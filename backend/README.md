@@ -6,17 +6,6 @@ FastAPI + SQLModel + Postgres backend for algoholic.
 - Docker (for the full dev stack: Postgres + web)
 
 ## Setup
-### Frontend
-
-```bash
-cd frontend
-pnpm install
-pnpm dev
-```
-Open http://localhost:3000. See [`../frontend/README.md`](../frontend/README.md) for more.
-
-
-### Backend
 ```bash
 cd backend
 cp .env.example .env
