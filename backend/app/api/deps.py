@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import Depends
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.db import async_session_factory
+from app.db.db import async_session_factory
 
 
 async def get_session() -> AsyncGenerator[AsyncSession]:

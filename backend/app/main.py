@@ -1,7 +1,9 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from starlette.middleware.sessions import SessionMiddleware
 
+from app.admin.main import register_admin
 from app.api.main import api_router
 from app.core.config import settings
 
@@ -17,4 +19,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(SessionMiddleware, secret_key=settings.SESSION_SECRET)
 app.include_router(api_router, prefix=settings.API_V1_STR)
+register_admin(app)

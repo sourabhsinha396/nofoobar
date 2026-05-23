@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
 
+    SUPERADMIN_USERNAME: str
+    SUPERADMIN_PASSWORD: str
+    SESSION_SECRET: str
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def DATABASE_URL(self) -> str:
