@@ -45,7 +45,7 @@ const faqs: ReadonlyArray<{ question: string; answer: string }> = [
 
 export function Faq() {
   return (
-    <section className="border-b border-border/60 py-24 md:py-32">
+    <section className="border-b border-border/60 bg-surface-subtle py-24 md:py-32">
       <div className="mx-auto max-w-3xl px-6">
         <div className="mb-12 text-center md:mb-16">
           <p className="mb-5 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">

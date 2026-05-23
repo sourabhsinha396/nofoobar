@@ -71,7 +71,7 @@ const expandedIds = [
 
 export function ContentStructure() {
   return (
-    <section className="border-b border-border/60 bg-muted/30 py-24 md:py-32">
+    <section className="border-b border-border/60 py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-6">
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 lg:items-center">
           <div>

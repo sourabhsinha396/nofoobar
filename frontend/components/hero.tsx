@@ -3,6 +3,7 @@ import { ShimmerButton } from "@/components/ui/shimmer-button";
 
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import { AuroraText } from "@/components/ui/aurora-text";
+import { Ripple } from "@/components/ui/ripple";
 
 function GithubMark({ className }: { className?: string }) {
   return (
@@ -20,6 +21,12 @@ function GithubMark({ className }: { className?: string }) {
 export function Hero() {
   return (
     <section className="flex items-center border-b border-border/60">
+      <Ripple
+              mainCircleSize={340}
+              mainCircleOpacity={0.18}
+              numCircles={9}
+              className="text-background"
+            />
       <div className="mx-auto w-full max-w-4xl px-6 py-20 text-center md:py-28">
         <p className="mb-6 text-xs font-medium uppercase tracking-[0.2em]">
           <AnimatedShinyText className="mx-0 max-w-none text-muted-foreground">

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { logout } from "@/lib/auth-actions";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -35,6 +36,11 @@ export async function Navbar() {
           >
             GitHub
           </Link>
+
+          <AnimatedThemeToggler
+            variant="circle"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground [&_svg]:h-4 [&_svg]:w-4"
+          />
 
           {user ? (
             <>

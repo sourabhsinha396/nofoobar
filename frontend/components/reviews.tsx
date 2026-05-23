@@ -83,7 +83,7 @@ function ReviewCard({ review }: { review: Review }) {
 
 export function Reviews() {
   return (
-    <section className="border-b border-border/60 py-24 md:py-32">
+    <section className="border-b border-border/60 bg-surface-subtle py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-6">
         <div className="mx-auto max-w-2xl text-center mb-16 md:mb-20">
           <p className="mb-5 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
