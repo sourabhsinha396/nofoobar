@@ -53,7 +53,7 @@ const features: ReadonlyArray<Feature> = [
   },
 ];
 
-export function SiteFeatures() {
+export function Features() {
   return (
     <section className="border-b border-border/60 py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-6">

@@ -1,6 +1,6 @@
 import { ListChecks, Sparkles } from "lucide-react";
 
-export function SiteAi() {
+export function Ai() {
   return (
     <section className="border-b border-border/60 py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-6">

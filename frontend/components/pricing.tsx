@@ -60,7 +60,7 @@ const plans: ReadonlyArray<Plan> = [
   },
 ];
 
-export function SitePricing() {
+export function Pricing() {
   return (
     <section
       id="pricing"

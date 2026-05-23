@@ -69,7 +69,7 @@ const expandedIds = [
   "16",
 ];
 
-export function SiteContentStructure() {
+export function ContentStructure() {
   return (
     <section className="border-b border-border/60 bg-muted/30 py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-6">

@@ -17,7 +17,7 @@ function GithubMark({ className }: { className?: string }) {
   );
 }
 
-export function SiteHero() {
+export function Hero() {
   return (
     <section className="flex items-center border-b border-border/60">
       <div className="mx-auto w-full max-w-4xl px-6 py-20 text-center md:py-28">

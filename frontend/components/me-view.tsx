@@ -51,15 +51,15 @@ export function MeView() {
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle>Hi, {user.name}</CardTitle>
+    <Card className="w-full max-w-lg p-2">
+      <CardHeader className="space-y-2">
+        <CardTitle className="text-3xl font-semibold tracking-tight">Hi, {user.name}</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <div className="text-sm text-muted-foreground">
+      <CardContent className="flex flex-col gap-5">
+        <div className="text-base text-muted-foreground">
           Signed in as <span className="font-medium text-foreground">{user.email}</span>
         </div>
-        <Button variant="outline" onClick={onLogout} disabled={isLoggingOut}>
+        <Button variant="outline" onClick={onLogout} disabled={isLoggingOut} className="h-11 text-base">
           {isLoggingOut ? "Signing out..." : "Sign out"}
         </Button>
       </CardContent>

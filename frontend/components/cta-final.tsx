@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Ripple } from "@/components/ui/ripple";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 
-export function SiteCtaFinal() {
+export function CtaFinal() {
   return (
     <section className="relative overflow-hidden border-b border-border/60 bg-foreground py-28 md:py-36">
       <Ripple

@@ -43,7 +43,7 @@ const faqs: ReadonlyArray<{ question: string; answer: string }> = [
   },
 ];
 
-export function SiteFaq() {
+export function Faq() {
   return (
     <section className="border-b border-border/60 py-24 md:py-32">
       <div className="mx-auto max-w-3xl px-6">

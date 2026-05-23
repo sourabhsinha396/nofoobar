@@ -33,7 +33,7 @@ const pillars: ReadonlyArray<Pillar> = [
   },
 ];
 
-export function SiteProductPillars() {
+export function ProductPillars() {
   return (
     <section className="border-y border-border/60 bg-muted/30 py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-6">

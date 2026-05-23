@@ -38,27 +38,27 @@ export function SignupForm() {
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle>Create your account</CardTitle>
-        <CardDescription>Get started with algoholic.</CardDescription>
+    <Card className="w-full max-w-lg p-2">
+      <CardHeader className="space-y-2">
+        <CardTitle className="text-3xl font-semibold tracking-tight">Create your account</CardTitle>
+        <CardDescription className="text-base">Get started with algoholic.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={onSubmit} className="flex flex-col gap-4">
+        <form onSubmit={onSubmit} className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" type="text" required autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
+            <Label htmlFor="name" className="text-sm font-medium">Name</Label>
+            <Input id="name" type="text" required autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} className="h-11 text-base" />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+            <Input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-11 text-base" />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" required minLength={8} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+            <Input id="password" type="password" required minLength={8} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} className="h-11 text-base" />
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit" disabled={isSubmitting} className="h-11 text-base">
             {isSubmitting ? "Creating account..." : "Sign up"}
           </Button>
         </form>
