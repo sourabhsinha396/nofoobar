@@ -1,5 +1,6 @@
 from collections.abc import AsyncGenerator
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import Depends, HTTPException, Request, status
 from sqlmodel import select
@@ -7,6 +8,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.db.db import async_session_factory
 from app.db.models.organization import Organization
+from app.db.models.user import User
 
 _LOCAL_HOSTS = {"localhost", "127.0.0.1", "host.docker.internal"}
 
@@ -42,3 +44,21 @@ async def get_current_org(request: Request, session: SessionDep) -> Organization
 
 
 CurrentOrgDep = Annotated[Organization, Depends(get_current_org)]
+
+
+async def get_current_user(request: Request, session: SessionDep) -> User:
+    user_id_str = request.session.get("user_id")
+    if not user_id_str:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not authenticated")
+    try:
+        user_id = UUID(user_id_str)
+    except (ValueError, TypeError) as exc:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid session") from exc
+    result = await session.exec(select(User).where(User.id == user_id))
+    user = result.first()
+    if user is None:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Stale session")
+    return user
+
+
+CurrentUserDep = Annotated[User, Depends(get_current_user)]
