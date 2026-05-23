@@ -1,6 +1,8 @@
-from pydantic import computed_field
+from typing import Annotated
+
+from pydantic import computed_field, field_validator
 from pydantic_core import MultiHostUrl
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -22,6 +24,15 @@ class Settings(BaseSettings):
     SUPERADMIN_USERNAME: str
     SUPERADMIN_PASSWORD: str
     SESSION_SECRET: str
+
+    CORS_ORIGINS: Annotated[list[str], NoDecode] = []
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def _split_cors_origins(cls, v: str | list[str]) -> list[str]:
+        if isinstance(v, str):
+            return [i.strip() for i in v.split(",") if i.strip()]
+        return v
 
     @computed_field  # type: ignore[prop-decorator]
     @property
