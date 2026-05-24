@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
 import { logout } from "@/lib/auth-actions";
-import { getMyOrgs, tenantUrl, type Role } from "@/lib/orgs";
+import { tenantUrl, type Role } from "@/lib/orgs";
+import { getMyOrgs } from "@/lib/orgs-server";
 
 const ROLE_LABELS: Record<Role, string> = {
   owner: "Owner",
@@ -60,7 +61,10 @@ export default async function MePage() {
           <ul className="space-y-3">
             {memberships.map(({ org, role }) => (
               <li key={org.id}>
-                <Link href={tenantUrl(org.slug)} className="block">
+                <Link
+                  href={tenantUrl(org.slug, role === "student" ? "/" : "/admin")}
+                  className="block"
+                >
                   <Card className="flex flex-row items-center justify-between p-5 transition-colors hover:border-foreground/20">
                     <div>
                       <p className="font-medium">{org.name}</p>

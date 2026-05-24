@@ -10,11 +10,24 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+export interface RequestOptions {
+  headers?: Record<string, string>;
+}
+
+async function request<T>(
+  method: string,
+  path: string,
+  body?: unknown,
+  options?: RequestOptions,
+): Promise<T> {
+  const headers: Record<string, string> = { ...(options?.headers ?? {}) };
+  if (body !== undefined) {
+    headers["Content-Type"] = "application/json";
+  }
   const response = await fetch(`${API_URL}${path}`, {
     method,
     credentials: "include",
-    headers: body !== undefined ? { "Content-Type": "application/json" } : undefined,
+    headers: Object.keys(headers).length ? headers : undefined,
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
   if (!response.ok) {
@@ -27,5 +40,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   return response.json() as Promise<T>;
 }
 
-export const apiGet = <T>(path: string): Promise<T> => request<T>("GET", path);
-export const apiPost = <T>(path: string, body?: unknown): Promise<T> => request<T>("POST", path, body);
+export const apiGet = <T>(path: string, options?: RequestOptions): Promise<T> =>
+  request<T>("GET", path, undefined, options);
+export const apiPost = <T>(path: string, body?: unknown, options?: RequestOptions): Promise<T> =>
+  request<T>("POST", path, body, options);

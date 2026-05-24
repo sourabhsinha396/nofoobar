@@ -20,14 +20,13 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-if settings.CORS_ORIGINS:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.CORS_ORIGINS,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=settings.CORS_ORIGIN_REGEX,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.add_middleware(
     SessionMiddleware,

@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from sqlalchemy import UniqueConstraint
@@ -5,6 +6,9 @@ from sqlmodel import Field, Relationship
 
 from app.db.models.common import TimestampedModel
 from app.db.models.organization import Organization
+
+if TYPE_CHECKING:
+    from app.db.models.section import Section
 
 
 class Course(TimestampedModel, table=True):
@@ -18,3 +22,7 @@ class Course(TimestampedModel, table=True):
     description: str | None = Field(default=None, max_length=2000)
 
     org: Organization = Relationship()
+    sections: list["Section"] = Relationship(
+        back_populates="course",
+        sa_relationship_kwargs={"order_by": "Section.position", "cascade": "all, delete-orphan"},
+    )

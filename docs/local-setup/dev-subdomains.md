@@ -29,13 +29,13 @@ SESSION_COOKIE_DOMAIN=.testholic.test
 
 The leading dot scopes the cookie to `testholic.test` and all its subdomains.
 
-Also extend `CORS_ORIGINS` to include your tenant hosts — without this, client-side forms (signup, login, create-org) posting from `*.testholic.test:3000` to `localhost:8000` get blocked by the browser:
+Also widen `CORS_ORIGIN_REGEX` to match your apex + every subdomain — without this, client-side forms (signup, login, create-org) posting from `*.testholic.test:3000` to `testholic.test:8000` get blocked by the browser:
 
 ```
-CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://testholic.test:3000,http://local.testholic.test:3000
+CORS_ORIGIN_REGEX=^http://([a-z0-9-]+\.)?testholic\.test:3000$
 ```
 
-Add a line per subdomain you'll exercise. (We'll switch to a regex when the list grows.)
+One regex covers the apex and every subdomain — no need to extend it per tenant.
 
 Restart so the new settings take effect:
 

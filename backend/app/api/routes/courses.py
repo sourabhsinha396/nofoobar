@@ -1,10 +1,11 @@
 from fastapi import APIRouter, HTTPException, status
+from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
 from app.api.deps import CurrentMembershipDep, SessionDep
 from app.db.models.course import Course
 from app.db.models.membership import Role
-from app.schemas.course import CourseCreate, CoursePublic
+from app.schemas.course import CourseCreate, CourseDetailPublic, CoursePublic
 
 router = APIRouter(prefix="/courses", tags=["courses"])
 
@@ -42,3 +43,19 @@ async def create_course(
 async def list_courses(membership: CurrentMembershipDep, session: SessionDep) -> list[CoursePublic]:
     result = await session.exec(select(Course).where(Course.org_id == membership.org_id))
     return list(result.all())
+
+
+@router.get("/{slug}")
+async def get_course(
+    slug: str, membership: CurrentMembershipDep, session: SessionDep
+) -> CourseDetailPublic:
+    result = await session.exec(
+        select(Course)
+        .where(Course.org_id == membership.org_id)
+        .where(Course.slug == slug)
+        .options(selectinload(Course.sections))
+    )
+    course = result.first()
+    if course is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, f"No course with slug {slug!r}")
+    return course

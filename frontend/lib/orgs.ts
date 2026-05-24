@@ -1,8 +1,7 @@
-import { cookies } from "next/headers";
-
-import { SESSION_COOKIE } from "@/lib/auth";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// Client-safe org helpers — types + path/URL builders. Anything that touches
+// `next/headers` (cookies, headers) lives in `lib/orgs-server.ts` so this file
+// can be imported from client components without dragging server-only code
+// into the browser bundle.
 
 export interface OrgSummary {
   id: string;
@@ -20,30 +19,21 @@ export interface Membership {
   role: Role;
 }
 
-export function tenantUrl(slug: string): string {
+export function tenantUrl(slug: string, path: string = "/"): string {
   const host = process.env.NEXT_PUBLIC_TENANT_HOST;
   if (host) {
     const protocol = process.env.NEXT_PUBLIC_TENANT_PROTOCOL ?? "https";
-    return `${protocol}://${slug}.${host}`;
+    return `${protocol}://${slug}.${host}${path}`;
   }
-  return `/org/${slug}`;
+  return path === "/" ? `/org/${slug}` : `/org/${slug}${path}`;
 }
 
-export async function getMyOrgs(): Promise<Membership[]> {
-  const cookieStore = await cookies();
-  if (!cookieStore.has(SESSION_COOKIE)) {
-    return [];
+// In-tenant navigation: returns a relative path that works in both subdomain
+// mode (`/admin`) and apex path mode (`/org/<slug>/admin`). Detects mode at
+// runtime by checking whether the current URL is path-prefixed.
+export function tenantPath(slug: string, path: string): string {
+  if (typeof window !== "undefined" && window.location.pathname.startsWith(`/org/${slug}`)) {
+    return path === "/" ? `/org/${slug}` : `/org/${slug}${path}`;
   }
-  try {
-    const response = await fetch(`${API_URL}/api/v1/me/orgs`, {
-      headers: { cookie: cookieStore.toString() },
-      cache: "no-store",
-    });
-    if (!response.ok) {
-      return [];
-    }
-    return (await response.json()) as Membership[];
-  } catch {
-    return [];
-  }
+  return path;
 }
