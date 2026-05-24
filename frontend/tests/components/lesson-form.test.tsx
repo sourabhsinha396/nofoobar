@@ -11,6 +11,23 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: pushMock, refresh: refreshMock }),
 }));
 
+// Stub the TipTap-based ArticleEditor with a simple div that exposes its props
+// via data attributes. Lets us verify the form passes the initial JSON doc
+// through and that it's submitted back unchanged, without dealing with the
+// contenteditable mechanics that don't render reliably in jsdom.
+vi.mock("@/components/article-editor", () => ({
+  ArticleEditor: ({
+    value,
+    id,
+  }: {
+    value: unknown;
+    onChange: (v: unknown) => void;
+    id?: string;
+  }) => (
+    <div data-testid="article-editor" data-value={JSON.stringify(value)} id={id} />
+  ),
+}));
+
 let fetchMock: ReturnType<typeof vi.fn>;
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -30,11 +47,21 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+const ARTICLE_BODY = {
+  type: "doc",
+  content: [
+    {
+      type: "paragraph",
+      content: [{ type: "text", text: "FastAPI is built on asyncio." }],
+    },
+  ],
+};
+
 const ARTICLE_INITIAL = {
   slug: "intro",
   title: "Why async matters",
   content_type: "article" as const,
-  content: { body: "FastAPI is built on asyncio." },
+  content: { body: ARTICLE_BODY },
 };
 
 const VIDEO_INITIAL = {
@@ -62,7 +89,9 @@ describe("LessonForm — edit mode", () => {
     renderEdit(ARTICLE_INITIAL);
     expect(screen.getByLabelText("Title")).toHaveValue("Why async matters");
     expect(screen.getByLabelText("Slug")).toHaveValue("intro");
-    expect(screen.getByLabelText(/Body/)).toHaveValue("FastAPI is built on asyncio.");
+    // ArticleEditor is mocked; check it received the initial TipTap doc.
+    const editor = screen.getByTestId("article-editor");
+    expect(JSON.parse(editor.dataset.value ?? "null")).toEqual(ARTICLE_BODY);
   });
 
   it("pre-populates fields from initial values (video)", () => {
@@ -78,12 +107,11 @@ describe("LessonForm — edit mode", () => {
     for (const radio of radios) {
       expect(radio).toBeDisabled();
     }
-    // The article radio is the one that's checked
     const articleRadio = radios.find((r) => (r as HTMLInputElement).value === "article");
     expect(articleRadio).toBeChecked();
   });
 
-  it("submits a PATCH with article-shaped content payload", async () => {
+  it("submits a PATCH with article-shaped content payload (TipTap JSON)", async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse({ id: "1", slug: "intro" }));
     renderEdit(ARTICLE_INITIAL);
 
@@ -103,7 +131,7 @@ describe("LessonForm — edit mode", () => {
     expect(body).toEqual({
       slug: "intro",
       title: "New title",
-      content: { content_type: "article", body: "FastAPI is built on asyncio." },
+      content: { content_type: "article", body: ARTICLE_BODY },
     });
     expect(init.headers).toMatchObject({ "X-Tenant-Slug": "demo" });
   });
@@ -160,7 +188,6 @@ describe("LessonForm — edit mode", () => {
     await user.type(slugInput, "renamed");
     await user.click(screen.getByRole("button", { name: /save changes/i }));
 
-    // tenantPath returns the bare path in subdomain mode (default jsdom location)
     expect(pushMock).toHaveBeenCalledWith(
       "/admin/courses/intro-fastapi/sections/getting-started/lessons/renamed",
     );

@@ -1,16 +1,30 @@
 from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, Field, HttpUrl, StringConstraints
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, StringConstraints
 from sqlmodel import SQLModel
 
 from app.db.models.lesson import ContentType
 from app.schemas.common import Slug
 
 
+class TipTapDoc(BaseModel):
+    """Lightly validated ProseMirror/TipTap document shape.
+
+    We only enforce the top-level invariants (`type: "doc"` + a `content` list);
+    individual node shapes are not validated server-side because TipTap on the
+    client is the authority on what's a valid doc. Extra top-level keys
+    (e.g. `attrs`) are passed through.
+    """
+
+    model_config = ConfigDict(extra="allow")
+    type: Literal["doc"]
+    content: list[dict[str, Any]] = []
+
+
 class ArticleContent(BaseModel):
     content_type: Literal[ContentType.ARTICLE] = ContentType.ARTICLE
-    body: Annotated[str, StringConstraints(min_length=1)]
+    body: TipTapDoc
 
 
 class VideoContent(BaseModel):

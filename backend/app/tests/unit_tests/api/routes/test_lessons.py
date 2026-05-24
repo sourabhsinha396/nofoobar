@@ -4,15 +4,16 @@ import pytest
 
 from app.db.models.lesson import ContentType
 from app.db.models.membership import Role
-from app.tests.factories.lesson import LessonFactory
+from app.tests.factories.lesson import LessonFactory, tiptap_doc
 from app.tests.factories.section import SectionFactory
 
 HOSTS = ["localhost", "acme.algoholic.app"]
 
+ARTICLE_BODY = tiptap_doc("Hello, world.")
 ARTICLE_PAYLOAD = {
     "slug": "intro",
     "title": "Intro",
-    "content": {"content_type": "article", "body": "Hello, world."},
+    "content": {"content_type": "article", "body": ARTICLE_BODY},
 }
 VIDEO_PAYLOAD = {
     "slug": "demo",
@@ -44,7 +45,7 @@ def test_create_article_lesson_succeeds_for_authors(client, mock_session, fake_m
     body = response.json()
     assert body["slug"] == "intro"
     assert body["content_type"] == "article"
-    assert body["content"] == {"body": "Hello, world."}
+    assert body["content"] == {"body": ARTICLE_BODY}
     assert body["section_id"] == str(section.id)
     assert body["course_id"] == str(section.course_id)
     assert body["org_id"] == str(fake_membership.org_id)
@@ -282,20 +283,21 @@ def test_patch_lesson_slug_succeeds_when_unique(client, mock_session, fake_membe
 
 
 def test_patch_lesson_content_matching_type(client, mock_session, fake_membership):
+    new_body = tiptap_doc("New body")
     lesson = LessonFactory.build(
         slug="intro",
         org_id=fake_membership.org_id,
         content_type=ContentType.ARTICLE,
-        content={"body": "Old"},
+        content={"body": tiptap_doc("Old")},
     )
     mock_session.exec.return_value.first.return_value = lesson
     response = client.patch(
         "/api/v1/courses/c/sections/s/lessons/intro",
-        json={"content": {"content_type": "article", "body": "New body"}},
+        json={"content": {"content_type": "article", "body": new_body}},
         headers={"Host": "localhost"},
     )
     assert response.status_code == 200
-    assert lesson.content == {"body": "New body"}
+    assert lesson.content == {"body": new_body}
 
 
 def test_patch_lesson_rejects_content_type_change(client, mock_session, fake_membership):
@@ -303,7 +305,7 @@ def test_patch_lesson_rejects_content_type_change(client, mock_session, fake_mem
         slug="intro",
         org_id=fake_membership.org_id,
         content_type=ContentType.ARTICLE,
-        content={"body": "Hi"},
+        content={"body": tiptap_doc()},
     )
     mock_session.exec.return_value.first.return_value = lesson
     response = client.patch(

@@ -5,7 +5,7 @@ import pytest
 from app.db.models.lesson import ContentType
 from app.db.models.membership import Role
 from app.tests.factories.enrollment import EnrollmentFactory
-from app.tests.factories.lesson import LessonFactory
+from app.tests.factories.lesson import LessonFactory, tiptap_doc
 from app.tests.factories.membership import UserOrgMembershipFactory
 
 HOSTS = ["localhost", "acme.algoholic.app"]
@@ -132,7 +132,8 @@ def test_response_includes_full_lesson_content_body(
         slug="welcome",
         content_type=ContentType.ARTICLE,
     )
-    lesson.content = {"body": "# Hello\n\nThis is the article body."}
+    doc = tiptap_doc("This is the article body.")
+    lesson.content = {"body": doc}
     enrollment = EnrollmentFactory.build(
         user_id=authed_user.id, org_id=fake_org.id, course_id=lesson.course_id
     )
@@ -140,7 +141,7 @@ def test_response_includes_full_lesson_content_body(
 
     response = client.get(LESSON_PATH, headers={"Host": "localhost"})
     body = response.json()
-    assert body["content"] == {"body": "# Hello\n\nThis is the article body."}
+    assert body["content"] == {"body": doc}
 
 
 def test_enrolled_user_skips_membership_lookup(

@@ -1,15 +1,17 @@
 "use client";
 
+import type { JSONContent } from "@tiptap/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { ArticleEditor } from "@/components/article-editor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { ApiError, apiPatch, apiPost } from "@/lib/api";
 import { tenantPath } from "@/lib/orgs";
+import { EMPTY_TIPTAP_DOC } from "@/lib/tiptap-extensions";
 import type { LessonContentType } from "@/lib/tenant";
 
 const SLUG_PATTERN = /^[a-z][a-z0-9-]{0,62}$/;
@@ -48,9 +50,26 @@ interface EditModeProps {
 type Props = CreateModeProps | EditModeProps;
 
 const CONTENT_TYPE_OPTIONS: Array<{ value: SupportedContentType; label: string; hint: string }> = [
-  { value: "article", label: "Article", hint: "Markdown body" },
+  { value: "article", label: "Article", hint: "Rich text body" },
   { value: "video", label: "Video", hint: "URL + optional duration" },
 ];
+
+function isJsonContent(value: unknown): value is JSONContent {
+  return typeof value === "object" && value !== null && "type" in value;
+}
+
+function isDocEmpty(doc: JSONContent): boolean {
+  function hasText(node: JSONContent): boolean {
+    if (typeof node.text === "string" && node.text.trim().length > 0) {
+      return true;
+    }
+    if (Array.isArray(node.content)) {
+      return node.content.some(hasText);
+    }
+    return false;
+  }
+  return !hasText(doc);
+}
 
 export function LessonForm(props: Props) {
   const router = useRouter();
@@ -63,11 +82,12 @@ export function LessonForm(props: Props) {
   const [contentType, setContentType] = useState<LessonContentType>(
     initial?.content_type ?? "article",
   );
-  const [body, setBody] = useState(
-    initial?.content_type === "article" && typeof initial.content.body === "string"
-      ? initial.content.body
-      : "",
-  );
+  const [body, setBody] = useState<JSONContent>(() => {
+    if (initial?.content_type === "article" && isJsonContent(initial.content.body)) {
+      return initial.content.body;
+    }
+    return EMPTY_TIPTAP_DOC;
+  });
   const [videoUrl, setVideoUrl] = useState(
     initial?.content_type === "video" && typeof initial.content.url === "string"
       ? initial.content.url
@@ -85,7 +105,7 @@ export function LessonForm(props: Props) {
 
   function buildContent(): Record<string, unknown> | null {
     if (contentType === "article") {
-      if (!body.trim()) {
+      if (isDocEmpty(body)) {
         setError("Article body cannot be empty.");
         return null;
       }
@@ -256,16 +276,9 @@ export function LessonForm(props: Props) {
           {contentType === "article" && (
             <div className="flex flex-col gap-2">
               <Label htmlFor="body" className="text-sm font-medium">
-                Body <span className="text-muted-foreground">(markdown)</span>
+                Body
               </Label>
-              <Textarea
-                id="body"
-                required
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                rows={10}
-                className="font-mono text-sm"
-              />
+              <ArticleEditor id="body" value={body} onChange={setBody} />
             </div>
           )}
 

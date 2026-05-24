@@ -3,6 +3,19 @@ from polyfactory.factories.pydantic_factory import ModelFactory
 from app.db.models.lesson import ContentType, Lesson
 
 
+def tiptap_doc(text: str = "Some content.") -> dict:
+    """Minimal valid TipTap JSON document: a single paragraph wrapping `text`."""
+    return {
+        "type": "doc",
+        "content": [
+            {
+                "type": "paragraph",
+                "content": [{"type": "text", "text": text}],
+            }
+        ],
+    }
+
+
 class LessonFactory(ModelFactory[Lesson]):
     __model__ = Lesson
 
@@ -12,4 +25,4 @@ class LessonFactory(ModelFactory[Lesson]):
 
     @classmethod
     def content(cls) -> dict:
-        return {"body": "Some markdown content."}
+        return {"body": tiptap_doc()}

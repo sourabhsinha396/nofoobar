@@ -1,6 +1,6 @@
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import type { JSONContent } from "@tiptap/react";
 
+import { ArticleRenderer } from "@/components/article-renderer";
 import { Card } from "@/components/ui/card";
 import type { Lesson } from "@/lib/tenant";
 
@@ -30,14 +30,21 @@ function youtubeId(url: string): string | null {
   }
 }
 
+function isJsonContent(value: unknown): value is JSONContent {
+  return typeof value === "object" && value !== null && "type" in value;
+}
+
 export function LessonContent({ lesson }: Props) {
   if (lesson.content_type === "article") {
-    const body = typeof lesson.content.body === "string" ? lesson.content.body : "";
-    return (
-      <article className="prose prose-neutral max-w-none dark:prose-invert">
-        <Markdown remarkPlugins={[remarkGfm]}>{body}</Markdown>
-      </article>
-    );
+    const body = lesson.content.body;
+    if (!isJsonContent(body)) {
+      return (
+        <Card className="items-center p-10 text-center">
+          <p className="text-muted-foreground">No content yet.</p>
+        </Card>
+      );
+    }
+    return <ArticleRenderer doc={body} />;
   }
 
   if (lesson.content_type === "video") {
