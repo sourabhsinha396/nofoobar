@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { DeleteSectionButton } from "@/components/delete-section-button";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
@@ -42,10 +43,11 @@ export default async function SectionDetailPage({ params }: Props) {
     redirect("/login");
   }
 
-  const [section, newLessonHref, courseHref] = await Promise.all([
+  const [section, newLessonHref, lessonsPrefix, editHref] = await Promise.all([
     getTenantSection(slug, courseSlug, sectionSlug),
     serverTenantPath(slug, `/admin/courses/${courseSlug}/sections/${sectionSlug}/lessons/new`),
-    serverTenantPath(slug, `/admin/courses/${courseSlug}`),
+    serverTenantPath(slug, `/admin/courses/${courseSlug}/sections/${sectionSlug}/lessons`),
+    serverTenantPath(slug, `/admin/courses/${courseSlug}/sections/${sectionSlug}/edit`),
   ]);
 
   if (!section) {
@@ -55,13 +57,7 @@ export default async function SectionDetailPage({ params }: Props) {
   return (
     <main className="mx-auto w-full max-w-4xl px-6 py-16 md:py-24">
       <header className="mb-12">
-        <Link
-          href={courseHref}
-          className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
-        >
-          ← Course
-        </Link>
-        <p className="mt-6 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+        <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
           Section
         </p>
         <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight md:text-4xl">
@@ -71,6 +67,18 @@ export default async function SectionDetailPage({ params }: Props) {
         {section.description && (
           <p className="mt-4 max-w-2xl text-muted-foreground">{section.description}</p>
         )}
+        <div className="mt-6 flex items-center gap-3">
+          <Button asChild variant="outline">
+            <Link href={editHref}>Edit section</Link>
+          </Button>
+          <DeleteSectionButton
+            orgSlug={slug}
+            courseSlug={courseSlug}
+            sectionSlug={sectionSlug}
+            sectionTitle={section.title}
+            lessonCount={section.lessons.length}
+          />
+        </div>
       </header>
 
       <section className="space-y-6">
@@ -91,27 +99,29 @@ export default async function SectionDetailPage({ params }: Props) {
           <ol className="space-y-3">
             {section.lessons.map((lesson, index) => (
               <li key={lesson.id}>
-                <Card className="p-5">
-                  <div className="flex items-baseline gap-3">
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{lesson.title}</p>
-                        <span className="inline-flex items-center rounded-full border border-border bg-surface-subtle px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                          {CONTENT_TYPE_LABELS[lesson.content_type]}
-                        </span>
+                <Link href={`${lessonsPrefix}/${lesson.slug}`} className="block">
+                  <Card className="p-5 transition-colors hover:border-foreground/20">
+                    <div className="flex items-baseline gap-3">
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{lesson.title}</p>
+                          <span className="inline-flex items-center rounded-full border border-border bg-surface-subtle px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                            {CONTENT_TYPE_LABELS[lesson.content_type]}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{lesson.slug}</p>
+                        {lessonPreview(lesson) && (
+                          <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+                            {lessonPreview(lesson)}
+                          </p>
+                        )}
                       </div>
-                      <p className="text-sm text-muted-foreground">{lesson.slug}</p>
-                      {lessonPreview(lesson) && (
-                        <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
-                          {lessonPreview(lesson)}
-                        </p>
-                      )}
                     </div>
-                  </div>
-                </Card>
+                  </Card>
+                </Link>
               </li>
             ))}
           </ol>

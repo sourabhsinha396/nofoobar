@@ -44,3 +44,7 @@ export const apiGet = <T>(path: string, options?: RequestOptions): Promise<T> =>
   request<T>("GET", path, undefined, options);
 export const apiPost = <T>(path: string, body?: unknown, options?: RequestOptions): Promise<T> =>
   request<T>("POST", path, body, options);
+export const apiPatch = <T>(path: string, body?: unknown, options?: RequestOptions): Promise<T> =>
+  request<T>("PATCH", path, body, options);
+export const apiDelete = <T>(path: string, options?: RequestOptions): Promise<T> =>
+  request<T>("DELETE", path, undefined, options);

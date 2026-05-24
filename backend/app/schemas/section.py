@@ -14,6 +14,12 @@ class SectionCreate(SQLModel):
     description: Annotated[str, StringConstraints(max_length=2000)] | None = None
 
 
+class SectionUpdate(SQLModel):
+    slug: Slug | None = None
+    title: Annotated[str, StringConstraints(min_length=1, max_length=255)] | None = None
+    description: Annotated[str, StringConstraints(max_length=2000)] | None = None
+
+
 class SectionPublic(SQLModel):
     id: UUID
     org_id: UUID

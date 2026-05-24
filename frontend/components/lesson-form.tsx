@@ -8,8 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ApiError, apiPost } from "@/lib/api";
+import { ApiError, apiPatch, apiPost } from "@/lib/api";
 import { tenantPath } from "@/lib/orgs";
+import type { LessonContentType } from "@/lib/tenant";
 
 const SLUG_PATTERN = /^[a-z][a-z0-9-]{0,62}$/;
 
@@ -20,26 +21,63 @@ interface LessonResponse {
   slug: string;
 }
 
-interface Props {
+export interface LessonInitialValues {
+  slug: string;
+  title: string;
+  content_type: LessonContentType;
+  content: Record<string, unknown>;
+}
+
+interface CreateModeProps {
+  mode: "create";
   orgSlug: string;
   courseSlug: string;
   sectionSlug: string;
   sectionTitle: string;
 }
 
+interface EditModeProps {
+  mode: "edit";
+  orgSlug: string;
+  courseSlug: string;
+  sectionSlug: string;
+  lessonSlug: string;
+  initial: LessonInitialValues;
+}
+
+type Props = CreateModeProps | EditModeProps;
+
 const CONTENT_TYPE_OPTIONS: Array<{ value: SupportedContentType; label: string; hint: string }> = [
   { value: "article", label: "Article", hint: "Markdown body" },
   { value: "video", label: "Video", hint: "URL + optional duration" },
 ];
 
-export function CreateLessonForm({ orgSlug, courseSlug, sectionSlug, sectionTitle }: Props) {
+export function LessonForm(props: Props) {
   const router = useRouter();
-  const [title, setTitle] = useState("");
-  const [slug, setSlug] = useState("");
-  const [contentType, setContentType] = useState<SupportedContentType>("article");
-  const [body, setBody] = useState("");
-  const [videoUrl, setVideoUrl] = useState("");
-  const [durationSeconds, setDurationSeconds] = useState("");
+
+  const initial = props.mode === "edit" ? props.initial : null;
+  const lockedContentType: LessonContentType | null = initial ? initial.content_type : null;
+
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const [slug, setSlug] = useState(initial?.slug ?? "");
+  const [contentType, setContentType] = useState<LessonContentType>(
+    initial?.content_type ?? "article",
+  );
+  const [body, setBody] = useState(
+    initial?.content_type === "article" && typeof initial.content.body === "string"
+      ? initial.content.body
+      : "",
+  );
+  const [videoUrl, setVideoUrl] = useState(
+    initial?.content_type === "video" && typeof initial.content.url === "string"
+      ? initial.content.url
+      : "",
+  );
+  const [durationSeconds, setDurationSeconds] = useState(
+    initial?.content_type === "video" && typeof initial.content.duration_seconds === "number"
+      ? String(initial.content.duration_seconds)
+      : "",
+  );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -53,20 +91,24 @@ export function CreateLessonForm({ orgSlug, courseSlug, sectionSlug, sectionTitl
       }
       return { content_type: "article", body };
     }
-    if (!videoUrl.trim()) {
-      setError("Video URL is required.");
-      return null;
-    }
-    const payload: Record<string, unknown> = { content_type: "video", url: videoUrl.trim() };
-    if (durationSeconds.trim()) {
-      const parsed = Number.parseInt(durationSeconds, 10);
-      if (Number.isNaN(parsed) || parsed < 0) {
-        setError("Duration must be a non-negative integer.");
+    if (contentType === "video") {
+      if (!videoUrl.trim()) {
+        setError("Video URL is required.");
         return null;
       }
-      payload.duration_seconds = parsed;
+      const payload: Record<string, unknown> = { content_type: "video", url: videoUrl.trim() };
+      if (durationSeconds.trim()) {
+        const parsed = Number.parseInt(durationSeconds, 10);
+        if (Number.isNaN(parsed) || parsed < 0) {
+          setError("Duration must be a non-negative integer.");
+          return null;
+        }
+        payload.duration_seconds = parsed;
+      }
+      return payload;
     }
-    return payload;
+    // lab/quiz aren't edited via this form yet
+    return null;
   }
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -85,24 +127,41 @@ export function CreateLessonForm({ orgSlug, courseSlug, sectionSlug, sectionTitl
 
     setIsSubmitting(true);
     try {
-      await apiPost<LessonResponse>(
-        `/api/v1/courses/${courseSlug}/sections/${sectionSlug}/lessons`,
-        { slug, title, content },
-        { headers: { "X-Tenant-Slug": orgSlug } },
-      );
-      router.push(tenantPath(orgSlug, `/admin/courses/${courseSlug}/sections/${sectionSlug}`));
+      if (props.mode === "create") {
+        await apiPost<LessonResponse>(
+          `/api/v1/courses/${props.courseSlug}/sections/${props.sectionSlug}/lessons`,
+          { slug, title, content },
+          { headers: { "X-Tenant-Slug": props.orgSlug } },
+        );
+        router.push(
+          tenantPath(props.orgSlug, `/admin/courses/${props.courseSlug}/sections/${props.sectionSlug}`),
+        );
+      } else {
+        await apiPatch<LessonResponse>(
+          `/api/v1/courses/${props.courseSlug}/sections/${props.sectionSlug}/lessons/${props.lessonSlug}`,
+          { slug, title, content },
+          { headers: { "X-Tenant-Slug": props.orgSlug } },
+        );
+        // Slug may have changed — navigate to the new URL.
+        router.push(
+          tenantPath(
+            props.orgSlug,
+            `/admin/courses/${props.courseSlug}/sections/${props.sectionSlug}/lessons/${slug}`,
+          ),
+        );
+      }
       router.refresh();
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        setError("That slug is already used in this section. Try another.");
+        setError(err.message || "Slug already used in this section.");
       } else if (err instanceof ApiError && err.status === 403) {
-        setError("Only owners and instructors can create lessons.");
+        setError("Only owners and instructors can edit lessons.");
       } else if (err instanceof ApiError && err.status === 404) {
-        setError("Section no longer exists.");
+        setError("Lesson no longer exists.");
       } else if (err instanceof ApiError && err.status === 422) {
         setError(err.message || "Please check the form fields.");
       } else {
-        setError(err instanceof Error ? err.message : "Could not create lesson.");
+        setError(err instanceof Error ? err.message : "Could not save lesson.");
       }
       setIsSubmitting(false);
     }
@@ -111,10 +170,18 @@ export function CreateLessonForm({ orgSlug, courseSlug, sectionSlug, sectionTitl
   return (
     <Card className="w-full p-2">
       <CardHeader className="space-y-2">
-        <CardTitle className="text-3xl font-semibold tracking-tight">Create a lesson</CardTitle>
+        <CardTitle className="text-3xl font-semibold tracking-tight">
+          {props.mode === "create" ? "Create a lesson" : "Edit lesson"}
+        </CardTitle>
         <CardDescription className="text-base">
-          Adding to <span className="font-mono">{sectionTitle}</span>. Labs and quizzes get their
-          own forms in a future update.
+          {props.mode === "create" ? (
+            <>
+              Adding to <span className="font-mono">{props.sectionTitle}</span>. Labs and quizzes
+              get their own forms in a future update.
+            </>
+          ) : (
+            <>Content type can&apos;t change after creation. Delete and recreate to switch types.</>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -122,27 +189,32 @@ export function CreateLessonForm({ orgSlug, courseSlug, sectionSlug, sectionTitl
           <fieldset className="flex flex-col gap-2">
             <Label className="text-sm font-medium">Type</Label>
             <div className="grid grid-cols-2 gap-3">
-              {CONTENT_TYPE_OPTIONS.map((opt) => (
-                <label
-                  key={opt.value}
-                  className={`flex cursor-pointer flex-col gap-1 rounded-lg border p-3 transition-colors ${
-                    contentType === opt.value
-                      ? "border-foreground/40 bg-surface-subtle"
-                      : "border-input hover:border-foreground/20"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="content_type"
-                    value={opt.value}
-                    checked={contentType === opt.value}
-                    onChange={() => setContentType(opt.value)}
-                    className="sr-only"
-                  />
-                  <span className="text-sm font-medium">{opt.label}</span>
-                  <span className="text-xs text-muted-foreground">{opt.hint}</span>
-                </label>
-              ))}
+              {CONTENT_TYPE_OPTIONS.map((opt) => {
+                const isLocked =
+                  lockedContentType !== null && lockedContentType !== opt.value;
+                return (
+                  <label
+                    key={opt.value}
+                    className={`flex flex-col gap-1 rounded-lg border p-3 transition-colors ${
+                      contentType === opt.value
+                        ? "border-foreground/40 bg-surface-subtle"
+                        : "border-input hover:border-foreground/20"
+                    } ${isLocked ? "cursor-not-allowed opacity-40" : "cursor-pointer"}`}
+                  >
+                    <input
+                      type="radio"
+                      name="content_type"
+                      value={opt.value}
+                      checked={contentType === opt.value}
+                      disabled={lockedContentType !== null}
+                      onChange={() => setContentType(opt.value)}
+                      className="sr-only"
+                    />
+                    <span className="text-sm font-medium">{opt.label}</span>
+                    <span className="text-xs text-muted-foreground">{opt.hint}</span>
+                  </label>
+                );
+              })}
             </div>
           </fieldset>
 
@@ -231,7 +303,13 @@ export function CreateLessonForm({ orgSlug, courseSlug, sectionSlug, sectionTitl
 
           {error && <p className="text-sm text-red-500">{error}</p>}
           <Button type="submit" disabled={isSubmitting} size="lg">
-            {isSubmitting ? "Creating..." : "Create lesson"}
+            {isSubmitting
+              ? props.mode === "create"
+                ? "Creating..."
+                : "Saving..."
+              : props.mode === "create"
+                ? "Create lesson"
+                : "Save changes"}
           </Button>
         </form>
       </CardContent>

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { CreateCourseForm } from "@/components/create-course-form";
+import { CourseForm } from "@/components/course-form";
 import { getCurrentUser } from "@/lib/auth";
 
 interface Props {
@@ -17,7 +17,7 @@ export default async function NewCoursePage({ params }: Props) {
 
   return (
     <main className="mx-auto w-full max-w-xl px-6 py-16 md:py-24">
-      <CreateCourseForm orgSlug={slug} />
+      <CourseForm mode="create" orgSlug={slug} />
     </main>
   );
 }

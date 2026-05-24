@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import pytest
 
 from app.db.models.membership import Role
@@ -98,4 +100,117 @@ def test_list_courses_filters_by_org_id_in_query(client, mock_session, fake_memb
 
 def test_list_courses_requires_authentication(client, mock_session):
     response = client.get("/api/v1/courses", headers={"Host": "localhost"})
+    assert response.status_code == 401
+
+
+# ---------- PATCH /courses/{slug} ----------
+
+
+def _exec_results(*first_values):
+    return [MagicMock(first=MagicMock(return_value=v)) for v in first_values]
+
+
+def test_patch_course_title_only(client, mock_session, fake_membership):
+    course = CourseFactory.build(slug="intro", title="Old", org_id=fake_membership.org_id)
+    mock_session.exec.return_value.first.return_value = course
+    response = client.patch(
+        "/api/v1/courses/intro",
+        json={"title": "New"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 200
+    assert response.json()["title"] == "New"
+    assert course.title == "New"
+
+
+def test_patch_course_slug_with_conflict(client, mock_session, fake_membership):
+    course = CourseFactory.build(slug="intro", org_id=fake_membership.org_id)
+    other = CourseFactory.build(slug="taken", org_id=fake_membership.org_id)
+    mock_session.exec.side_effect = _exec_results(course, other)
+    response = client.patch(
+        "/api/v1/courses/intro",
+        json={"slug": "taken"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 409
+
+
+def test_patch_course_slug_succeeds_when_unique(client, mock_session, fake_membership):
+    course = CourseFactory.build(slug="intro", org_id=fake_membership.org_id)
+    mock_session.exec.side_effect = _exec_results(course, None)
+    response = client.patch(
+        "/api/v1/courses/intro",
+        json={"slug": "fresh"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 200
+    assert response.json()["slug"] == "fresh"
+
+
+def test_patch_course_rejects_students(client, mock_session, fake_membership):
+    fake_membership.role = Role.STUDENT
+    response = client.patch(
+        "/api/v1/courses/intro",
+        json={"title": "Nope"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 403
+
+
+def test_patch_course_404_when_missing(client, mock_session, fake_membership):
+    mock_session.exec.return_value.first.return_value = None
+    response = client.patch(
+        "/api/v1/courses/ghost",
+        json={"title": "X"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 404
+
+
+def test_patch_course_requires_authentication(client, mock_session):
+    response = client.patch(
+        "/api/v1/courses/intro",
+        json={"title": "X"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 401
+
+
+# ---------- DELETE /courses/{slug} ----------
+
+
+def test_delete_course_returns_204(client, mock_session, fake_membership):
+    course = CourseFactory.build(slug="intro", org_id=fake_membership.org_id)
+    mock_session.exec.return_value.first.return_value = course
+    response = client.delete(
+        "/api/v1/courses/intro",
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 204
+    mock_session.delete.assert_called_once_with(course)
+
+
+def test_delete_course_rejects_students(client, mock_session, fake_membership):
+    fake_membership.role = Role.STUDENT
+    response = client.delete(
+        "/api/v1/courses/intro",
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 403
+
+
+def test_delete_course_404_when_missing(client, mock_session, fake_membership):
+    mock_session.exec.return_value.first.return_value = None
+    response = client.delete(
+        "/api/v1/courses/ghost",
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 404
+
+
+def test_delete_course_requires_authentication(client, mock_session):
+    response = client.delete(
+        "/api/v1/courses/intro",
+        headers={"Host": "localhost"},
+    )
     assert response.status_code == 401

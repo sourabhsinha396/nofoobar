@@ -8,28 +8,44 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ApiError, apiPost } from "@/lib/api";
+import { ApiError, apiPatch, apiPost } from "@/lib/api";
 import { tenantPath } from "@/lib/orgs";
 
 const SLUG_PATTERN = /^[a-z][a-z0-9-]{0,62}$/;
 
-interface SectionResponse {
+interface CourseResponse {
   id: string;
   slug: string;
   title: string;
 }
 
-interface Props {
-  orgSlug: string;
-  courseSlug: string;
-  courseTitle: string;
+export interface CourseInitialValues {
+  slug: string;
+  title: string;
+  description: string | null;
 }
 
-export function CreateSectionForm({ orgSlug, courseSlug, courseTitle }: Props) {
+interface CreateModeProps {
+  mode: "create";
+  orgSlug: string;
+}
+
+interface EditModeProps {
+  mode: "edit";
+  orgSlug: string;
+  courseSlug: string;
+  initial: CourseInitialValues;
+}
+
+type Props = CreateModeProps | EditModeProps;
+
+export function CourseForm(props: Props) {
   const router = useRouter();
-  const [title, setTitle] = useState("");
-  const [slug, setSlug] = useState("");
-  const [description, setDescription] = useState("");
+  const initial = props.mode === "edit" ? props.initial : null;
+
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const [slug, setSlug] = useState(initial?.slug ?? "");
+  const [description, setDescription] = useState(initial?.description ?? "");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -47,25 +63,36 @@ export function CreateSectionForm({ orgSlug, courseSlug, courseTitle }: Props) {
     }
 
     setIsSubmitting(true);
+    const payloadDescription = description.trim() || null;
+
     try {
-      await apiPost<SectionResponse>(
-        `/api/v1/courses/${courseSlug}/sections`,
-        { slug, title, description: description.trim() || null },
-        { headers: { "X-Tenant-Slug": orgSlug } },
-      );
-      router.push(tenantPath(orgSlug, `/admin/courses/${courseSlug}`));
+      if (props.mode === "create") {
+        await apiPost<CourseResponse>(
+          "/api/v1/courses",
+          { slug, title, description: payloadDescription },
+          { headers: { "X-Tenant-Slug": props.orgSlug } },
+        );
+        router.push(tenantPath(props.orgSlug, "/admin"));
+      } else {
+        await apiPatch<CourseResponse>(
+          `/api/v1/courses/${props.courseSlug}`,
+          { slug, title, description: payloadDescription },
+          { headers: { "X-Tenant-Slug": props.orgSlug } },
+        );
+        router.push(tenantPath(props.orgSlug, `/admin/courses/${slug}`));
+      }
       router.refresh();
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        setError("That slug is already used in this course. Try another.");
+        setError("That slug is already used in this organization. Try another.");
       } else if (err instanceof ApiError && err.status === 403) {
-        setError("Only owners and instructors can create sections.");
+        setError("Only owners and instructors can edit courses.");
       } else if (err instanceof ApiError && err.status === 404) {
         setError("Course no longer exists.");
       } else if (err instanceof ApiError && err.status === 422) {
         setError("Please check the form fields.");
       } else {
-        setError(err instanceof Error ? err.message : "Could not create section.");
+        setError(err instanceof Error ? err.message : "Could not save course.");
       }
       setIsSubmitting(false);
     }
@@ -74,10 +101,13 @@ export function CreateSectionForm({ orgSlug, courseSlug, courseTitle }: Props) {
   return (
     <Card className="w-full p-2">
       <CardHeader className="space-y-2">
-        <CardTitle className="text-3xl font-semibold tracking-tight">Create a section</CardTitle>
+        <CardTitle className="text-3xl font-semibold tracking-tight">
+          {props.mode === "create" ? "Create a course" : "Edit course"}
+        </CardTitle>
         <CardDescription className="text-base">
-          Adding to <span className="font-mono">{courseTitle}</span>. Sections group related
-          lessons; you can reorder them later.
+          {props.mode === "create"
+            ? "You can edit the title and description later. The slug becomes part of the course URL."
+            : "Edit the title, slug, or description. Sections and lessons stay where they are."}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -130,7 +160,13 @@ export function CreateSectionForm({ orgSlug, courseSlug, courseTitle }: Props) {
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
           <Button type="submit" disabled={isSubmitting} size="lg">
-            {isSubmitting ? "Creating..." : "Create section"}
+            {isSubmitting
+              ? props.mode === "create"
+                ? "Creating..."
+                : "Saving..."
+              : props.mode === "create"
+                ? "Create course"
+                : "Save changes"}
           </Button>
         </form>
       </CardContent>

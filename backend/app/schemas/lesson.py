@@ -47,6 +47,12 @@ class LessonCreate(BaseModel):
     content: LessonContent
 
 
+class LessonUpdate(BaseModel):
+    slug: Slug | None = None
+    title: Annotated[str, StringConstraints(min_length=1, max_length=255)] | None = None
+    content: LessonContent | None = None
+
+
 class LessonPublic(SQLModel):
     id: UUID
     org_id: UUID

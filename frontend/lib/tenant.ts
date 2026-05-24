@@ -140,3 +140,26 @@ export async function getTenantSection(
     return null;
   }
 }
+
+export async function getTenantLesson(
+  orgSlug: string,
+  courseSlug: string,
+  sectionSlug: string,
+  lessonSlug: string,
+): Promise<Lesson | null> {
+  try {
+    const response = await fetch(
+      `${API_URL}/api/v1/courses/${courseSlug}/sections/${sectionSlug}/lessons/${lessonSlug}`,
+      {
+        headers: await tenantHeaders(orgSlug),
+        cache: "no-store",
+      },
+    );
+    if (!response.ok) {
+      return null;
+    }
+    return (await response.json()) as Lesson;
+  } catch {
+    return null;
+  }
+}

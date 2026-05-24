@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Response, status
 from sqlalchemy import func
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
@@ -10,7 +10,7 @@ from app.db.models.course import Course
 from app.db.models.lesson import Lesson
 from app.db.models.membership import Role
 from app.db.models.section import Section
-from app.schemas.lesson import LessonCreate, LessonPublic
+from app.schemas.lesson import LessonCreate, LessonPublic, LessonUpdate
 from app.schemas.section import SectionDetailPublic
 
 router = APIRouter(prefix="/courses/{course_slug}/sections/{section_slug}", tags=["lessons"])
@@ -33,6 +33,27 @@ async def _get_section_or_404(session: SessionDep, org_id: UUID, course_slug: st
             f"No section with slug {section_slug!r} in course {course_slug!r}",
         )
     return section
+
+
+async def _get_lesson_or_404(
+    session: SessionDep, org_id: UUID, course_slug: str, section_slug: str, lesson_slug: str
+) -> Lesson:
+    result = await session.exec(
+        select(Lesson)
+        .join(Section, Section.id == Lesson.section_id)
+        .join(Course, Course.id == Section.course_id)
+        .where(Lesson.org_id == org_id)
+        .where(Course.slug == course_slug)
+        .where(Section.slug == section_slug)
+        .where(Lesson.slug == lesson_slug)
+    )
+    lesson = result.first()
+    if lesson is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            f"No lesson with slug {lesson_slug!r} in section {section_slug!r}",
+        )
+    return lesson
 
 
 @router.get("")
@@ -116,3 +137,71 @@ async def list_lessons(
         select(Lesson).where(Lesson.section_id == section.id).order_by(Lesson.position)
     )
     return list(result.all())
+
+
+@router.get("/lessons/{lesson_slug}")
+async def get_lesson(
+    course_slug: str,
+    section_slug: str,
+    lesson_slug: str,
+    membership: CurrentMembershipDep,
+    session: SessionDep,
+) -> LessonPublic:
+    return await _get_lesson_or_404(session, membership.org_id, course_slug, section_slug, lesson_slug)
+
+
+@router.patch("/lessons/{lesson_slug}")
+async def update_lesson(
+    course_slug: str,
+    section_slug: str,
+    lesson_slug: str,
+    payload: LessonUpdate,
+    membership: CurrentMembershipDep,
+    session: SessionDep,
+) -> LessonPublic:
+    if membership.role not in _AUTHOR_ROLES:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Only owners and instructors can edit lessons")
+
+    lesson = await _get_lesson_or_404(session, membership.org_id, course_slug, section_slug, lesson_slug)
+
+    if payload.slug is not None and payload.slug != lesson.slug:
+        existing = await session.exec(
+            select(Lesson)
+            .where(Lesson.section_id == lesson.section_id)
+            .where(Lesson.slug == payload.slug)
+        )
+        if existing.first() is not None:
+            raise HTTPException(status.HTTP_409_CONFLICT, "Slug already used in this section")
+        lesson.slug = payload.slug
+
+    if payload.title is not None:
+        lesson.title = payload.title
+
+    if payload.content is not None:
+        if payload.content.content_type != lesson.content_type:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT,
+                "content_type cannot change after creation — delete and recreate the lesson",
+            )
+        lesson.content = payload.content.model_dump(mode="json", exclude={"content_type"})
+
+    await session.commit()
+    await session.refresh(lesson)
+    return lesson
+
+
+@router.delete("/lessons/{lesson_slug}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_lesson(
+    course_slug: str,
+    section_slug: str,
+    lesson_slug: str,
+    membership: CurrentMembershipDep,
+    session: SessionDep,
+) -> Response:
+    if membership.role not in _AUTHOR_ROLES:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Only owners and instructors can delete lessons")
+
+    lesson = await _get_lesson_or_404(session, membership.org_id, course_slug, section_slug, lesson_slug)
+    await session.delete(lesson)
+    await session.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

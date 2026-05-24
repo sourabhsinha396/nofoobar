@@ -152,3 +152,124 @@ def test_get_course_404_when_missing(client, mock_session, fake_membership):
 def test_get_course_requires_authentication(client, mock_session):
     response = client.get("/api/v1/courses/intro", headers={"Host": "localhost"})
     assert response.status_code == 401
+
+
+# ---------- PATCH /sections/{section_slug} ----------
+
+
+def test_patch_section_title_only(client, mock_session, fake_membership):
+    section = SectionFactory.build(slug="intro", title="Old", org_id=fake_membership.org_id)
+    mock_session.exec.return_value.first.return_value = section
+    response = client.patch(
+        "/api/v1/courses/c/sections/intro",
+        json={"title": "New"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 200
+    assert response.json()["title"] == "New"
+    assert section.title == "New"
+
+
+def test_patch_section_description_can_be_cleared(client, mock_session, fake_membership):
+    section = SectionFactory.build(slug="intro", description="Old", org_id=fake_membership.org_id)
+    mock_session.exec.return_value.first.return_value = section
+    response = client.patch(
+        "/api/v1/courses/c/sections/intro",
+        json={"description": None},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 200
+    assert section.description is None
+
+
+def test_patch_section_slug_with_conflict(client, mock_session, fake_membership):
+    section = SectionFactory.build(slug="intro", org_id=fake_membership.org_id)
+    other = SectionFactory.build(slug="taken", course_id=section.course_id, org_id=fake_membership.org_id)
+    mock_session.exec.side_effect = _exec_results(section, other)
+    response = client.patch(
+        "/api/v1/courses/c/sections/intro",
+        json={"slug": "taken"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 409
+
+
+def test_patch_section_slug_succeeds_when_unique(client, mock_session, fake_membership):
+    section = SectionFactory.build(slug="intro", org_id=fake_membership.org_id)
+    mock_session.exec.side_effect = _exec_results(section, None)
+    response = client.patch(
+        "/api/v1/courses/c/sections/intro",
+        json={"slug": "fresh"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 200
+    assert response.json()["slug"] == "fresh"
+
+
+def test_patch_section_rejects_students(client, mock_session, fake_membership):
+    fake_membership.role = Role.STUDENT
+    response = client.patch(
+        "/api/v1/courses/c/sections/intro",
+        json={"title": "Nope"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 403
+
+
+def test_patch_section_404_when_missing(client, mock_session, fake_membership):
+    mock_session.exec.return_value.first.return_value = None
+    response = client.patch(
+        "/api/v1/courses/c/sections/ghost",
+        json={"title": "X"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 404
+
+
+def test_patch_section_requires_authentication(client, mock_session):
+    response = client.patch(
+        "/api/v1/courses/c/sections/intro",
+        json={"title": "X"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 401
+
+
+# ---------- DELETE /sections/{section_slug} ----------
+
+
+def test_delete_section_returns_204(client, mock_session, fake_membership):
+    section = SectionFactory.build(slug="intro", org_id=fake_membership.org_id)
+    mock_session.exec.return_value.first.return_value = section
+    response = client.delete(
+        "/api/v1/courses/c/sections/intro",
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 204
+    mock_session.delete.assert_called_once_with(section)
+
+
+def test_delete_section_rejects_students(client, mock_session, fake_membership):
+    fake_membership.role = Role.STUDENT
+    response = client.delete(
+        "/api/v1/courses/c/sections/intro",
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 403
+
+
+def test_delete_section_404_when_missing(client, mock_session, fake_membership):
+    mock_session.exec.return_value.first.return_value = None
+    response = client.delete(
+        "/api/v1/courses/c/sections/ghost",
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 404
+
+
+def test_delete_section_requires_authentication(client, mock_session):
+    response = client.delete(
+        "/api/v1/courses/c/sections/intro",
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 401

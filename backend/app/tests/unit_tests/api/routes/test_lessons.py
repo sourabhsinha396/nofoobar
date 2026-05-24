@@ -205,3 +205,180 @@ def test_get_section_requires_authentication(client, mock_session):
         headers={"Host": "localhost"},
     )
     assert response.status_code == 401
+
+
+# ---------- GET /lessons/{lesson_slug} ----------
+
+
+@pytest.mark.parametrize("host", HOSTS)
+def test_get_lesson_returns_lesson(client, mock_session, fake_membership, host):
+    lesson = LessonFactory.build(slug="intro", org_id=fake_membership.org_id)
+    mock_session.exec.return_value.first.return_value = lesson
+    response = client.get(
+        "/api/v1/courses/c/sections/s/lessons/intro",
+        headers={"Host": host},
+    )
+    assert response.status_code == 200
+    assert response.json()["slug"] == "intro"
+
+
+def test_get_lesson_404_when_missing(client, mock_session, fake_membership):
+    mock_session.exec.return_value.first.return_value = None
+    response = client.get(
+        "/api/v1/courses/c/sections/s/lessons/ghost",
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 404
+
+
+def test_get_lesson_requires_authentication(client, mock_session):
+    response = client.get(
+        "/api/v1/courses/c/sections/s/lessons/intro",
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 401
+
+
+# ---------- PATCH /lessons/{lesson_slug} ----------
+
+
+def test_patch_lesson_title_only(client, mock_session, fake_membership):
+    lesson = LessonFactory.build(
+        slug="intro", title="Old", org_id=fake_membership.org_id, content_type=ContentType.ARTICLE
+    )
+    mock_session.exec.return_value.first.return_value = lesson
+    response = client.patch(
+        "/api/v1/courses/c/sections/s/lessons/intro",
+        json={"title": "New"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 200
+    assert response.json()["title"] == "New"
+    assert lesson.title == "New"
+
+
+def test_patch_lesson_slug_with_conflict(client, mock_session, fake_membership):
+    lesson = LessonFactory.build(slug="intro", org_id=fake_membership.org_id)
+    other = LessonFactory.build(slug="taken", section_id=lesson.section_id, org_id=fake_membership.org_id)
+    mock_session.exec.side_effect = _exec_results(lesson, other)
+    response = client.patch(
+        "/api/v1/courses/c/sections/s/lessons/intro",
+        json={"slug": "taken"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 409
+
+
+def test_patch_lesson_slug_succeeds_when_unique(client, mock_session, fake_membership):
+    lesson = LessonFactory.build(slug="intro", org_id=fake_membership.org_id)
+    mock_session.exec.side_effect = _exec_results(lesson, None)
+    response = client.patch(
+        "/api/v1/courses/c/sections/s/lessons/intro",
+        json={"slug": "fresh"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 200
+    assert response.json()["slug"] == "fresh"
+
+
+def test_patch_lesson_content_matching_type(client, mock_session, fake_membership):
+    lesson = LessonFactory.build(
+        slug="intro",
+        org_id=fake_membership.org_id,
+        content_type=ContentType.ARTICLE,
+        content={"body": "Old"},
+    )
+    mock_session.exec.return_value.first.return_value = lesson
+    response = client.patch(
+        "/api/v1/courses/c/sections/s/lessons/intro",
+        json={"content": {"content_type": "article", "body": "New body"}},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 200
+    assert lesson.content == {"body": "New body"}
+
+
+def test_patch_lesson_rejects_content_type_change(client, mock_session, fake_membership):
+    lesson = LessonFactory.build(
+        slug="intro",
+        org_id=fake_membership.org_id,
+        content_type=ContentType.ARTICLE,
+        content={"body": "Hi"},
+    )
+    mock_session.exec.return_value.first.return_value = lesson
+    response = client.patch(
+        "/api/v1/courses/c/sections/s/lessons/intro",
+        json={"content": {"content_type": "video", "url": "https://example.com/v"}},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 409
+    assert "content_type" in response.json()["detail"]
+
+
+def test_patch_lesson_rejects_students(client, mock_session, fake_membership):
+    fake_membership.role = Role.STUDENT
+    response = client.patch(
+        "/api/v1/courses/c/sections/s/lessons/intro",
+        json={"title": "Nope"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 403
+
+
+def test_patch_lesson_404_when_missing(client, mock_session, fake_membership):
+    mock_session.exec.return_value.first.return_value = None
+    response = client.patch(
+        "/api/v1/courses/c/sections/s/lessons/ghost",
+        json={"title": "X"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 404
+
+
+def test_patch_lesson_requires_authentication(client, mock_session):
+    response = client.patch(
+        "/api/v1/courses/c/sections/s/lessons/intro",
+        json={"title": "X"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 401
+
+
+# ---------- DELETE /lessons/{lesson_slug} ----------
+
+
+def test_delete_lesson_returns_204(client, mock_session, fake_membership):
+    lesson = LessonFactory.build(slug="intro", org_id=fake_membership.org_id)
+    mock_session.exec.return_value.first.return_value = lesson
+    response = client.delete(
+        "/api/v1/courses/c/sections/s/lessons/intro",
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 204
+    mock_session.delete.assert_called_once_with(lesson)
+
+
+def test_delete_lesson_rejects_students(client, mock_session, fake_membership):
+    fake_membership.role = Role.STUDENT
+    response = client.delete(
+        "/api/v1/courses/c/sections/s/lessons/intro",
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 403
+
+
+def test_delete_lesson_404_when_missing(client, mock_session, fake_membership):
+    mock_session.exec.return_value.first.return_value = None
+    response = client.delete(
+        "/api/v1/courses/c/sections/s/lessons/ghost",
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 404
+
+
+def test_delete_lesson_requires_authentication(client, mock_session):
+    response = client.delete(
+        "/api/v1/courses/c/sections/s/lessons/intro",
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 401
