@@ -26,6 +26,7 @@
     "react-dom": "19.2.4",
     "react-hook-form": "^7.76.0",
     "react-markdown": "^10.1.0",
+    "react-resizable-panels": "^4.11.2",
     "react-tweet": "^3.3.0",
     "remark-gfm": "^4.0.1",
     "server-only": "^0.0.1",

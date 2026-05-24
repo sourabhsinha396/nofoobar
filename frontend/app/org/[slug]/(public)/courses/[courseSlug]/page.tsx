@@ -39,18 +39,29 @@ const CONTENT_TYPE_LABELS = {
   quiz: "Quiz",
 } as const;
 
-function LessonRow({ lesson }: { lesson: PublishedLessonOutline }) {
+function LessonRow({ lesson, href }: { lesson: PublishedLessonOutline; href?: string }) {
   const Icon = CONTENT_TYPE_ICONS[lesson.content_type];
-  return (
-    <div className="flex items-center gap-3 py-2 text-sm">
+  const body = (
+    <>
       <Icon className="size-4 text-muted-foreground" aria-hidden />
       <span className="flex-1">{lesson.title}</span>
       <span className="hidden text-xs uppercase tracking-wide text-muted-foreground sm:inline">
         {CONTENT_TYPE_LABELS[lesson.content_type]}
       </span>
-      <Lock className="size-3.5 text-muted-foreground" aria-label="Locked" />
-    </div>
+      {!href && <Lock className="size-3.5 text-muted-foreground" aria-label="Locked" />}
+    </>
   );
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="flex items-center gap-3 py-2 text-sm transition-colors hover:text-foreground"
+      >
+        {body}
+      </Link>
+    );
+  }
+  return <div className="flex items-center gap-3 py-2 text-sm">{body}</div>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -81,12 +92,21 @@ export default async function CourseLandingPage({ params }: Props) {
   const totalLessons = course.sections.reduce((sum, s) => sum + s.lessons.length, 0);
   const allSectionIds = course.sections.map((s) => s.id);
 
-  const [enrollments, loginHref, myLearningHref] = await Promise.all([
+  const [enrollments, loginHref, coursesPrefix] = await Promise.all([
     user ? getMyEnrollments(slug) : Promise.resolve(null),
     serverTenantPath(slug, "/login"),
-    serverTenantPath(slug, "/my-learning"),
+    serverTenantPath(slug, "/courses"),
   ]);
   const isEnrolled = !!enrollments?.some((e) => e.course_id === course.id);
+
+  const firstSection = course.sections[0];
+  const firstLesson = firstSection?.lessons[0];
+  const startLearningHref =
+    isEnrolled && firstSection && firstLesson
+      ? `${coursesPrefix}/${course.slug}/sections/${firstSection.slug}/lessons/${firstLesson.slug}`
+      : null;
+
+  const lessonHrefPrefix = `${coursesPrefix}/${course.slug}/sections`;
 
   return (
     <main className="mx-auto w-full max-w-4xl px-6 py-16 md:py-24">
@@ -106,14 +126,16 @@ export default async function CourseLandingPage({ params }: Props) {
               <Link href={loginHref}>Sign in to enroll</Link>
             </Button>
           ) : isEnrolled ? (
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4">
+              {startLearningHref && (
+                <Button asChild size="lg">
+                  <Link href={startLearningHref}>Start learning</Link>
+                </Button>
+              )}
               <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
                 <CheckCircle2 className="size-4" aria-hidden />
                 Enrolled
               </span>
-              <Button asChild variant="outline" size="lg">
-                <Link href={myLearningHref}>Go to My Learning</Link>
-              </Button>
             </div>
           ) : (
             <EnrollButton orgSlug={slug} courseSlug={course.slug} />
@@ -155,7 +177,14 @@ export default async function CourseLandingPage({ params }: Props) {
                     <ul className="divide-y divide-border border-y border-border">
                       {section.lessons.map((lesson) => (
                         <li key={lesson.id}>
-                          <LessonRow lesson={lesson} />
+                          <LessonRow
+                            lesson={lesson}
+                            href={
+                              isEnrolled
+                                ? `${lessonHrefPrefix}/${section.slug}/lessons/${lesson.slug}`
+                                : undefined
+                            }
+                          />
                         </li>
                       ))}
                     </ul>

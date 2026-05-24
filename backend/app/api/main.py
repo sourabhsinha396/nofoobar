@@ -5,6 +5,7 @@ from app.api.routes import (
     courses,
     enrollments,
     health,
+    learn,
     lessons,
     me,
     orgs,
@@ -24,3 +25,4 @@ api_router.include_router(sections.router)
 api_router.include_router(lessons.router)
 api_router.include_router(public_courses.router)
 api_router.include_router(enrollments.router)
+api_router.include_router(learn.router)
