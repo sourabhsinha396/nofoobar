@@ -66,10 +66,23 @@ class UserOrgMembershipAdmin(ModelView, model=UserOrgMembership):
 
 
 class CourseAdmin(ModelView, model=Course):
-    column_list = [Course.id, Course.slug, Course.title, Course.org_id, Course.created_at]
+    column_list = [
+        Course.id,
+        Course.slug,
+        Course.title,
+        Course.visibility,
+        Course.org_id,
+        Course.created_at,
+    ]
     column_searchable_list = [Course.slug, Course.title]
-    column_sortable_list = [Course.slug, Course.title, Course.created_at]
-    form_columns = [Course.org_id, Course.slug, Course.title, Course.description]
+    column_sortable_list = [Course.slug, Course.title, Course.visibility, Course.created_at]
+    form_columns = [
+        Course.org_id,
+        Course.slug,
+        Course.title,
+        Course.description,
+        Course.visibility,
+    ]
     name = "Course"
     name_plural = "Courses"
     icon = "fa-solid fa-graduation-cap"

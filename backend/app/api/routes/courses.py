@@ -100,6 +100,8 @@ async def update_course(
         course.title = update_data["title"]
     if "description" in update_data:
         course.description = update_data["description"]
+    if "visibility" in update_data:
+        course.visibility = update_data["visibility"]
 
     await session.commit()
     await session.refresh(course)

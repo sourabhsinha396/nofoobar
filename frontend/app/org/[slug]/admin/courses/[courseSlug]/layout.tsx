@@ -18,11 +18,10 @@ export default async function CourseAdminLayout({ children, params }: Props) {
     redirect("/login");
   }
 
-  const [course, backHref, coursePrefix, editHref] = await Promise.all([
+  const [course, backHref, coursePrefix] = await Promise.all([
     getTenantCourse(slug, courseSlug),
     serverTenantPath(slug, "/admin"),
     serverTenantPath(slug, `/admin/courses/${courseSlug}`),
-    serverTenantPath(slug, `/admin/courses/${courseSlug}/edit`),
   ]);
 
   if (!course) {
@@ -49,10 +48,8 @@ export default async function CourseAdminLayout({ children, params }: Props) {
 
   return (
     <CourseAdminShell
-      course={course}
-      orgSlug={slug}
-      editHref={editHref}
-      sectionCount={course.sections.length}
+      courseSlug={courseSlug}
+      courseTitle={course.title}
       backHref={backHref}
       navGroups={navGroups}
     >

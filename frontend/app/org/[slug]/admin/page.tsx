@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { VisibilityBadge } from "@/components/visibility-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
@@ -63,7 +64,10 @@ export default async function TenantAdminDashboard({ params }: Props) {
               <li key={course.id}>
                 <Link href={`${coursesPrefix}/${course.slug}`} className="block">
                   <Card className="p-5 transition-colors hover:border-foreground/20">
-                    <p className="font-medium">{course.title}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{course.title}</p>
+                      <VisibilityBadge visibility={course.visibility} />
+                    </div>
                     <p className="text-sm text-muted-foreground">{course.slug}</p>
                     {course.description && (
                       <p className="mt-2 text-sm text-muted-foreground">{course.description}</p>

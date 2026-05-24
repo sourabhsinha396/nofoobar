@@ -4,14 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { DeleteCourseButton } from "@/components/delete-course-button";
-import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
@@ -32,20 +31,16 @@ interface NavGroup {
 }
 
 interface Props {
-  course: { title: string; slug: string; description: string | null };
-  orgSlug: string;
-  editHref: string;
-  sectionCount: number;
+  courseSlug: string;
+  courseTitle: string;
   backHref: string;
   navGroups: NavGroup[];
   children: ReactNode;
 }
 
 export function CourseAdminShell({
-  course,
-  orgSlug,
-  editHref,
-  sectionCount,
+  courseSlug,
+  courseTitle,
   backHref,
   navGroups,
   children,
@@ -55,6 +50,16 @@ export function CourseAdminShell({
   return (
     <SidebarProvider>
       <Sidebar>
+        <SidebarHeader>
+          <div className="px-2 py-1">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Course
+            </p>
+            <p className="mt-0.5 truncate text-sm font-medium" title={courseTitle}>
+              {courseTitle}
+            </p>
+          </div>
+        </SidebarHeader>
         <SidebarContent>
           {navGroups.map((group) => (
             <SidebarGroup key={group.label}>
@@ -62,7 +67,7 @@ export function CourseAdminShell({
               <SidebarGroupContent>
                 <SidebarMenu>
                   {group.items.map((item) => {
-                    const isActive = pathname.endsWith(`/${course.slug}/${item.segment}`);
+                    const isActive = pathname.endsWith(`/${courseSlug}/${item.segment}`);
                     return (
                       <SidebarMenuItem key={item.segment}>
                         <SidebarMenuButton asChild isActive={isActive}>
@@ -79,38 +84,15 @@ export function CourseAdminShell({
       </Sidebar>
       <SidebarInset>
         <div className="mx-auto w-full max-w-4xl px-6 py-12 md:py-16">
-          <header className="mb-10">
-            <div className="flex items-center gap-3">
-              <SidebarTrigger />
-              <Link
-                href={backHref}
-                className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
-              >
-                ← Courses
-              </Link>
-            </div>
-            <p className="mt-6 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-              Course
-            </p>
-            <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight md:text-4xl">
-              {course.title}
-            </h1>
-            <p className="mt-2 font-mono text-sm text-muted-foreground">{course.slug}</p>
-            {course.description && (
-              <p className="mt-4 max-w-2xl text-muted-foreground">{course.description}</p>
-            )}
-            <div className="mt-6 flex items-center gap-3">
-              <Button asChild variant="outline" size="sm">
-                <Link href={editHref}>Edit course</Link>
-              </Button>
-              <DeleteCourseButton
-                orgSlug={orgSlug}
-                courseSlug={course.slug}
-                courseTitle={course.title}
-                sectionCount={sectionCount}
-              />
-            </div>
-          </header>
+          <div className="mb-8 flex items-center gap-3">
+            <SidebarTrigger />
+            <Link
+              href={backHref}
+              className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
+            >
+              ← Courses
+            </Link>
+          </div>
           {children}
         </div>
       </SidebarInset>

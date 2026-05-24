@@ -2,6 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from app.db.models.course import CourseVisibility
 from app.db.models.membership import Role
 from app.tests.factories.course import CourseFactory
 
@@ -214,3 +215,68 @@ def test_delete_course_requires_authentication(client, mock_session):
         headers={"Host": "localhost"},
     )
     assert response.status_code == 401
+
+
+# ---------- visibility ----------
+
+
+def test_new_course_defaults_to_draft(client, mock_session, fake_membership):
+    mock_session.exec.return_value.first.return_value = None
+    response = client.post(
+        "/api/v1/courses",
+        json={"slug": "intro", "title": "Intro"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 201
+    assert response.json()["visibility"] == "draft"
+    added = mock_session.add.call_args.args[0]
+    assert added.visibility == CourseVisibility.DRAFT
+
+
+def test_patch_course_publish(client, mock_session, fake_membership):
+    course = CourseFactory.build(
+        slug="intro", org_id=fake_membership.org_id, visibility=CourseVisibility.DRAFT
+    )
+    mock_session.exec.return_value.first.return_value = course
+    response = client.patch(
+        "/api/v1/courses/intro",
+        json={"visibility": "published"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 200
+    assert response.json()["visibility"] == "published"
+    assert course.visibility == CourseVisibility.PUBLISHED
+
+
+def test_patch_course_unpublish(client, mock_session, fake_membership):
+    course = CourseFactory.build(
+        slug="intro", org_id=fake_membership.org_id, visibility=CourseVisibility.PUBLISHED
+    )
+    mock_session.exec.return_value.first.return_value = course
+    response = client.patch(
+        "/api/v1/courses/intro",
+        json={"visibility": "draft"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 200
+    assert course.visibility == CourseVisibility.DRAFT
+
+
+def test_patch_course_rejects_unknown_visibility(client, mock_session, fake_membership):
+    response = client.patch(
+        "/api/v1/courses/intro",
+        json={"visibility": "archived"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 422
+
+
+def test_get_course_includes_visibility(client, mock_session, fake_membership):
+    course = CourseFactory.build(
+        slug="intro", org_id=fake_membership.org_id, visibility=CourseVisibility.PUBLISHED
+    )
+    course.sections = []
+    mock_session.exec.return_value.first.return_value = course
+    response = client.get("/api/v1/courses/intro", headers={"Host": "localhost"})
+    assert response.status_code == 200
+    assert response.json()["visibility"] == "published"

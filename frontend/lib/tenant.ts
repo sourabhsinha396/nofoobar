@@ -23,12 +23,15 @@ export interface TenantOrg {
   description: string | null;
 }
 
+export type CourseVisibility = "draft" | "published";
+
 export interface Course {
   id: string;
   org_id: string;
   slug: string;
   title: string;
   description: string | null;
+  visibility: CourseVisibility;
 }
 
 export interface Section {

@@ -4,6 +4,7 @@ from uuid import UUID
 from pydantic import StringConstraints
 from sqlmodel import SQLModel
 
+from app.db.models.course import CourseVisibility
 from app.schemas.common import Slug
 from app.schemas.section import SectionPublic
 
@@ -18,6 +19,7 @@ class CourseUpdate(SQLModel):
     slug: Slug | None = None
     title: Annotated[str, StringConstraints(min_length=1, max_length=255)] | None = None
     description: Annotated[str, StringConstraints(max_length=2000)] | None = None
+    visibility: CourseVisibility | None = None
 
 
 class CoursePublic(SQLModel):
@@ -26,6 +28,7 @@ class CoursePublic(SQLModel):
     slug: str
     title: str
     description: str | None = None
+    visibility: CourseVisibility
 
 
 class CourseDetailPublic(CoursePublic):
