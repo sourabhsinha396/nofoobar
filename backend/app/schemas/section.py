@@ -5,7 +5,7 @@ from pydantic import StringConstraints
 from sqlmodel import SQLModel
 
 from app.schemas.common import Slug
-from app.schemas.lesson import LessonPublic
+from app.schemas.lesson import LessonOutline, LessonPublic
 
 
 class SectionCreate(SQLModel):
@@ -32,3 +32,12 @@ class SectionPublic(SQLModel):
 
 class SectionDetailPublic(SectionPublic):
     lessons: list[LessonPublic] = []
+
+
+class SectionOutline(SQLModel):
+    id: UUID
+    slug: str
+    title: str
+    description: str | None = None
+    position: int
+    lessons: list[LessonOutline] = []

@@ -66,6 +66,34 @@ export interface SectionDetail extends Section {
   lessons: Lesson[];
 }
 
+export interface PublishedCourseSummary {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+}
+
+export interface PublishedLessonOutline {
+  id: string;
+  slug: string;
+  title: string;
+  content_type: LessonContentType;
+  position: number;
+}
+
+export interface PublishedSectionOutline {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  position: number;
+  lessons: PublishedLessonOutline[];
+}
+
+export interface PublishedCourseLanding extends PublishedCourseSummary {
+  sections: PublishedSectionOutline[];
+}
+
 async function tenantHeaders(slug: string): Promise<HeadersInit> {
   const cookieStore = await cookies();
   return {
@@ -139,6 +167,41 @@ export async function getTenantSection(
       return null;
     }
     return (await response.json()) as SectionDetail;
+  } catch {
+    return null;
+  }
+}
+
+export async function getPublishedCourses(
+  slug: string,
+): Promise<PublishedCourseSummary[] | null> {
+  try {
+    const response = await fetch(`${API_URL}/api/v1/public/courses`, {
+      headers: await tenantHeaders(slug),
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      return null;
+    }
+    return (await response.json()) as PublishedCourseSummary[];
+  } catch {
+    return null;
+  }
+}
+
+export async function getPublishedCourse(
+  orgSlug: string,
+  courseSlug: string,
+): Promise<PublishedCourseLanding | null> {
+  try {
+    const response = await fetch(`${API_URL}/api/v1/public/courses/${courseSlug}`, {
+      headers: await tenantHeaders(orgSlug),
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      return null;
+    }
+    return (await response.json()) as PublishedCourseLanding;
   } catch {
     return null;
   }

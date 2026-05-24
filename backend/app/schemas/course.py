@@ -6,7 +6,7 @@ from sqlmodel import SQLModel
 
 from app.db.models.course import CourseVisibility
 from app.schemas.common import Slug
-from app.schemas.section import SectionPublic
+from app.schemas.section import SectionOutline, SectionPublic
 
 
 class CourseCreate(SQLModel):
@@ -33,3 +33,14 @@ class CoursePublic(SQLModel):
 
 class CourseDetailPublic(CoursePublic):
     sections: list[SectionPublic] = []
+
+
+class CourseSummary(SQLModel):
+    id: UUID
+    slug: str
+    title: str
+    description: str | None = None
+
+
+class CourseLanding(CourseSummary):
+    sections: list[SectionOutline] = []

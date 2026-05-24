@@ -15,7 +15,11 @@ interface LoginResponse {
   name: string;
 }
 
-export function LoginForm() {
+interface Props {
+  redirectTo?: string;
+}
+
+export function LoginForm({ redirectTo = "/me" }: Props = {}) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,7 +37,7 @@ export function LoginForm() {
       setIsSubmitting(false);
       return;
     }
-    router.push("/me");
+    router.push(redirectTo);
     router.refresh();
   }
 

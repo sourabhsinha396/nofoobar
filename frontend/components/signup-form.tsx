@@ -15,7 +15,11 @@ interface SignupResponse {
   name: string;
 }
 
-export function SignupForm() {
+interface Props {
+  redirectTo?: string;
+}
+
+export function SignupForm({ redirectTo = "/me" }: Props = {}) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -34,7 +38,7 @@ export function SignupForm() {
       setIsSubmitting(false);
       return;
     }
-    router.push("/me");
+    router.push(redirectTo);
     router.refresh();
   }
 

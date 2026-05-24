@@ -63,3 +63,11 @@ class LessonPublic(SQLModel):
     content_type: ContentType
     content: dict[str, Any]
     position: int
+
+
+class LessonOutline(SQLModel):
+    id: UUID
+    slug: str
+    title: str
+    content_type: ContentType
+    position: int
