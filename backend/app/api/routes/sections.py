@@ -8,7 +8,12 @@ from app.api.deps import CurrentMembershipDep, SessionDep
 from app.db.models.course import Course
 from app.db.models.membership import Role
 from app.db.models.section import Section
-from app.schemas.section import SectionCreate, SectionPublic, SectionUpdate
+from app.schemas.section import (
+    SectionCreate,
+    SectionPublic,
+    SectionReorderPayload,
+    SectionUpdate,
+)
 
 router = APIRouter(prefix="/courses/{course_slug}/sections", tags=["sections"])
 
@@ -93,6 +98,37 @@ async def list_sections(
         select(Section).where(Section.course_id == course.id).order_by(Section.position)
     )
     return list(result.all())
+
+
+@router.patch("/reorder", status_code=status.HTTP_204_NO_CONTENT)
+async def reorder_sections(
+    course_slug: str,
+    payload: SectionReorderPayload,
+    membership: CurrentMembershipDep,
+    session: SessionDep,
+) -> Response:
+    if membership.role not in _AUTHOR_ROLES:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Only owners and instructors can reorder sections")
+
+    course = await _get_course_or_404(session, membership.org_id, course_slug)
+
+    sections_result = await session.exec(
+        select(Section).where(Section.course_id == course.id)
+    )
+    sections = list(sections_result.all())
+    sections_by_id = {s.id: s for s in sections}
+
+    if set(payload.ids) != set(sections_by_id.keys()):
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "Reorder payload must include every section in the course exactly once",
+        )
+
+    for position, section_id in enumerate(payload.ids):
+        sections_by_id[section_id].position = position
+
+    await session.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.patch("/{section_slug}")

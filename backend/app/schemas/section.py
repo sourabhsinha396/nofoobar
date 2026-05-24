@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from pydantic import StringConstraints
+from pydantic import BaseModel, Field, StringConstraints
 from sqlmodel import SQLModel
 
 from app.schemas.common import Slug
@@ -41,3 +41,7 @@ class SectionOutline(SQLModel):
     description: str | None = None
     position: int
     lessons: list[LessonOutline] = []
+
+
+class SectionReorderPayload(BaseModel):
+    ids: Annotated[list[UUID], Field(min_length=0)]

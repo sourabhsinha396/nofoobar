@@ -2,37 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { DeleteSectionButton } from "@/components/delete-section-button";
+import { SortableLessonList } from "@/components/sortable-lesson-list";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
-import { getTenantSection, serverTenantPath, type LessonContentType } from "@/lib/tenant";
+import { getTenantSection, serverTenantPath } from "@/lib/tenant";
 
 interface Props {
   params: Promise<{ slug: string; courseSlug: string; sectionSlug: string }>;
-}
-
-const CONTENT_TYPE_LABELS: Record<LessonContentType, string> = {
-  article: "Article",
-  video: "Video",
-  lab: "Lab",
-  quiz: "Quiz",
-};
-
-function lessonPreview(lesson: { content_type: LessonContentType; content: Record<string, unknown> }) {
-  switch (lesson.content_type) {
-    case "article": {
-      const body = typeof lesson.content.body === "string" ? lesson.content.body : "";
-      return body.length > 120 ? `${body.slice(0, 120)}…` : body;
-    }
-    case "video":
-      return typeof lesson.content.url === "string" ? lesson.content.url : "";
-    case "lab":
-      return typeof lesson.content.lab_id === "string" ? `Lab ${lesson.content.lab_id}` : "";
-    case "quiz": {
-      const questions = Array.isArray(lesson.content.questions) ? lesson.content.questions : [];
-      return `${questions.length} question${questions.length === 1 ? "" : "s"}`;
-    }
-  }
 }
 
 export default async function SectionDetailPage({ params }: Props) {
@@ -96,35 +73,13 @@ export default async function SectionDetailPage({ params }: Props) {
             </p>
           </Card>
         ) : (
-          <ol className="space-y-3">
-            {section.lessons.map((lesson, index) => (
-              <li key={lesson.id}>
-                <Link href={`${lessonsPrefix}/${lesson.slug}`} className="block">
-                  <Card className="p-5 transition-colors hover:border-foreground/20">
-                    <div className="flex items-baseline gap-3">
-                      <span className="font-mono text-xs text-muted-foreground">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium">{lesson.title}</p>
-                          <span className="inline-flex items-center rounded-full border border-border bg-surface-subtle px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                            {CONTENT_TYPE_LABELS[lesson.content_type]}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{lesson.slug}</p>
-                        {lessonPreview(lesson) && (
-                          <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
-                            {lessonPreview(lesson)}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                </Link>
-              </li>
-            ))}
-          </ol>
+          <SortableLessonList
+            orgSlug={slug}
+            courseSlug={courseSlug}
+            sectionSlug={sectionSlug}
+            lessonsPrefix={lessonsPrefix}
+            initialLessons={section.lessons}
+          />
         )}
       </section>
     </main>

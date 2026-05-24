@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { DeleteCourseButton } from "@/components/delete-course-button";
 import { PublishCourseButton } from "@/components/publish-course-button";
+import { SortableSectionList } from "@/components/sortable-section-list";
 import { VisibilityBadge } from "@/components/visibility-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -75,28 +76,12 @@ export default async function CurriculumPage({ params }: Props) {
             </p>
           </Card>
         ) : (
-          <ol className="space-y-3">
-            {course.sections.map((section, index) => (
-              <li key={section.id}>
-                <Link href={`${sectionsPrefix}/${section.slug}`} className="block">
-                  <Card className="p-5 transition-colors hover:border-foreground/20">
-                    <div className="flex items-baseline gap-3">
-                      <span className="font-mono text-xs text-muted-foreground">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      <div className="flex-1">
-                        <p className="font-medium">{section.title}</p>
-                        <p className="text-sm text-muted-foreground">{section.slug}</p>
-                        {section.description && (
-                          <p className="mt-2 text-sm text-muted-foreground">{section.description}</p>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                </Link>
-              </li>
-            ))}
-          </ol>
+          <SortableSectionList
+            orgSlug={slug}
+            courseSlug={courseSlug}
+            sectionsPrefix={sectionsPrefix}
+            initialSections={course.sections}
+          />
         )}
       </section>
     </>

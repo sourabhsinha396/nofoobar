@@ -382,3 +382,103 @@ def test_delete_lesson_requires_authentication(client, mock_session):
         headers={"Host": "localhost"},
     )
     assert response.status_code == 401
+
+
+# ---------- PATCH /courses/{c}/sections/{s}/lessons/reorder ----------
+
+
+def test_reorder_lessons_happy_path(client, mock_session, fake_membership):
+    section = SectionFactory.build(org_id=fake_membership.org_id, slug="getting-started")
+    l1 = LessonFactory.build(section_id=section.id, org_id=fake_membership.org_id, position=0)
+    l2 = LessonFactory.build(section_id=section.id, org_id=fake_membership.org_id, position=1)
+    l3 = LessonFactory.build(section_id=section.id, org_id=fake_membership.org_id, position=2)
+    # exec order: section lookup (join with course), lessons list
+    mock_session.exec.side_effect = [
+        MagicMock(first=MagicMock(return_value=section)),
+        MagicMock(all=MagicMock(return_value=[l1, l2, l3])),
+    ]
+    response = client.patch(
+        "/api/v1/courses/intro/sections/getting-started/lessons/reorder",
+        json={"ids": [str(l3.id), str(l1.id), str(l2.id)]},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 204
+    assert l3.position == 0
+    assert l1.position == 1
+    assert l2.position == 2
+    mock_session.commit.assert_called_once()
+
+
+def test_reorder_lessons_400_when_id_missing(client, mock_session, fake_membership):
+    section = SectionFactory.build(org_id=fake_membership.org_id)
+    l1 = LessonFactory.build(section_id=section.id, org_id=fake_membership.org_id)
+    l2 = LessonFactory.build(section_id=section.id, org_id=fake_membership.org_id)
+    mock_session.exec.side_effect = [
+        MagicMock(first=MagicMock(return_value=section)),
+        MagicMock(all=MagicMock(return_value=[l1, l2])),
+    ]
+    response = client.patch(
+        "/api/v1/courses/intro/sections/getting-started/lessons/reorder",
+        json={"ids": [str(l1.id)]},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 400
+
+
+def test_reorder_lessons_400_when_extra_id_present(client, mock_session, fake_membership):
+    from uuid import uuid4
+    section = SectionFactory.build(org_id=fake_membership.org_id)
+    l1 = LessonFactory.build(section_id=section.id, org_id=fake_membership.org_id)
+    mock_session.exec.side_effect = [
+        MagicMock(first=MagicMock(return_value=section)),
+        MagicMock(all=MagicMock(return_value=[l1])),
+    ]
+    response = client.patch(
+        "/api/v1/courses/intro/sections/getting-started/lessons/reorder",
+        json={"ids": [str(l1.id), str(uuid4())]},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 400
+
+
+def test_reorder_lessons_rejects_students(client, mock_session, fake_membership):
+    fake_membership.role = Role.STUDENT
+    response = client.patch(
+        "/api/v1/courses/intro/sections/getting-started/lessons/reorder",
+        json={"ids": []},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 403
+
+
+def test_reorder_lessons_404_when_section_missing(client, mock_session, fake_membership):
+    mock_session.exec.return_value.first.return_value = None
+    response = client.patch(
+        "/api/v1/courses/intro/sections/ghost/lessons/reorder",
+        json={"ids": []},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 404
+
+
+def test_reorder_lessons_requires_authentication(client, mock_session):
+    response = client.patch(
+        "/api/v1/courses/intro/sections/getting-started/lessons/reorder",
+        json={"ids": []},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 401
+
+
+def test_reorder_lessons_empty_list_is_ok_for_empty_section(client, mock_session, fake_membership):
+    section = SectionFactory.build(org_id=fake_membership.org_id)
+    mock_session.exec.side_effect = [
+        MagicMock(first=MagicMock(return_value=section)),
+        MagicMock(all=MagicMock(return_value=[])),
+    ]
+    response = client.patch(
+        "/api/v1/courses/intro/sections/empty/lessons/reorder",
+        json={"ids": []},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 204

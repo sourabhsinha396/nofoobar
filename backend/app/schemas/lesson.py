@@ -71,3 +71,7 @@ class LessonOutline(SQLModel):
     title: str
     content_type: ContentType
     position: int
+
+
+class LessonReorderPayload(BaseModel):
+    ids: Annotated[list[UUID], Field(min_length=0)]
