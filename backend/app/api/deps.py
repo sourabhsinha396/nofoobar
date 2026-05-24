@@ -1,16 +1,20 @@
 from collections.abc import AsyncGenerator
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, Request, status
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from app.core.config import settings
 from app.db.db import async_session_factory
+from app.db.models.membership import UserOrgMembership
 from app.db.models.organization import Organization
 from app.db.models.user import User
 
 _LOCAL_HOSTS = {"localhost", "127.0.0.1", "host.docker.internal"}
+
+TenantLookup = tuple[Literal["slug", "domain"], str]
 
 
 async def get_session() -> AsyncGenerator[AsyncSession]:
@@ -21,25 +25,39 @@ async def get_session() -> AsyncGenerator[AsyncSession]:
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
-def _resolve_slug(request: Request) -> str:
+def _resolve_tenant(request: Request) -> TenantLookup:
     host = request.headers.get("host", "").split(":")[0].lower()
-    if host in _LOCAL_HOSTS:
+    apex = settings.APEX_DOMAIN.lower()
+
+    # Trusted hosts (local-dev loopbacks + the apex itself) carry the tenant
+    # in an X-Tenant-Slug header. The apex case covers server-to-server calls
+    # from the Next frontend, which fetches the backend at apex:port and tells
+    # us which tenant the originating request belonged to via the header.
+    if host in _LOCAL_HOSTS or host == apex:
         slug = request.headers.get("x-tenant-slug", "").strip().lower()
         if not slug:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Missing X-Tenant-Slug header (dev)")
-        return slug
-    parts = host.split(".")
-    if len(parts) < 3:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "No tenant subdomain in host")
-    return parts[0]
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Missing X-Tenant-Slug header")
+        return ("slug", slug)
+
+    if host.endswith(f".{apex}"):
+        slug = host[: -len(apex) - 1]
+        if not slug or "." in slug:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, f"Invalid tenant subdomain: {host}")
+        return ("slug", slug)
+
+    return ("domain", host)
 
 
 async def get_current_org(request: Request, session: SessionDep) -> Organization:
-    slug = _resolve_slug(request)
-    result = await session.exec(select(Organization).where(Organization.slug == slug))
+    kind, value = _resolve_tenant(request)
+    if kind == "slug":
+        stmt = select(Organization).where(Organization.slug == value)
+    else:
+        stmt = select(Organization).where(Organization.custom_domain == value)
+    result = await session.exec(stmt)
     org = result.first()
     if org is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, f"Unknown tenant: {slug}")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, f"Unknown tenant: {value}")
     return org
 
 
@@ -62,3 +80,20 @@ async def get_current_user(request: Request, session: SessionDep) -> User:
 
 
 CurrentUserDep = Annotated[User, Depends(get_current_user)]
+
+
+async def get_current_membership(
+    user: CurrentUserDep, org: CurrentOrgDep, session: SessionDep
+) -> UserOrgMembership:
+    result = await session.exec(
+        select(UserOrgMembership)
+        .where(UserOrgMembership.user_id == user.id)
+        .where(UserOrgMembership.org_id == org.id)
+    )
+    membership = result.first()
+    if membership is None:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Not a member of this organization")
+    return membership
+
+
+CurrentMembershipDep = Annotated[UserOrgMembership, Depends(get_current_membership)]

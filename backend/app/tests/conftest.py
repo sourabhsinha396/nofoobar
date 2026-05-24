@@ -3,11 +3,13 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from fastapi.testclient import TestClient
 
-from app.api.deps import get_current_org, get_current_user, get_session
+from app.api.deps import get_current_membership, get_current_org, get_current_user, get_session
 from app.core.security import hash_password
+from app.db.models.membership import Role, UserOrgMembership
 from app.db.models.organization import Organization
 from app.db.models.user import User
 from app.main import app
+from app.tests.factories.membership import UserOrgMembershipFactory
 from app.tests.factories.organization import OrganizationFactory
 from app.tests.factories.user import UserFactory
 
@@ -67,3 +69,16 @@ def user_with_known_password() -> tuple[User, str]:
     plain = "hunter2"
     user = UserFactory.build(password_hash=hash_password(plain))
     return user, plain
+
+
+@pytest.fixture
+def fake_membership(authed_user: User, fake_org: Organization) -> UserOrgMembership:
+    membership = UserOrgMembershipFactory.build(
+        user_id=authed_user.id, org_id=fake_org.id, role=Role.OWNER
+    )
+
+    async def _override():
+        return membership
+
+    app.dependency_overrides[get_current_membership] = _override
+    return membership

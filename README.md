@@ -1,5 +1,7 @@
 # algoholic
 
+![algoholic homepage](frontend/public/public-assets/lms-home.png)
+
 Open-source, multi-tenant learning management system for course creators.
 
 ## Tech stack
@@ -36,5 +38,6 @@ pnpm dev
 
 - [`backend/README.md`](backend/README.md) — backend conventions, migrations, common commands
 - [`frontend/README.md`](frontend/README.md) — frontend conventions, UI policy
+- [`docs/local-setup/dev-subdomains.md`](docs/local-setup/dev-subdomains.md) — testing tenant subdomains on a local machine
 - [`CLAUDE.md`](CLAUDE.md) — orientation for Claude Code sessions
 - [`docs/`](docs/) — deeper architecture / devops notes (work in progress)

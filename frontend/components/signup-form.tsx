@@ -29,12 +29,13 @@ export function SignupForm() {
     setIsSubmitting(true);
     try {
       await apiPost<SignupResponse>("/api/v1/auth/signup", { name, email, password });
-      router.push("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Signup failed");
-    } finally {
       setIsSubmitting(false);
+      return;
     }
+    router.push("/me");
+    router.refresh();
   }
 
   return (

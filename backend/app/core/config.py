@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     SUPERADMIN_USERNAME: str
     SUPERADMIN_PASSWORD: str
     SESSION_SECRET: str
+    SESSION_COOKIE_DOMAIN: str | None = None
+
+    APEX_DOMAIN: str = "algoholic.io"
 
     CORS_ORIGINS: Annotated[list[str], NoDecode] = []
 

@@ -28,12 +28,13 @@ export function LoginForm() {
     setIsSubmitting(true);
     try {
       await apiPost<LoginResponse>("/api/v1/auth/login", { email, password });
-      router.push("/me");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
-    } finally {
       setIsSubmitting(false);
+      return;
     }
+    router.push("/me");
+    router.refresh();
   }
 
   return (
