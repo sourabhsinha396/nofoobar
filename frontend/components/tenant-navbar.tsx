@@ -24,7 +24,7 @@ export async function TenantNavbar({ slug, orgName }: Props) {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 md:px-8">
-        <div className="flex items-center gap-6">
+        <div className="flex items-baseline gap-6">
           <Link
             href={homeHref}
             className="font-heading text-2xl leading-none tracking-tight text-foreground"
