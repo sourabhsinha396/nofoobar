@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FileText, FlaskConical, ListChecks, Lock, PlayCircle } from "lucide-react";
+import { CheckCircle2, FileText, FlaskConical, ListChecks, Lock, PlayCircle } from "lucide-react";
 
+import { EnrollButton } from "@/components/enroll-button";
 import {
   Accordion,
   AccordionContent,
@@ -10,9 +12,12 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { getCurrentUser } from "@/lib/auth";
 import {
+  getMyEnrollments,
   getPublishedCourse,
   getTenantOrg,
+  serverTenantPath,
   type PublishedLessonOutline,
 } from "@/lib/tenant";
 
@@ -63,9 +68,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CourseLandingPage({ params }: Props) {
   const { slug, courseSlug } = await params;
 
-  const [org, course] = await Promise.all([
+  const [org, course, user] = await Promise.all([
     getTenantOrg(slug),
     getPublishedCourse(slug, courseSlug),
+    getCurrentUser(),
   ]);
 
   if (!org || !course) {
@@ -74,6 +80,13 @@ export default async function CourseLandingPage({ params }: Props) {
 
   const totalLessons = course.sections.reduce((sum, s) => sum + s.lessons.length, 0);
   const allSectionIds = course.sections.map((s) => s.id);
+
+  const [enrollments, loginHref, myLearningHref] = await Promise.all([
+    user ? getMyEnrollments(slug) : Promise.resolve(null),
+    serverTenantPath(slug, "/login"),
+    serverTenantPath(slug, "/my-learning"),
+  ]);
+  const isEnrolled = !!enrollments?.some((e) => e.course_id === course.id);
 
   return (
     <main className="mx-auto w-full max-w-4xl px-6 py-16 md:py-24">
@@ -88,9 +101,23 @@ export default async function CourseLandingPage({ params }: Props) {
           <p className="mt-4 max-w-2xl text-lg text-muted-foreground">{course.description}</p>
         )}
         <div className="mt-8 flex flex-wrap items-center gap-4">
-          <Button size="lg" disabled>
-            Coming soon
-          </Button>
+          {!user ? (
+            <Button asChild size="lg">
+              <Link href={loginHref}>Sign in to enroll</Link>
+            </Button>
+          ) : isEnrolled ? (
+            <div className="flex items-center gap-4">
+              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                <CheckCircle2 className="size-4" aria-hidden />
+                Enrolled
+              </span>
+              <Button asChild variant="outline" size="lg">
+                <Link href={myLearningHref}>Go to My Learning</Link>
+              </Button>
+            </div>
+          ) : (
+            <EnrollButton orgSlug={slug} courseSlug={course.slug} />
+          )}
           <p className="text-sm text-muted-foreground">
             {course.sections.length}{" "}
             {course.sections.length === 1 ? "section" : "sections"} ·{" "}

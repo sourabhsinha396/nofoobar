@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.api.routes import (
     auth,
     courses,
+    enrollments,
     health,
     lessons,
     me,
@@ -22,3 +23,4 @@ api_router.include_router(courses.router)
 api_router.include_router(sections.router)
 api_router.include_router(lessons.router)
 api_router.include_router(public_courses.router)
+api_router.include_router(enrollments.router)

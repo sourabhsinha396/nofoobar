@@ -1,6 +1,7 @@
 from sqladmin import ModelView
 
 from app.db.models.course import Course
+from app.db.models.enrollment import Enrollment
 from app.db.models.lesson import Lesson
 from app.db.models.membership import UserOrgMembership
 from app.db.models.organization import Organization
@@ -113,6 +114,30 @@ class SectionAdmin(ModelView, model=Section):
     name = "Section"
     name_plural = "Sections"
     icon = "fa-solid fa-list"
+    can_create = True
+    can_edit = True
+    can_delete = True
+
+
+class EnrollmentAdmin(ModelView, model=Enrollment):
+    column_list = [
+        Enrollment.id,
+        Enrollment.user_id,
+        Enrollment.course_id,
+        Enrollment.org_id,
+        Enrollment.expires_at,
+        Enrollment.created_at,
+    ]
+    column_sortable_list = [Enrollment.created_at, Enrollment.expires_at]
+    form_columns = [
+        Enrollment.user_id,
+        Enrollment.org_id,
+        Enrollment.course_id,
+        Enrollment.expires_at,
+    ]
+    name = "Enrollment"
+    name_plural = "Enrollments"
+    icon = "fa-solid fa-user-check"
     can_create = True
     can_edit = True
     can_delete = True

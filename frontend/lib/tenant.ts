@@ -94,6 +94,16 @@ export interface PublishedCourseLanding extends PublishedCourseSummary {
   sections: PublishedSectionOutline[];
 }
 
+export interface Enrollment {
+  id: string;
+  user_id: string;
+  org_id: string;
+  course_id: string;
+  created_at: string;
+  expires_at: string | null;
+  course: PublishedCourseSummary;
+}
+
 async function tenantHeaders(slug: string): Promise<HeadersInit> {
   const cookieStore = await cookies();
   return {
@@ -184,6 +194,21 @@ export async function getPublishedCourses(
       return null;
     }
     return (await response.json()) as PublishedCourseSummary[];
+  } catch {
+    return null;
+  }
+}
+
+export async function getMyEnrollments(slug: string): Promise<Enrollment[] | null> {
+  try {
+    const response = await fetch(`${API_URL}/api/v1/me/enrollments`, {
+      headers: await tenantHeaders(slug),
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      return null;
+    }
+    return (await response.json()) as Enrollment[];
   } catch {
     return null;
   }

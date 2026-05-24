@@ -10,6 +10,7 @@ from app.db.models.common import TimestampedModel
 from app.db.models.organization import Organization
 
 if TYPE_CHECKING:
+    from app.db.models.enrollment import Enrollment
     from app.db.models.section import Section
 
 
@@ -41,4 +42,8 @@ class Course(TimestampedModel, table=True):
     sections: list["Section"] = Relationship(
         back_populates="course",
         sa_relationship_kwargs={"order_by": "Section.position", "cascade": "all, delete-orphan"},
+    )
+    enrollments: list["Enrollment"] = Relationship(
+        back_populates="course",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )

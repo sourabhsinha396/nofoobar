@@ -4,6 +4,7 @@ from sqladmin import Admin
 from app.admin.auth import AdminAuth
 from app.admin.views import (
     CourseAdmin,
+    EnrollmentAdmin,
     LessonAdmin,
     OrganizationAdmin,
     SectionAdmin,
@@ -27,3 +28,4 @@ def register_admin(app: FastAPI) -> None:
     admin.add_view(CourseAdmin)
     admin.add_view(SectionAdmin)
     admin.add_view(LessonAdmin)
+    admin.add_view(EnrollmentAdmin)
