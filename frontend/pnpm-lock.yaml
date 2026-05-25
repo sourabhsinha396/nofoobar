@@ -29,6 +29,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.100.11
         version: 5.100.11(react@19.2.4)
+      '@tiptap/extension-youtube':
+        specifier: ^3.23.6
+        version: 3.23.6(@tiptap/core@3.23.6(@tiptap/pm@3.23.6))
       '@tiptap/html':
         specifier: ^3.23.6
         version: 3.23.6(@tiptap/core@3.23.6(@tiptap/pm@3.23.6))(@tiptap/pm@3.23.6)(happy-dom@20.9.0)
@@ -1860,6 +1863,11 @@ packages:
 
   '@tiptap/extension-underline@3.23.6':
     resolution: {integrity: sha512-P55wGIZGYTVH92Fq0cgI4/O9AhLCaJC3hhxg15RSERP5/YegM9eJHDK/GQ1EE/DvYA+xpYGOV6agKwAUqfA/Iw==}
+    peerDependencies:
+      '@tiptap/core': 3.23.6
+
+  '@tiptap/extension-youtube@3.23.6':
+    resolution: {integrity: sha512-j+Yfx4JkG/PE8mA4oEhAm9z8k1wMgbDtIS7V7BjFzyEOusFfISgovaHDLHJt5tlm7e321pzoBB9RNg8yIAApdw==}
     peerDependencies:
       '@tiptap/core': 3.23.6
 
@@ -6392,6 +6400,10 @@ snapshots:
       '@tiptap/core': 3.23.6(@tiptap/pm@3.23.6)
 
   '@tiptap/extension-underline@3.23.6(@tiptap/core@3.23.6(@tiptap/pm@3.23.6))':
+    dependencies:
+      '@tiptap/core': 3.23.6(@tiptap/pm@3.23.6)
+
+  '@tiptap/extension-youtube@3.23.6(@tiptap/core@3.23.6(@tiptap/pm@3.23.6))':
     dependencies:
       '@tiptap/core': 3.23.6(@tiptap/pm@3.23.6)
 

@@ -184,6 +184,27 @@
   }
 }
 
+/* TipTap YouTube embeds — extension renders <div data-youtube-video><iframe …/></div>
+   with inline width/height attrs. Override to 16:9 responsive so videos
+   never overflow the prose column on mobile. */
+[data-youtube-video] {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin: 1.5em 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--muted);
+}
+
+[data-youtube-video] iframe {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  border: 0;
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
