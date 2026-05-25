@@ -184,10 +184,11 @@
   }
 }
 
-/* TipTap YouTube embeds — extension renders <div data-youtube-video><iframe …/></div>
-   with inline width/height attrs. Override to 16:9 responsive so videos
-   never overflow the prose column on mobile. */
-[data-youtube-video] {
+/* TipTap video embeds — shared responsive 16:9 wrapper.
+   - [data-youtube-video]: from @tiptap/extension-youtube
+   - [data-video-embed]:   from our custom VideoEmbed node (Vimeo, Loom, mp4) */
+[data-youtube-video],
+[data-video-embed] {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -197,12 +198,17 @@
   background: var(--muted);
 }
 
-[data-youtube-video] iframe {
+[data-youtube-video] iframe,
+[data-video-embed] iframe,
+[data-video-embed] video {
   position: absolute;
   inset: 0;
   width: 100% !important;
   height: 100% !important;
   border: 0;
+  /* `object-fit: contain` keeps the full frame visible on .mp4 files that
+     don't match the 16:9 aspect — letterboxes against the muted bg. */
+  object-fit: contain;
 }
 
 ::view-transition-old(root),

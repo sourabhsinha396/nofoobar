@@ -1,7 +1,7 @@
 "use client";
 
 import { EditorContent, useEditor, type Editor, type JSONContent } from "@tiptap/react";
-import { Bold, Code2, Heading1, Italic, List, Video } from "lucide-react";
+import { Bold, Code2, Heading1, Italic, List, Play } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { TIPTAP_EXTENSIONS } from "@/lib/tiptap-extensions";
+import { detectVideoProvider } from "@/lib/tiptap-video-embed";
 
 interface Props {
   value: JSONContent;
@@ -49,10 +50,10 @@ function ToolbarButton({ onClick, isActive = false, label, children }: ToolbarBu
 
 interface ToolbarProps {
   editor: Editor | null;
-  onOpenYoutube: () => void;
+  onOpenVideo: () => void;
 }
 
-function Toolbar({ editor, onOpenYoutube }: ToolbarProps) {
+function Toolbar({ editor, onOpenVideo }: ToolbarProps) {
   if (!editor) return null;
   return (
     <div className="flex items-center gap-1 border-b border-input p-1">
@@ -92,35 +93,20 @@ function Toolbar({ editor, onOpenYoutube }: ToolbarProps) {
         <Code2 className="size-4" />
       </ToolbarButton>
       <span className="mx-1 h-5 w-px bg-border" aria-hidden />
-      <ToolbarButton onClick={onOpenYoutube} label="Embed YouTube video">
-        <Video className="size-4" />
+      <ToolbarButton onClick={onOpenVideo} label="Embed video">
+        <Play className="size-4" />
       </ToolbarButton>
     </div>
   );
 }
 
-// Loose but useful — accepts the common URL shapes:
-//   https://www.youtube.com/watch?v=ID
-//   https://youtu.be/ID
-//   https://www.youtube.com/embed/ID
-//   https://m.youtube.com/watch?v=ID
-//   https://www.youtube-nocookie.com/embed/ID
-// The TipTap extension does its own parsing too; this is just a friendly
-// guard so the user sees an inline error before submitting garbage.
-const YT_URL_RE =
-  /^https?:\/\/(?:www\.|m\.)?(?:youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)[\w-]{6,}/i;
-
-function isYoutubeUrl(value: string): boolean {
-  return YT_URL_RE.test(value.trim());
-}
-
-interface YoutubeDialogProps {
+interface VideoDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onInsert: (url: string) => void;
+  onInsert: (detected: NonNullable<ReturnType<typeof detectVideoProvider>>) => void;
 }
 
-function YoutubeDialog({ open, onOpenChange, onInsert }: YoutubeDialogProps) {
+function VideoDialog({ open, onOpenChange, onInsert }: VideoDialogProps) {
   const [url, setUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -137,12 +123,14 @@ function YoutubeDialog({ open, onOpenChange, onInsert }: YoutubeDialogProps) {
     // surrounding LessonForm's <form>, triggering its onSubmit (a PATCH
     // + navigation away from the page).
     event.stopPropagation();
-    const trimmed = url.trim();
-    if (!isYoutubeUrl(trimmed)) {
-      setError("Paste a YouTube URL — e.g. https://www.youtube.com/watch?v=…");
+    const detected = detectVideoProvider(url);
+    if (!detected) {
+      setError(
+        "Unrecognized URL. Supported: YouTube, Vimeo, Loom, or a direct .mp4/.webm/.ogg/.mov link.",
+      );
       return;
     }
-    onInsert(trimmed);
+    onInsert(detected);
     reset();
     onOpenChange(false);
   }
@@ -157,19 +145,19 @@ function YoutubeDialog({ open, onOpenChange, onInsert }: YoutubeDialogProps) {
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Embed YouTube video</DialogTitle>
+          <DialogTitle>Embed video</DialogTitle>
           <DialogDescription>
-            Paste the full YouTube URL. We use the privacy-enhanced embed —
-            no tracking cookies until the learner hits play.
+            Paste a YouTube, Vimeo, or Loom link, or a direct .mp4/.webm URL.
+            YouTube embeds use the privacy-enhanced (no-cookie) variant.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="flex flex-col gap-3">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="youtube-url">URL</Label>
+            <Label htmlFor="video-url">URL</Label>
             <Input
-              id="youtube-url"
+              id="video-url"
               type="url"
-              placeholder="https://www.youtube.com/watch?v=…"
+              placeholder="https://www.youtube.com/watch?v=… or https://vimeo.com/… or https://…/video.mp4"
               value={url}
               onChange={(e) => {
                 setUrl(e.target.value);
@@ -192,7 +180,7 @@ function YoutubeDialog({ open, onOpenChange, onInsert }: YoutubeDialogProps) {
 }
 
 export function ArticleEditor({ value, onChange, id }: Props) {
-  const [youtubeOpen, setYoutubeOpen] = useState(false);
+  const [videoOpen, setVideoOpen] = useState(false);
 
   const editor = useEditor({
     extensions: TIPTAP_EXTENSIONS,
@@ -214,9 +202,19 @@ export function ArticleEditor({ value, onChange, id }: Props) {
     },
   });
 
-  function insertYoutube(url: string) {
+  function insertVideo(detected: NonNullable<ReturnType<typeof detectVideoProvider>>) {
     if (!editor) return;
-    editor.chain().focus().setYoutubeVideo({ src: url }).run();
+    // YouTube has its own dedicated extension (better defaults — nocookie,
+    // controls, etc.). Everything else goes through our VideoEmbed node.
+    if (detected.provider === "youtube") {
+      editor.chain().focus().setYoutubeVideo({ src: detected.src }).run();
+    } else {
+      editor
+        .chain()
+        .focus()
+        .setVideoEmbed({ src: detected.src, provider: detected.provider })
+        .run();
+    }
   }
 
   // Blur the editor before opening the dialog. Without this, the focused
@@ -224,20 +222,16 @@ export function ArticleEditor({ value, onChange, id }: Props) {
   // marks aria-hidden when the modal opens — Chrome's a11y validator
   // flags the resulting "focused element inside aria-hidden ancestor"
   // contradiction. Blurring lets focus move cleanly into the dialog.
-  function openYoutubeDialog() {
+  function openVideoDialog() {
     editor?.commands.blur();
-    setYoutubeOpen(true);
+    setVideoOpen(true);
   }
 
   return (
     <div className="rounded-md border border-input bg-background">
-      <Toolbar editor={editor} onOpenYoutube={openYoutubeDialog} />
+      <Toolbar editor={editor} onOpenVideo={openVideoDialog} />
       <EditorContent editor={editor} />
-      <YoutubeDialog
-        open={youtubeOpen}
-        onOpenChange={setYoutubeOpen}
-        onInsert={insertYoutube}
-      />
+      <VideoDialog open={videoOpen} onOpenChange={setVideoOpen} onInsert={insertVideo} />
     </div>
   );
 }
