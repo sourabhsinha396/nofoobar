@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { CourseCard } from "@/components/course-card";
+import { CourseCard } from "@/components/course/course-card";
 import { Card } from "@/components/ui/card";
 import { getPublishedCourses, getTenantOrg, serverTenantPath } from "@/lib/tenant";
 

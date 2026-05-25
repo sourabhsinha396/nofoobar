@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { SortableSectionList } from "@/components/sortable-section-list";
+import { SortableSectionList } from "@/components/section/sortable-section-list";
 import type { Section } from "@/lib/tenant";
 
 const SECTIONS: Section[] = [

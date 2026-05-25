@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { LessonForm } from "@/components/lesson-form";
+import { LessonForm } from "@/components/lesson/lesson-form";
 
 const pushMock = vi.fn();
 const refreshMock = vi.fn();
@@ -15,7 +15,7 @@ vi.mock("next/navigation", () => ({
 // via data attributes. Lets us verify the form passes the initial JSON doc
 // through and that it's submitted back unchanged, without dealing with the
 // contenteditable mechanics that don't render reliably in jsdom.
-vi.mock("@/components/article-editor", () => ({
+vi.mock("@/components/lesson/article-editor", () => ({
   ArticleEditor: ({
     value,
     id,

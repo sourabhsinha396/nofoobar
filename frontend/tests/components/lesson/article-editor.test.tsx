@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { ArticleEditor } from "@/components/article-editor";
+import { ArticleEditor } from "@/components/lesson/article-editor";
 import { EMPTY_TIPTAP_DOC } from "@/lib/tiptap-extensions";
 
 afterEach(() => {

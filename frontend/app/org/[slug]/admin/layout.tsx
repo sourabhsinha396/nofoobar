@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 
-import { AdminNavbar } from "@/components/admin-navbar";
+import { AdminNavbar } from "@/components/layout/admin-navbar";
 import { getTenantOrg } from "@/lib/tenant";
 
 interface Props {

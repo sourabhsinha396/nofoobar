@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { AdminUserMenu } from "@/components/admin-user-menu";
+import { AdminUserMenu } from "@/components/layout/admin-user-menu";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { getCurrentUser } from "@/lib/auth";
 import { tenantUrl } from "@/lib/orgs";

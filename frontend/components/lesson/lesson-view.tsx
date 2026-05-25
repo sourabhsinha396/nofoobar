@@ -4,7 +4,7 @@ import { Menu } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 
-import { CourseSidebar } from "@/components/course-sidebar";
+import { CourseSidebar } from "@/components/course/course-sidebar";
 import { Button } from "@/components/ui/button";
 import {
   ResizableHandle,

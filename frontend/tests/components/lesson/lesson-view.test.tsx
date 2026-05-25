@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
-import { LessonView } from "@/components/lesson-view";
+import { LessonView } from "@/components/lesson/lesson-view";
 import type { PublishedCourseLanding } from "@/lib/tenant";
 
 const COURSE: PublishedCourseLanding = {

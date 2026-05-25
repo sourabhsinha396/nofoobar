@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AdminUserMenu } from "@/components/admin-user-menu";
+import { AdminUserMenu } from "@/components/layout/admin-user-menu";
 
 const logoutMock = vi.fn();
 

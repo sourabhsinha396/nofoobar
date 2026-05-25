@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { TenantUserMenu } from "@/components/tenant-user-menu";
+import { TenantUserMenu } from "@/components/layout/tenant-user-menu";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { getCurrentUser } from "@/lib/auth";
 import { serverTenantPath } from "@/lib/tenant";

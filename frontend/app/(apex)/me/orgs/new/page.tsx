@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { CreateOrgForm } from "@/components/create-org-form";
+import { CreateOrgForm } from "@/components/auth/create-org-form";
 import { getCurrentUser } from "@/lib/auth";
 
 export default async function NewOrgPage() {

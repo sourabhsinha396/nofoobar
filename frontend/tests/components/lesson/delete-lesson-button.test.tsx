@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { DeleteLessonButton } from "@/components/delete-lesson-button";
+import { DeleteLessonButton } from "@/components/lesson/delete-lesson-button";
 
 const pushMock = vi.fn();
 const refreshMock = vi.fn();

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
-import { DisconnectPaymentAccountButton } from "@/components/disconnect-payment-account-button";
-import { PaymentAccountForm } from "@/components/payment-account-form";
+import { DisconnectPaymentAccountButton } from "@/components/payments/disconnect-payment-account-button";
+import { PaymentAccountForm } from "@/components/payments/payment-account-form";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { getCurrentUser } from "@/lib/auth";

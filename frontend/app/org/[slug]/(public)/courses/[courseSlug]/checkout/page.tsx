@@ -1,7 +1,7 @@
 import { Infinity as InfinityIcon, ListChecks } from "lucide-react";
 import { redirect } from "next/navigation";
 
-import { CheckoutForm } from "@/components/checkout-form";
+import { CheckoutForm } from "@/components/enrollment/checkout-form";
 import { Card } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
 import { formatPrice } from "@/lib/format";

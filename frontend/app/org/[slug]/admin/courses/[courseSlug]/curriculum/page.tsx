@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { DeleteCourseButton } from "@/components/delete-course-button";
-import { PublishCourseButton } from "@/components/publish-course-button";
-import { SortableSectionList } from "@/components/sortable-section-list";
-import { VisibilityBadge } from "@/components/visibility-badge";
+import { DeleteCourseButton } from "@/components/course/delete-course-button";
+import { PublishCourseButton } from "@/components/course/publish-course-button";
+import { SortableSectionList } from "@/components/section/sortable-section-list";
+import { VisibilityBadge } from "@/components/course/visibility-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getTenantCourse, serverTenantPath } from "@/lib/tenant";

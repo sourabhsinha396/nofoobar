@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { CourseAdminShell } from "@/components/course-admin-shell";
+import { CourseAdminShell } from "@/components/layout/course-admin-shell";
 import { getCurrentUser } from "@/lib/auth";
 import { getTenantCourse, serverTenantPath } from "@/lib/tenant";
 

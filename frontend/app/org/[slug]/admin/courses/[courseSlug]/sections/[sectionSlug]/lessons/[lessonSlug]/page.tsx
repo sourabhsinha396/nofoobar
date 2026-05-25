@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { DeleteLessonButton } from "@/components/delete-lesson-button";
-import { LessonContent } from "@/components/lesson-content";
+import { DeleteLessonButton } from "@/components/lesson/delete-lesson-button";
+import { LessonContent } from "@/components/lesson/lesson-content";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
 import { getTenantLesson, serverTenantPath, type LessonContentType } from "@/lib/tenant";

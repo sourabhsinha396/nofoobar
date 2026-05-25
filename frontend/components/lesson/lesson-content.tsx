@@ -1,6 +1,6 @@
 import type { JSONContent } from "@tiptap/react";
 
-import { ArticleRenderer } from "@/components/article-renderer";
+import { ArticleRenderer } from "@/components/lesson/article-renderer";
 import { Card } from "@/components/ui/card";
 import type { Lesson } from "@/lib/tenant";
 

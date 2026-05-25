@@ -2,7 +2,7 @@ import { CreditCard } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-import { VisibilityBadge } from "@/components/visibility-badge";
+import { VisibilityBadge } from "@/components/course/visibility-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";

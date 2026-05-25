@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { SortableLessonList } from "@/components/sortable-lesson-list";
+import { SortableLessonList } from "@/components/lesson/sortable-lesson-list";
 import type { Lesson } from "@/lib/tenant";
 
 const LESSONS: Lesson[] = [

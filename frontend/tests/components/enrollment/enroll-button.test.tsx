@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { EnrollButton } from "@/components/enroll-button";
+import { EnrollButton } from "@/components/enrollment/enroll-button";
 
 const refreshMock = vi.fn();
 const pushMock = vi.fn();

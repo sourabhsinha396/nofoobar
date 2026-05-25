@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { DeleteSectionButton } from "@/components/delete-section-button";
-import { SortableLessonList } from "@/components/sortable-lesson-list";
+import { DeleteSectionButton } from "@/components/section/delete-section-button";
+import { SortableLessonList } from "@/components/lesson/sortable-lesson-list";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";

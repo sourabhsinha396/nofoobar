@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { SectionForm } from "@/components/section-form";
+import { SectionForm } from "@/components/section/section-form";
 import { getCurrentUser } from "@/lib/auth";
 import { getTenantCourse, serverTenantPath } from "@/lib/tenant";
 

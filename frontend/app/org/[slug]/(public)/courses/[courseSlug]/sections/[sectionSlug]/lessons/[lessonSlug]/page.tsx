@@ -3,8 +3,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { LessonContent } from "@/components/lesson-content";
-import { LessonView } from "@/components/lesson-view";
+import { LessonContent } from "@/components/lesson/lesson-content";
+import { LessonView } from "@/components/lesson/lesson-view";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
 import {

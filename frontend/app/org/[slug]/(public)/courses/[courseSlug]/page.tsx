@@ -3,8 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CheckCircle2, FileText, FlaskConical, ListChecks, Lock, PlayCircle } from "lucide-react";
 
-import { EnrollButton } from "@/components/enroll-button";
-import { PaymentVerifier } from "@/components/payment-verifier";
+import { EnrollButton } from "@/components/enrollment/enroll-button";
+import { PaymentVerifier } from "@/components/enrollment/payment-verifier";
 import {
   Accordion,
   AccordionContent,
