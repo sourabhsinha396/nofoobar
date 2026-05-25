@@ -54,7 +54,30 @@ def test_upload_returns_public_url(client, fake_membership, configured_s3, host)
     # Verify the storage layer was called with the expected arguments.
     assert configured_s3["content_type"] == "image/png"
     assert configured_s3["body"] == b"hello-bytes"
+    # Defaults to the thumbnails category — preserves the original behavior
+    # for LogoUploader, which doesn't send a category.
     assert configured_s3["key"].startswith(f"uploads/thumbnails/{fake_membership.org_id}/")
+
+
+def test_upload_with_explicit_images_category(client, fake_membership, configured_s3):
+    response = client.post(
+        "/api/v1/uploads/image",
+        files={"file": ("photo.png", b"x", "image/png")},
+        data={"category": "images"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 200
+    assert configured_s3["key"].startswith(f"uploads/images/{fake_membership.org_id}/")
+
+
+def test_upload_rejects_unknown_category(client, fake_membership, configured_s3):
+    response = client.post(
+        "/api/v1/uploads/image",
+        files={"file": ("photo.png", b"x", "image/png")},
+        data={"category": "videos"},  # not in the Literal allowlist
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 422
 
 
 def test_upload_rejects_students(client, fake_membership, configured_s3):

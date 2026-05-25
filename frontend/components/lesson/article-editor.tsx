@@ -1,8 +1,8 @@
 "use client";
 
 import { EditorContent, useEditor, type Editor, type JSONContent } from "@tiptap/react";
-import { Bold, Code2, Heading1, Italic, List, Play } from "lucide-react";
-import { useState } from "react";
+import { Bold, Code2, Heading1, ImagePlus, Italic, List, Play } from "lucide-react";
+import { useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,13 +15,42 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { TIPTAP_EXTENSIONS } from "@/lib/tiptap-extensions";
 import { detectVideoProvider } from "@/lib/tiptap-video-embed";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const IMAGE_MAX_BYTES = 2 * 1024 * 1024;
+const IMAGE_ACCEPT = "image/png,image/jpeg,image/gif";
+
+interface ImageUploadResponse {
+  public_url: string;
+}
+
+async function uploadImage(file: File, orgSlug: string): Promise<ImageUploadResponse> {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("category", "images");
+
+  const response = await fetch(`${API_URL}/api/v1/uploads/image`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "X-Tenant-Slug": orgSlug },
+    body: form,
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({ detail: `HTTP ${response.status}` }));
+    throw new ApiError(response.status, data.detail ?? `HTTP ${response.status}`);
+  }
+  return (await response.json()) as ImageUploadResponse;
+}
+
 interface Props {
   value: JSONContent;
   onChange: (value: JSONContent) => void;
+  orgSlug: string;
   id?: string;
 }
 
@@ -51,9 +80,11 @@ function ToolbarButton({ onClick, isActive = false, label, children }: ToolbarBu
 interface ToolbarProps {
   editor: Editor | null;
   onOpenVideo: () => void;
+  onPickImage: () => void;
+  isUploadingImage: boolean;
 }
 
-function Toolbar({ editor, onOpenVideo }: ToolbarProps) {
+function Toolbar({ editor, onOpenVideo, onPickImage, isUploadingImage }: ToolbarProps) {
   if (!editor) return null;
   return (
     <div className="flex items-center gap-1 border-b border-input p-1">
@@ -93,6 +124,14 @@ function Toolbar({ editor, onOpenVideo }: ToolbarProps) {
         <Code2 className="size-4" />
       </ToolbarButton>
       <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+      <ToolbarButton
+        onClick={onPickImage}
+        label={isUploadingImage ? "Uploading image…" : "Upload image"}
+      >
+        <ImagePlus
+          className={cn("size-4", isUploadingImage && "animate-pulse text-muted-foreground")}
+        />
+      </ToolbarButton>
       <ToolbarButton onClick={onOpenVideo} label="Embed video">
         <Play className="size-4" />
       </ToolbarButton>
@@ -179,8 +218,11 @@ function VideoDialog({ open, onOpenChange, onInsert }: VideoDialogProps) {
   );
 }
 
-export function ArticleEditor({ value, onChange, id }: Props) {
+export function ArticleEditor({ value, onChange, orgSlug, id }: Props) {
   const [videoOpen, setVideoOpen] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
     extensions: TIPTAP_EXTENSIONS,
@@ -227,10 +269,63 @@ export function ArticleEditor({ value, onChange, id }: Props) {
     setVideoOpen(true);
   }
 
+  function pickImage() {
+    setImageError(null);
+    fileInputRef.current?.click();
+  }
+
+  async function handleImageFile(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    // Reset value immediately so picking the same file twice still fires onChange.
+    event.target.value = "";
+    if (!file || !editor) return;
+
+    if (file.size > IMAGE_MAX_BYTES) {
+      const mb = Math.round(IMAGE_MAX_BYTES / 1024 / 1024);
+      setImageError(`Image too large. Max ${mb} MB.`);
+      return;
+    }
+
+    setImageUploading(true);
+    try {
+      const { public_url } = await uploadImage(file, orgSlug);
+      editor.chain().focus().setImage({ src: public_url }).run();
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 503) {
+        setImageError("Uploads aren't configured on this instance.");
+      } else if (err instanceof ApiError && err.status === 422) {
+        setImageError("Only PNG, JPG, and GIF files are allowed.");
+      } else if (err instanceof ApiError && err.status === 413) {
+        setImageError("Image too large.");
+      } else if (err instanceof ApiError && err.status === 403) {
+        setImageError("Only owners and instructors can upload images.");
+      } else {
+        setImageError(err instanceof Error ? err.message : "Upload failed.");
+      }
+    } finally {
+      setImageUploading(false);
+    }
+  }
+
   return (
     <div className="rounded-md border border-input bg-background">
-      <Toolbar editor={editor} onOpenVideo={openVideoDialog} />
+      <Toolbar
+        editor={editor}
+        onOpenVideo={openVideoDialog}
+        onPickImage={pickImage}
+        isUploadingImage={imageUploading}
+      />
       <EditorContent editor={editor} />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={IMAGE_ACCEPT}
+        className="sr-only"
+        onChange={handleImageFile}
+      />
+      {imageError && (
+        <p className="border-t border-input px-3 py-2 text-sm text-red-500">{imageError}</p>
+      )}
       <VideoDialog open={videoOpen} onOpenChange={setVideoOpen} onInsert={insertVideo} />
     </div>
   );

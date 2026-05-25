@@ -22,6 +22,7 @@ vi.mock("@/components/lesson/article-editor", () => ({
   }: {
     value: unknown;
     onChange: (v: unknown) => void;
+    orgSlug: string;
     id?: string;
   }) => (
     <div data-testid="article-editor" data-value={JSON.stringify(value)} id={id} />

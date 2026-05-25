@@ -1,3 +1,4 @@
+import Image from "@tiptap/extension-image";
 import Youtube from "@tiptap/extension-youtube";
 import type { JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -14,6 +15,11 @@ import { VideoEmbed } from "@/lib/tiptap-video-embed";
 //
 // VideoEmbed — our custom node for Vimeo / Loom iframes and HTML5 <video> for
 // direct .mp4 URLs. YouTube intentionally stays in its dedicated extension.
+//
+// Image — official extension. Stored as a TipTap node with `src/alt/title`;
+// renders as plain <img>. Image bytes are uploaded to R2 via the backend
+// (POST /uploads/image with category=images), which returns the public URL
+// that we then store in the node's `src`.
 export const TIPTAP_EXTENSIONS = [
   StarterKit,
   Youtube.configure({
@@ -24,6 +30,10 @@ export const TIPTAP_EXTENSIONS = [
     modestBranding: true,
   }),
   VideoEmbed,
+  Image.configure({
+    inline: false,
+    allowBase64: false,
+  }),
 ];
 
 export const EMPTY_TIPTAP_DOC: JSONContent = {

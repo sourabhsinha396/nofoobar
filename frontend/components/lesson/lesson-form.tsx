@@ -278,7 +278,12 @@ export function LessonForm(props: Props) {
               <Label htmlFor="body" className="text-sm font-medium">
                 Body
               </Label>
-              <ArticleEditor id="body" value={body} onChange={setBody} />
+              <ArticleEditor
+                id="body"
+                value={body}
+                onChange={setBody}
+                orgSlug={props.orgSlug}
+              />
             </div>
           )}
 
