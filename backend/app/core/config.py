@@ -36,6 +36,23 @@ class Settings(BaseSettings):
     # Rotating this key invalidates every stored secret — tenants must re-paste keys.
     SECRETS_ENCRYPTION_KEY: str = ""
 
+    # S3-compatible object storage for tenant-uploaded images (course logos,
+    # later: lesson covers, org logos). Algoholic uses Cloudflare R2 in
+    # practice but everything goes through the boto3 client so any
+    # S3-compatible provider works (AWS S3, Backblaze B2, MinIO, etc.).
+    #
+    # All five fields must be set for uploads to work. If any is empty, the
+    # /uploads endpoint returns 503 and the frontend silently degrades to
+    # paste-a-URL mode. See docs/devops/storage-r2.md for setup.
+    S3_ENDPOINT_URL: str = ""  # e.g. https://<account>.r2.cloudflarestorage.com
+    S3_ACCESS_KEY_ID: str = ""
+    S3_SECRET_ACCESS_KEY: str = ""
+    S3_BUCKET: str = ""
+    # Public URL prefix that the bucket is reachable at — R2's public dev URL
+    # (https://pub-<hash>.r2.dev) or a custom domain. logo_url written to the
+    # DB is built as {S3_PUBLIC_URL_BASE}/{object-key}.
+    S3_PUBLIC_URL_BASE: str = ""
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def DATABASE_URL(self) -> str:

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { LogoUploader } from "@/components/course/logo-uploader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -275,38 +276,27 @@ export function CourseForm(props: Props) {
               rows={4}
             />
           </div>
-          <div className="grid gap-3 sm:grid-cols-[1fr_180px]">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="logo_url" className="text-sm font-medium">
-                Logo URL <span className="text-muted-foreground">(optional)</span>
-              </Label>
-              <Input
-                id="logo_url"
-                type="url"
-                placeholder="https://example.com/logo.png"
-                maxLength={500}
-                value={logoUrl}
-                onChange={(e) => setLogoUrl(e.target.value)}
-                className="h-11 text-base"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="level" className="text-sm font-medium">
-                Level
-              </Label>
-              <select
-                id="level"
-                value={level}
-                onChange={(e) => setLevel(e.target.value as CourseLevel)}
-                className="h-11 rounded-md border border-input bg-background px-3 text-base"
-              >
-                {LEVEL_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <LogoUploader
+            orgSlug={props.orgSlug}
+            value={logoUrl}
+            onChange={setLogoUrl}
+          />
+          <div className="flex flex-col gap-2 sm:max-w-[200px]">
+            <Label htmlFor="level" className="text-sm font-medium">
+              Level
+            </Label>
+            <select
+              id="level"
+              value={level}
+              onChange={(e) => setLevel(e.target.value as CourseLevel)}
+              className="h-11 rounded-md border border-input bg-background px-3 text-base"
+            >
+              {LEVEL_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="tags" className="text-sm font-medium">

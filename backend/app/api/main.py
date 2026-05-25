@@ -13,6 +13,7 @@ from app.api.routes import (
     public_courses,
     sections,
     tenant,
+    uploads,
 )
 
 api_router = APIRouter()
@@ -28,3 +29,4 @@ api_router.include_router(public_courses.router)
 api_router.include_router(enrollments.router)
 api_router.include_router(learn.router)
 api_router.include_router(payments.router)
+api_router.include_router(uploads.router)
