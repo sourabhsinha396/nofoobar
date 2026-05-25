@@ -5,6 +5,8 @@ from app.db.models.enrollment import Enrollment
 from app.db.models.lesson import Lesson
 from app.db.models.membership import UserOrgMembership
 from app.db.models.organization import Organization
+from app.db.models.payment_account import OrgPaymentAccount
+from app.db.models.payment_attempt import PaymentAttempt
 from app.db.models.section import Section
 from app.db.models.user import User
 
@@ -17,7 +19,11 @@ class OrganizationAdmin(ModelView, model=Organization):
         Organization.custom_domain,
         Organization.created_at,
     ]
-    column_searchable_list = [Organization.slug, Organization.name, Organization.custom_domain]
+    column_searchable_list = [
+        Organization.slug,
+        Organization.name,
+        Organization.custom_domain,
+    ]
     column_sortable_list = [Organization.slug, Organization.name, Organization.created_at]
     form_columns = [
         Organization.slug,
@@ -33,6 +39,32 @@ class OrganizationAdmin(ModelView, model=Organization):
     can_create = True
     can_edit = True
     can_delete = True
+
+
+class OrgPaymentAccountAdmin(ModelView, model=OrgPaymentAccount):
+    # secret_key is intentionally NOT in column_list or form_columns — it's
+    # encrypted bytes and should never be exposed through sqladmin (decrypting
+    # it would defeat the at-rest encryption).
+    column_list = [
+        OrgPaymentAccount.id,
+        OrgPaymentAccount.org_id,
+        OrgPaymentAccount.provider,
+        OrgPaymentAccount.key_id,
+        OrgPaymentAccount.created_at,
+    ]
+    column_searchable_list = [OrgPaymentAccount.key_id]
+    column_sortable_list = [
+        OrgPaymentAccount.provider,
+        OrgPaymentAccount.created_at,
+    ]
+    # No form_columns set → sqladmin disables editing. Tenants manage their
+    # own credentials via the admin UI; superadmin can only inspect + delete.
+    name = "Payment account"
+    name_plural = "Payment accounts"
+    icon = "fa-solid fa-link"
+    can_create = False
+    can_edit = False
+    can_delete = True  # superadmin can revoke a tenant's connection
 
 
 class UserAdmin(ModelView, model=User):
@@ -72,17 +104,27 @@ class CourseAdmin(ModelView, model=Course):
         Course.slug,
         Course.title,
         Course.visibility,
+        Course.price_cents,
+        Course.currency,
         Course.org_id,
         Course.created_at,
     ]
     column_searchable_list = [Course.slug, Course.title]
-    column_sortable_list = [Course.slug, Course.title, Course.visibility, Course.created_at]
+    column_sortable_list = [
+        Course.slug,
+        Course.title,
+        Course.visibility,
+        Course.price_cents,
+        Course.created_at,
+    ]
     form_columns = [
         Course.org_id,
         Course.slug,
         Course.title,
         Course.description,
         Course.visibility,
+        Course.price_cents,
+        Course.currency,
     ]
     name = "Course"
     name_plural = "Courses"
@@ -117,6 +159,33 @@ class SectionAdmin(ModelView, model=Section):
     can_create = True
     can_edit = True
     can_delete = True
+
+
+class PaymentAttemptAdmin(ModelView, model=PaymentAttempt):
+    column_list = [
+        PaymentAttempt.id,
+        PaymentAttempt.status,
+        PaymentAttempt.provider,
+        PaymentAttempt.amount_cents,
+        PaymentAttempt.currency,
+        PaymentAttempt.user_id,
+        PaymentAttempt.course_id,
+        PaymentAttempt.org_id,
+        PaymentAttempt.gateway_session_id,
+        PaymentAttempt.created_at,
+    ]
+    column_searchable_list = [PaymentAttempt.gateway_session_id]
+    column_sortable_list = [
+        PaymentAttempt.created_at,
+        PaymentAttempt.status,
+        PaymentAttempt.amount_cents,
+    ]
+    name = "Payment attempt"
+    name_plural = "Payment attempts"
+    icon = "fa-solid fa-credit-card"
+    can_create = False  # only the checkout endpoint should mint these
+    can_edit = True  # admins can manually adjust status for refunds/disputes
+    can_delete = False  # audit log; never delete
 
 
 class EnrollmentAdmin(ModelView, model=Enrollment):

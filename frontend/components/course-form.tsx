@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ApiError, apiPatch, apiPost } from "@/lib/api";
 import { tenantPath } from "@/lib/orgs";
+import { convertPpp } from "@/lib/pricing";
+import type { Currency } from "@/lib/tenant";
 
 const SLUG_PATTERN = /^[a-z][a-z0-9-]{0,62}$/;
 
@@ -23,7 +25,17 @@ export interface CourseInitialValues {
   slug: string;
   title: string;
   description: string | null;
+  price_cents: number | null;
+  currency: string;
 }
+
+const CURRENCY_OPTIONS: ReadonlyArray<{ code: string; label: string }> = [
+  { code: "USD", label: "USD ($)" },
+  { code: "EUR", label: "EUR (€)" },
+  { code: "GBP", label: "GBP (£)" },
+  { code: "INR", label: "INR (₹)" },
+  { code: "AUD", label: "AUD (A$)" },
+];
 
 interface CreateModeProps {
   mode: "create";
@@ -46,6 +58,28 @@ export function CourseForm(props: Props) {
   const [title, setTitle] = useState(initial?.title ?? "");
   const [slug, setSlug] = useState(initial?.slug ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
+  // Price stored as the major unit (e.g. "29" for $29.00) for UX; converted
+  // to cents at submit time. Empty string means free.
+  const [priceMajor, setPriceMajor] = useState(
+    initial?.price_cents != null ? (initial.price_cents / 100).toString() : "",
+  );
+  const [currency, setCurrency] = useState<Currency>(
+    (initial?.currency as Currency) ?? "USD",
+  );
+
+  // Swap currency + PPP-convert the price field so the creator gets a
+  // sensible starting number in the new market (e.g. $29 → ₹1885, not
+  // ₹29). Field stays editable for overrides.
+  function handleCurrencyChange(next: Currency) {
+    const trimmed = priceMajor.trim();
+    if (trimmed !== "" && next !== currency) {
+      const parsed = Number(trimmed);
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        setPriceMajor(String(convertPpp(parsed, currency, next)));
+      }
+    }
+    setCurrency(next);
+  }
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -65,18 +99,37 @@ export function CourseForm(props: Props) {
     setIsSubmitting(true);
     const payloadDescription = description.trim() || null;
 
+    let priceCents: number | null = null;
+    const trimmedPrice = priceMajor.trim();
+    if (trimmedPrice !== "") {
+      const parsed = Number(trimmedPrice);
+      if (Number.isNaN(parsed) || parsed < 0) {
+        setError("Price must be zero or positive.");
+        setIsSubmitting(false);
+        return;
+      }
+      priceCents = Math.round(parsed * 100);
+    }
+    const payload = {
+      slug,
+      title,
+      description: payloadDescription,
+      price_cents: priceCents,
+      currency,
+    };
+
     try {
       if (props.mode === "create") {
         await apiPost<CourseResponse>(
           "/api/v1/courses",
-          { slug, title, description: payloadDescription },
+          payload,
           { headers: { "X-Tenant-Slug": props.orgSlug } },
         );
         router.push(tenantPath(props.orgSlug, "/admin"));
       } else {
         await apiPatch<CourseResponse>(
           `/api/v1/courses/${props.courseSlug}`,
-          { slug, title, description: payloadDescription },
+          payload,
           { headers: { "X-Tenant-Slug": props.orgSlug } },
         );
         router.push(tenantPath(props.orgSlug, `/admin/courses/${slug}`));
@@ -145,6 +198,40 @@ export function CourseForm(props: Props) {
             <p className="text-xs text-muted-foreground">
               Lowercase letters, digits, and hyphens. Must start with a letter. Max 63 characters.
             </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-[1fr_140px]">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="price" className="text-sm font-medium">
+                Price <span className="text-muted-foreground">(leave blank for free)</span>
+              </Label>
+              <Input
+                id="price"
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="0.00"
+                value={priceMajor}
+                onChange={(e) => setPriceMajor(e.target.value)}
+                className="h-11 text-base"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="currency" className="text-sm font-medium">
+                Currency
+              </Label>
+              <select
+                id="currency"
+                value={currency}
+                onChange={(e) => handleCurrencyChange(e.target.value as Currency)}
+                className="h-11 rounded-md border border-input bg-background px-3 text-base"
+              >
+                {CURRENCY_OPTIONS.map((opt) => (
+                  <option key={opt.code} value={opt.code}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="description" className="text-sm font-medium">

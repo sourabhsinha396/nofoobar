@@ -31,6 +31,8 @@ export default async function EditCoursePage({ params }: Props) {
           slug: course.slug,
           title: course.title,
           description: course.description,
+          price_cents: course.price_cents,
+          currency: course.currency,
         }}
       />
     </main>

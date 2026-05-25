@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { CheckCircle2, FileText, FlaskConical, ListChecks, Lock, PlayCircle } from "lucide-react";
 
 import { EnrollButton } from "@/components/enroll-button";
+import { PaymentVerifier } from "@/components/payment-verifier";
 import {
   Accordion,
   AccordionContent,
@@ -13,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
+import { formatPrice } from "@/lib/format";
 import {
   getMyEnrollments,
   getPublishedCourse,
@@ -23,6 +25,7 @@ import {
 
 interface Props {
   params: Promise<{ slug: string; courseSlug: string }>;
+  searchParams: Promise<{ payment_attempt?: string }>;
 }
 
 const CONTENT_TYPE_ICONS = {
@@ -76,8 +79,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function CourseLandingPage({ params }: Props) {
+export default async function CourseLandingPage({ params, searchParams }: Props) {
   const { slug, courseSlug } = await params;
+  const { payment_attempt: paymentAttemptId } = await searchParams;
 
   const [org, course, user] = await Promise.all([
     getTenantOrg(slug),
@@ -91,6 +95,12 @@ export default async function CourseLandingPage({ params }: Props) {
 
   const totalLessons = course.sections.reduce((sum, s) => sum + s.lessons.length, 0);
   const allSectionIds = course.sections.map((s) => s.id);
+
+  const priceLabel =
+    course.price_cents && course.price_cents > 0
+      ? formatPrice(course.price_cents, course.currency)
+      : "Free";
+  const isPaid = course.price_cents !== null && course.price_cents > 0;
 
   const [enrollments, loginHref, coursesPrefix] = await Promise.all([
     user ? getMyEnrollments(slug) : Promise.resolve(null),
@@ -110,10 +120,24 @@ export default async function CourseLandingPage({ params }: Props) {
 
   return (
     <main className="mx-auto w-full max-w-4xl px-6 py-16 md:py-24">
+      {paymentAttemptId && user && (
+        <PaymentVerifier orgSlug={slug} paymentAttemptId={paymentAttemptId} />
+      )}
       <header className="mb-12">
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-          {org.name}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+            {org.name}
+          </p>
+          <span
+            className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${
+              isPaid
+                ? "border-foreground/20 bg-foreground/5 text-foreground"
+                : "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+            }`}
+          >
+            {priceLabel}
+          </span>
+        </div>
         <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight md:text-5xl">
           {course.title}
         </h1>
@@ -138,7 +162,13 @@ export default async function CourseLandingPage({ params }: Props) {
               </span>
             </div>
           ) : (
-            <EnrollButton orgSlug={slug} courseSlug={course.slug} />
+            <EnrollButton
+              orgSlug={slug}
+              courseSlug={course.slug}
+              priceCents={course.price_cents}
+              currency={course.currency}
+              priceLabel={priceLabel}
+            />
           )}
           <p className="text-sm text-muted-foreground">
             {course.sections.length}{" "}

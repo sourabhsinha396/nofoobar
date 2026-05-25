@@ -193,7 +193,14 @@ def test_enrollment_response_omits_updated_at(client, mock_session, fake_org, au
         "expires_at",
         "course",
     }
-    assert set(body[0]["course"].keys()) == {"id", "slug", "title", "description"}
+    assert set(body[0]["course"].keys()) == {
+        "id",
+        "slug",
+        "title",
+        "description",
+        "price_cents",
+        "currency",
+    }
 
 
 # ---------- safety net: Enrollment model invariants ----------

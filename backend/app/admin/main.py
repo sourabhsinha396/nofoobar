@@ -7,6 +7,8 @@ from app.admin.views import (
     EnrollmentAdmin,
     LessonAdmin,
     OrganizationAdmin,
+    OrgPaymentAccountAdmin,
+    PaymentAttemptAdmin,
     SectionAdmin,
     UserAdmin,
     UserOrgMembershipAdmin,
@@ -23,9 +25,11 @@ def register_admin(app: FastAPI) -> None:
         title="Algoholic Admin",
     )
     admin.add_view(OrganizationAdmin)
+    admin.add_view(OrgPaymentAccountAdmin)
     admin.add_view(UserAdmin)
     admin.add_view(UserOrgMembershipAdmin)
     admin.add_view(CourseAdmin)
     admin.add_view(SectionAdmin)
     admin.add_view(LessonAdmin)
     admin.add_view(EnrollmentAdmin)
+    admin.add_view(PaymentAttemptAdmin)

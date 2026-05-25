@@ -15,6 +15,9 @@ dependencies = [
     "sqladmin>=0.20",
     "itsdangerous>=2.2",
     "pwdlib[argon2]>=0.2",
+    "stripe>=15.1.0",
+    "cryptography>=44",
+    "razorpay>=1.4",
 ]
 
 [dependency-groups]

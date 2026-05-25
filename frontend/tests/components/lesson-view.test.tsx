@@ -10,6 +10,8 @@ const COURSE: PublishedCourseLanding = {
   slug: "intro",
   title: "Intro to FastAPI",
   description: null,
+  price_cents: null,
+  currency: "USD",
   sections: [
     {
       id: "sec-1",

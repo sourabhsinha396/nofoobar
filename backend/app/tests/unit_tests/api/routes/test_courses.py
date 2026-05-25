@@ -271,6 +271,81 @@ def test_patch_course_rejects_unknown_visibility(client, mock_session, fake_memb
     assert response.status_code == 422
 
 
+# ---------- pricing ----------
+
+
+def test_new_course_defaults_to_free(client, mock_session, fake_membership):
+    mock_session.exec.return_value.first.return_value = None
+    response = client.post(
+        "/api/v1/courses",
+        json={"slug": "intro", "title": "Intro"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 201
+    body = response.json()
+    assert body["price_cents"] is None
+    assert body["currency"] == "USD"
+
+
+def test_create_course_accepts_price_and_currency(client, mock_session, fake_membership):
+    mock_session.exec.return_value.first.return_value = None
+    response = client.post(
+        "/api/v1/courses",
+        json={"slug": "paid", "title": "Paid", "price_cents": 4900, "currency": "EUR"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 201
+    body = response.json()
+    assert body["price_cents"] == 4900
+    assert body["currency"] == "EUR"
+
+
+def test_patch_course_can_set_price(client, mock_session, fake_membership):
+    course = CourseFactory.build(slug="intro", org_id=fake_membership.org_id, price_cents=None)
+    mock_session.exec.return_value.first.return_value = course
+    response = client.patch(
+        "/api/v1/courses/intro",
+        json={"price_cents": 9900, "currency": "USD"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 200
+    assert response.json()["price_cents"] == 9900
+    assert course.price_cents == 9900
+
+
+def test_patch_course_can_clear_price_back_to_free(client, mock_session, fake_membership):
+    course = CourseFactory.build(slug="paid", org_id=fake_membership.org_id, price_cents=9900)
+    mock_session.exec.return_value.first.return_value = course
+    response = client.patch(
+        "/api/v1/courses/paid",
+        json={"price_cents": None},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 200
+    assert response.json()["price_cents"] is None
+    assert course.price_cents is None
+
+
+def test_create_course_rejects_unsupported_currency(client, mock_session, fake_membership):
+    response = client.post(
+        "/api/v1/courses",
+        json={"slug": "x", "title": "X", "price_cents": 100, "currency": "JPY"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 422
+
+
+def test_create_course_rejects_negative_price(client, mock_session, fake_membership):
+    response = client.post(
+        "/api/v1/courses",
+        json={"slug": "x", "title": "X", "price_cents": -1},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 422
+
+
+
+
 def test_get_course_includes_visibility(client, mock_session, fake_membership):
     course = CourseFactory.build(
         slug="intro", org_id=fake_membership.org_id, visibility=CourseVisibility.PUBLISHED

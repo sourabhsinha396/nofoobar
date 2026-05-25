@@ -5,9 +5,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EnrollButton } from "@/components/enroll-button";
 
 const refreshMock = vi.fn();
+const pushMock = vi.fn();
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: refreshMock }),
+  useRouter: () => ({ refresh: refreshMock, push: pushMock }),
 }));
 
 let fetchMock: ReturnType<typeof vi.fn>;
@@ -29,8 +30,19 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-function renderButton() {
-  return render(<EnrollButton orgSlug="demo" courseSlug="intro-fastapi" />);
+function renderButton(
+  overrides: Partial<React.ComponentProps<typeof EnrollButton>> = {},
+) {
+  return render(
+    <EnrollButton
+      orgSlug="demo"
+      courseSlug="intro-fastapi"
+      priceCents={null}
+      currency="USD"
+      priceLabel="Free"
+      {...overrides}
+    />,
+  );
 }
 
 describe("EnrollButton", () => {
@@ -94,5 +106,17 @@ describe("EnrollButton", () => {
     const init = fetchMock.mock.calls[0][1];
     expect(init.body).toBeUndefined();
     expect(init.headers).not.toHaveProperty("Content-Type");
+  });
+
+  it("for paid courses, navigates to the checkout page instead of POSTing", async () => {
+    renderButton({ priceCents: 9900, currency: "USD", priceLabel: "$99.00" });
+    expect(screen.getByRole("button", { name: /buy for \$99\.00/i })).toBeInTheDocument();
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /buy for \$99\.00/i }));
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(pushMock).toHaveBeenCalledOnce();
+    expect(pushMock.mock.calls[0][0]).toContain("/courses/intro-fastapi/checkout");
   });
 });

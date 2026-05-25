@@ -35,4 +35,5 @@ async def create_org(
         logo_url=org.logo_url,
         primary_color=org.primary_color,
         description=org.description,
+        payment_accounts=[],
     )

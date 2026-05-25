@@ -1,3 +1,4 @@
+import { CreditCard } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -19,11 +20,12 @@ export default async function TenantAdminDashboard({ params }: Props) {
     redirect("/login");
   }
 
-  const [org, courses, newCourseHref, coursesPrefix] = await Promise.all([
+  const [org, courses, newCourseHref, coursesPrefix, paymentsHref] = await Promise.all([
     getTenantOrg(slug),
     getTenantCourses(slug),
     serverTenantPath(slug, "/admin/courses/new"),
     serverTenantPath(slug, "/admin/courses"),
+    serverTenantPath(slug, "/admin/payments"),
   ]);
 
   if (!org || courses === null) {
@@ -43,6 +45,26 @@ export default async function TenantAdminDashboard({ params }: Props) {
           <p className="mt-2 max-w-2xl text-muted-foreground">{org.description}</p>
         )}
       </header>
+
+      {org.payment_accounts.length === 0 && (
+        <Card className="mb-8 flex flex-col gap-3 border-amber-500/30 bg-amber-500/10 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <CreditCard className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400" />
+            <div>
+              <p className="font-medium text-amber-700 dark:text-amber-300">
+                Connect a payment provider
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                You can publish free courses now, but paid courses need a connected provider
+                (Stripe, soon Razorpay).
+              </p>
+            </div>
+          </div>
+          <Button asChild>
+            <Link href={paymentsHref}>Set up payments</Link>
+          </Button>
+        </Card>
+      )}
 
       <section className="space-y-6">
         <div className="flex items-end justify-between gap-4">

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatPrice } from "@/lib/format";
 import { getPublishedCourses, getTenantOrg, serverTenantPath } from "@/lib/tenant";
 
 interface Props {
@@ -43,7 +44,20 @@ export default async function TenantCourseCatalog({ params }: Props) {
               <Link href={`${coursesPrefix}/${course.slug}`} className="block h-full">
                 <Card className="h-full p-6 transition-colors hover:border-foreground/20">
                   <CardHeader className="p-0">
-                    <CardTitle className="font-heading text-xl">{course.title}</CardTitle>
+                    <div className="flex items-start justify-between gap-3">
+                      <CardTitle className="font-heading text-xl">{course.title}</CardTitle>
+                      <span
+                        className={`shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium ${
+                          course.price_cents && course.price_cents > 0
+                            ? "border-foreground/20 bg-foreground/5 text-foreground"
+                            : "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                        }`}
+                      >
+                        {course.price_cents && course.price_cents > 0
+                          ? formatPrice(course.price_cents, course.currency)
+                          : "Free"}
+                      </span>
+                    </div>
                     {course.description && (
                       <CardDescription className="line-clamp-3">
                         {course.description}

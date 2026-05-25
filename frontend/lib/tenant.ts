@@ -14,6 +14,13 @@ export async function serverTenantPath(slug: string, path: string): Promise<stri
   return path === "/" ? `/org/${slug}` : `/org/${slug}${path}`;
 }
 
+export type PaymentProvider = "stripe" | "razorpay";
+
+export interface PaymentAccount {
+  provider: PaymentProvider;
+  key_id: string;
+}
+
 export interface TenantOrg {
   id: string;
   slug: string;
@@ -21,9 +28,11 @@ export interface TenantOrg {
   logo_url: string | null;
   primary_color: string | null;
   description: string | null;
+  payment_accounts: PaymentAccount[];
 }
 
 export type CourseVisibility = "draft" | "published";
+export type Currency = "USD" | "EUR" | "GBP" | "INR" | "AUD";
 
 export interface Course {
   id: string;
@@ -32,6 +41,8 @@ export interface Course {
   title: string;
   description: string | null;
   visibility: CourseVisibility;
+  price_cents: number | null;
+  currency: string;
 }
 
 export interface Section {
@@ -71,6 +82,8 @@ export interface PublishedCourseSummary {
   slug: string;
   title: string;
   description: string | null;
+  price_cents: number | null;
+  currency: string;
 }
 
 export interface PublishedLessonOutline {
@@ -110,6 +123,21 @@ async function tenantHeaders(slug: string): Promise<HeadersInit> {
     cookie: cookieStore.toString(),
     "x-tenant-slug": slug,
   };
+}
+
+export async function getPaymentAccounts(slug: string): Promise<PaymentAccount[] | null> {
+  try {
+    const response = await fetch(`${API_URL}/api/v1/orgs/${slug}/payment-accounts`, {
+      headers: await tenantHeaders(slug),
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      return null;
+    }
+    return (await response.json()) as PaymentAccount[];
+  } catch {
+    return null;
+  }
 }
 
 export async function getTenantOrg(slug: string): Promise<TenantOrg | null> {

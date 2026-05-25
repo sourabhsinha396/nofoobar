@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     # without subdomains; override in .env for the dev-subdomains workflow or prod.
     CORS_ORIGIN_REGEX: str = r"^http://(localhost|127\.0\.0\.1):3000$"
 
+    # Fernet key for at-rest encryption of tenant payment-provider secrets
+    # stored in org_payment_accounts. Generate with:
+    #   python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+    # Rotating this key invalidates every stored secret — tenants must re-paste keys.
+    SECRETS_ENCRYPTION_KEY: str = ""
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def DATABASE_URL(self) -> str:

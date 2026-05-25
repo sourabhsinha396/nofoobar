@@ -10,6 +10,8 @@ const FIXTURE: PublishedCourseLanding = {
   slug: "intro",
   title: "Intro to FastAPI",
   description: null,
+  price_cents: null,
+  currency: "USD",
   sections: [
     {
       id: "sec-1",
@@ -116,6 +118,8 @@ describe("CourseSidebar", () => {
     // A lesson with the same slug in a different section must NOT be considered active.
     const cousin: PublishedCourseLanding = {
       ...FIXTURE,
+      price_cents: null,
+      currency: "USD",
       sections: [
         ...FIXTURE.sections,
         {

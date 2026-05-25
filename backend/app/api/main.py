@@ -9,6 +9,7 @@ from app.api.routes import (
     lessons,
     me,
     orgs,
+    payments,
     public_courses,
     sections,
     tenant,
@@ -26,3 +27,4 @@ api_router.include_router(lessons.router)
 api_router.include_router(public_courses.router)
 api_router.include_router(enrollments.router)
 api_router.include_router(learn.router)
+api_router.include_router(payments.router)

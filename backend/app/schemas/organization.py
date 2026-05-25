@@ -5,6 +5,7 @@ from pydantic import StringConstraints
 from sqlmodel import SQLModel
 
 from app.schemas.common import Slug
+from app.schemas.payment_account import OrgPaymentAccountPublic
 
 
 class OrganizationCreate(SQLModel):
@@ -20,3 +21,7 @@ class OrganizationPublic(SQLModel):
     logo_url: str | None = None
     primary_color: str | None = None
     description: str | None = None
+    # Per-provider connection status; empty list means this tenant can't
+    # accept paid payments yet. Frontend derives "needs onboarding" from
+    # `payment_accounts.length === 0` (or filters by provider).
+    payment_accounts: list[OrgPaymentAccountPublic] = []

@@ -32,6 +32,8 @@ async def create_course(
         slug=payload.slug,
         title=payload.title,
         description=payload.description,
+        price_cents=payload.price_cents,
+        currency=payload.currency,
     )
     session.add(course)
     await session.commit()
@@ -102,6 +104,10 @@ async def update_course(
         course.description = update_data["description"]
     if "visibility" in update_data:
         course.visibility = update_data["visibility"]
+    if "price_cents" in update_data:
+        course.price_cents = update_data["price_cents"]
+    if "currency" in update_data:
+        course.currency = update_data["currency"]
 
     await session.commit()
     await session.refresh(course)
