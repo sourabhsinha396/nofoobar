@@ -1,6 +1,6 @@
 import { CreditCard } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { VisibilityBadge } from "@/components/visibility-badge";
 import { Button } from "@/components/ui/button";
@@ -20,16 +20,39 @@ export default async function TenantAdminDashboard({ params }: Props) {
     redirect("/login");
   }
 
-  const [org, courses, newCourseHref, coursesPrefix, paymentsHref] = await Promise.all([
-    getTenantOrg(slug),
+  const org = await getTenantOrg(slug);
+  if (!org) {
+    notFound();
+  }
+
+  const [courses, newCourseHref, coursesPrefix, paymentsHref] = await Promise.all([
     getTenantCourses(slug),
     serverTenantPath(slug, "/admin/courses/new"),
     serverTenantPath(slug, "/admin/courses"),
     serverTenantPath(slug, "/admin/payments"),
   ]);
 
-  if (!org || courses === null) {
-    redirect("/me");
+  // Org exists but membership-gated endpoints refused. Almost always: the
+  // signed-in user isn't a member of this org. Render a clear message instead
+  // of silently bouncing to /me (where the symptom looked like a stripped
+  // subdomain).
+  if (courses === null) {
+    return (
+      <main className="mx-auto w-full max-w-2xl px-6 py-24">
+        <Card className="items-center p-10 text-center">
+          <h1 className="font-heading text-2xl font-semibold tracking-tight">
+            You&apos;re not a member of {org.name}
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Signed in as {user.email}. Ask an owner of {org.name} to invite this account,
+            or switch organizations.
+          </p>
+          <Button asChild className="mt-6" size="lg">
+            <Link href="/me">Back to your organizations</Link>
+          </Button>
+        </Card>
+      </main>
+    );
   }
 
   return (

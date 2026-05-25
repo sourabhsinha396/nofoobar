@@ -59,6 +59,7 @@ def test_list_published_courses_response_omits_visibility_and_org_id(
     assert "org_id" not in body[0]
     assert set(body[0].keys()) == {
         "id", "slug", "title", "description", "price_cents", "currency",
+        "logo_url", "level", "tags",
     }
 
 

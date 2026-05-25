@@ -2,8 +2,8 @@ from enum import StrEnum
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
+from sqlalchemy import ARRAY, Column, String, UniqueConstraint
 from sqlalchemy import Enum as SAEnum
-from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, Relationship
 
 from app.db.models.common import TimestampedModel
@@ -17,6 +17,12 @@ if TYPE_CHECKING:
 class CourseVisibility(StrEnum):
     DRAFT = "draft"
     PUBLISHED = "published"
+
+
+class CourseLevel(StrEnum):
+    BEGINNER = "beginner"
+    INTERMEDIATE = "intermediate"
+    ADVANCED = "advanced"
 
 
 class Course(TimestampedModel, table=True):
@@ -43,6 +49,21 @@ class Course(TimestampedModel, table=True):
     # PPP-converts to the buyer's currency before creating the order.
     price_cents: int | None = Field(default=None)
     currency: str = Field(default="USD", max_length=3)
+
+    logo_url: str | None = Field(default=None, max_length=500)
+    level: CourseLevel = Field(
+        default=CourseLevel.BEGINNER,
+        sa_type=SAEnum(
+            CourseLevel,
+            name="course_level",
+            values_callable=lambda enum: [m.value for m in enum],
+        ),
+        sa_column_kwargs={"server_default": CourseLevel.BEGINNER.value},
+    )
+    tags: list[str] = Field(
+        default_factory=list,
+        sa_column=Column(ARRAY(String), nullable=False, server_default="{}"),
+    )
 
     org: Organization = Relationship()
     sections: list["Section"] = Relationship(

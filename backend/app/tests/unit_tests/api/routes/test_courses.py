@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from app.db.models.course import CourseVisibility
+from app.db.models.course import CourseLevel, CourseVisibility
 from app.db.models.membership import Role
 from app.tests.factories.course import CourseFactory
 
@@ -355,3 +355,112 @@ def test_get_course_includes_visibility(client, mock_session, fake_membership):
     response = client.get("/api/v1/courses/intro", headers={"Host": "localhost"})
     assert response.status_code == 200
     assert response.json()["visibility"] == "published"
+
+
+# ---------- metadata fields (tags / logo_url / level) ----------
+#
+# The create/update routes copy fields manually onto the Course model. Past
+# bug: payment_provider was silently dropped because that copy line was
+# missing. These tests assert each metadata field round-trips through both
+# POST and PATCH so a future missing copy line fails loudly.
+
+
+def test_new_course_defaults_metadata_fields(client, mock_session, fake_membership):
+    mock_session.exec.return_value.first.return_value = None
+    response = client.post(
+        "/api/v1/courses",
+        json={"slug": "intro", "title": "Intro"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 201
+    body = response.json()
+    assert body["level"] == CourseLevel.BEGINNER.value
+    assert body["tags"] == []
+    assert body["logo_url"] is None
+
+
+def test_create_course_persists_metadata_fields(client, mock_session, fake_membership):
+    mock_session.exec.return_value.first.return_value = None
+    response = client.post(
+        "/api/v1/courses",
+        json={
+            "slug": "intro",
+            "title": "Intro",
+            "logo_url": "https://example.com/logo.png",
+            "level": "advanced",
+            "tags": ["  FastAPI ", "python", "fastapi"],
+        },
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 201
+    body = response.json()
+    assert body["logo_url"] == "https://example.com/logo.png"
+    assert body["level"] == "advanced"
+    assert body["tags"] == ["fastapi", "python"]
+    added = mock_session.add.call_args.args[0]
+    assert added.logo_url == "https://example.com/logo.png"
+    assert added.level == CourseLevel.ADVANCED
+    assert added.tags == ["fastapi", "python"]
+
+
+def test_patch_course_updates_logo_url(client, mock_session, fake_membership):
+    course = CourseFactory.build(slug="intro", org_id=fake_membership.org_id, logo_url=None)
+    mock_session.exec.return_value.first.return_value = course
+    response = client.patch(
+        "/api/v1/courses/intro",
+        json={"logo_url": "https://example.com/new.png"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 200
+    assert response.json()["logo_url"] == "https://example.com/new.png"
+    assert course.logo_url == "https://example.com/new.png"
+
+
+def test_patch_course_updates_level(client, mock_session, fake_membership):
+    course = CourseFactory.build(
+        slug="intro", org_id=fake_membership.org_id, level=CourseLevel.BEGINNER
+    )
+    mock_session.exec.return_value.first.return_value = course
+    response = client.patch(
+        "/api/v1/courses/intro",
+        json={"level": "intermediate"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 200
+    assert response.json()["level"] == "intermediate"
+    assert course.level == CourseLevel.INTERMEDIATE
+
+
+def test_patch_course_updates_tags(client, mock_session, fake_membership):
+    course = CourseFactory.build(slug="intro", org_id=fake_membership.org_id, tags=["old"])
+    mock_session.exec.return_value.first.return_value = course
+    response = client.patch(
+        "/api/v1/courses/intro",
+        json={"tags": ["Python", " python ", "FastAPI"]},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 200
+    assert response.json()["tags"] == ["python", "fastapi"]
+    assert course.tags == ["python", "fastapi"]
+
+
+def test_patch_course_can_clear_tags(client, mock_session, fake_membership):
+    course = CourseFactory.build(slug="intro", org_id=fake_membership.org_id, tags=["python"])
+    mock_session.exec.return_value.first.return_value = course
+    response = client.patch(
+        "/api/v1/courses/intro",
+        json={"tags": []},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 200
+    assert response.json()["tags"] == []
+    assert course.tags == []
+
+
+def test_create_course_rejects_unknown_level(client, mock_session, fake_membership):
+    response = client.post(
+        "/api/v1/courses",
+        json={"slug": "x", "title": "X", "level": "expert"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 422

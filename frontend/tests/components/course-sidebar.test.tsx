@@ -12,6 +12,9 @@ const FIXTURE: PublishedCourseLanding = {
   description: null,
   price_cents: null,
   currency: "USD",
+  logo_url: null,
+  level: "beginner",
+  tags: [],
   sections: [
     {
       id: "sec-1",

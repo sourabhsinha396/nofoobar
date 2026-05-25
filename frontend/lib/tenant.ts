@@ -32,6 +32,7 @@ export interface TenantOrg {
 }
 
 export type CourseVisibility = "draft" | "published";
+export type CourseLevel = "beginner" | "intermediate" | "advanced";
 export type Currency = "USD" | "EUR" | "GBP" | "INR" | "AUD";
 
 export interface Course {
@@ -43,6 +44,9 @@ export interface Course {
   visibility: CourseVisibility;
   price_cents: number | null;
   currency: string;
+  logo_url: string | null;
+  level: CourseLevel;
+  tags: string[];
 }
 
 export interface Section {
@@ -84,6 +88,9 @@ export interface PublishedCourseSummary {
   description: string | null;
   price_cents: number | null;
   currency: string;
+  logo_url: string | null;
+  level: CourseLevel;
+  tags: string[];
 }
 
 export interface PublishedLessonOutline {

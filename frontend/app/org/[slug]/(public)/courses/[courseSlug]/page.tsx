@@ -14,12 +14,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
+import { LEVEL_CLASSES, LEVEL_LABELS, fallbackHue } from "@/lib/course-display";
 import { formatPrice } from "@/lib/format";
 import {
   getMyEnrollments,
   getPublishedCourse,
   getTenantOrg,
   serverTenantPath,
+  type LessonContentType,
   type PublishedLessonOutline,
 } from "@/lib/tenant";
 
@@ -41,6 +43,25 @@ const CONTENT_TYPE_LABELS = {
   lab: "Lab",
   quiz: "Quiz",
 } as const;
+
+const CONTENT_TYPE_PLURALS: Record<LessonContentType, string> = {
+  article: "articles",
+  video: "videos",
+  lab: "labs",
+  quiz: "quizzes",
+};
+
+const CONTENT_TYPE_ORDER: ReadonlyArray<LessonContentType> = [
+  "video",
+  "article",
+  "lab",
+  "quiz",
+];
+
+function formatBreakdownEntry(type: LessonContentType, count: number): string {
+  if (count === 1) return `1 ${CONTENT_TYPE_LABELS[type].toLowerCase()}`;
+  return `${count} ${CONTENT_TYPE_PLURALS[type]}`;
+}
 
 function LessonRow({ lesson, href }: { lesson: PublishedLessonOutline; href?: string }) {
   const Icon = CONTENT_TYPE_ICONS[lesson.content_type];
@@ -96,6 +117,18 @@ export default async function CourseLandingPage({ params, searchParams }: Props)
   const totalLessons = course.sections.reduce((sum, s) => sum + s.lessons.length, 0);
   const allSectionIds = course.sections.map((s) => s.id);
 
+  // Lesson-type breakdown — fold across sections so the right-side card can
+  // surface "X videos · Y articles · …" instead of a bare lesson count.
+  const breakdown = course.sections.reduce(
+    (acc, section) => {
+      for (const lesson of section.lessons) {
+        acc[lesson.content_type] = (acc[lesson.content_type] ?? 0) + 1;
+      }
+      return acc;
+    },
+    {} as Partial<Record<LessonContentType, number>>,
+  );
+
   const priceLabel =
     course.price_cents && course.price_cents > 0
       ? formatPrice(course.price_cents, course.currency)
@@ -117,68 +150,134 @@ export default async function CourseLandingPage({ params, searchParams }: Props)
       : null;
 
   const lessonHrefPrefix = `${coursesPrefix}/${course.slug}/sections`;
+  const hue = fallbackHue(course.slug);
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-6 py-16 md:py-24">
+    <main className="mx-auto w-full max-w-6xl px-6 py-12 md:py-16">
       {paymentAttemptId && user && (
         <PaymentVerifier orgSlug={slug} paymentAttemptId={paymentAttemptId} />
       )}
-      <header className="mb-12">
-        <div className="flex items-center gap-3">
+
+      {/* Top: header + enroll card side-by-side. Curriculum is its own
+          section below the grid, full-width. DOM order is header → aside so
+          on mobile (single column) the enroll card lands right under the
+          title, and the curriculum naturally follows beneath. */}
+      <div className="grid items-start gap-x-8 gap-y-8 lg:grid-cols-[1fr_360px]">
+        <header>
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
             {org.name}
           </p>
-          <span
-            className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${
-              isPaid
-                ? "border-foreground/20 bg-foreground/5 text-foreground"
-                : "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-            }`}
-          >
-            {priceLabel}
-          </span>
-        </div>
-        <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight md:text-5xl">
-          {course.title}
-        </h1>
-        {course.description && (
-          <p className="mt-4 max-w-2xl text-lg text-muted-foreground">{course.description}</p>
-        )}
-        <div className="mt-8 flex flex-wrap items-center gap-4">
-          {!user ? (
-            <Button asChild size="lg">
-              <Link href={loginHref}>Sign in to enroll</Link>
-            </Button>
-          ) : isEnrolled ? (
-            <div className="flex flex-wrap items-center gap-4">
-              {startLearningHref && (
-                <Button asChild size="lg">
-                  <Link href={startLearningHref}>Start learning</Link>
-                </Button>
-              )}
-              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                <CheckCircle2 className="size-4" aria-hidden />
-                Enrolled
-              </span>
-            </div>
-          ) : (
-            <EnrollButton
-              orgSlug={slug}
-              courseSlug={course.slug}
-              priceCents={course.price_cents}
-              currency={course.currency}
-              priceLabel={priceLabel}
-            />
+          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight md:text-5xl">
+            {course.title}
+          </h1>
+          {course.description && (
+            <p className="mt-4 max-w-3xl text-lg text-muted-foreground">
+              {course.description}
+            </p>
           )}
-          <p className="text-sm text-muted-foreground">
-            {course.sections.length}{" "}
-            {course.sections.length === 1 ? "section" : "sections"} ·{" "}
-            {totalLessons} {totalLessons === 1 ? "lesson" : "lessons"}
-          </p>
-        </div>
-      </header>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <span
+              className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium ${LEVEL_CLASSES[course.level]}`}
+            >
+              {LEVEL_LABELS[course.level]}
+            </span>
+            <span className="text-sm text-muted-foreground">
+              {course.sections.length}{" "}
+              {course.sections.length === 1 ? "section" : "sections"} ·{" "}
+              {totalLessons} {totalLessons === 1 ? "lesson" : "lessons"}
+            </span>
+          </div>
+          {course.tags.length > 0 && (
+            <ul className="mt-4 flex flex-wrap gap-1.5">
+              {course.tags.map((tag) => (
+                <li
+                  key={tag}
+                  className="rounded-full bg-foreground/5 px-2.5 py-0.5 text-xs text-muted-foreground"
+                >
+                  {tag}
+                </li>
+              ))}
+            </ul>
+          )}
+        </header>
 
-      <section className="space-y-4">
+        <aside>
+          <Card className="overflow-hidden p-0">
+            <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
+              {course.logo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element -- arbitrary user-supplied URL; swap to next/image once R2 upload pipeline lands and we know the host
+                <img
+                  src={course.logo_url}
+                  alt={`${course.title} cover`}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div
+                  className="flex h-full w-full items-center justify-center font-heading text-6xl font-semibold text-white"
+                  style={{
+                    background: `linear-gradient(135deg, hsl(${hue} 70% 55%), hsl(${(hue + 40) % 360} 70% 40%))`,
+                  }}
+                  aria-hidden
+                >
+                  {course.title.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+            <div className="space-y-5 p-6">
+              <p className="font-heading text-3xl font-semibold tracking-tight">
+                {priceLabel}
+              </p>
+
+              {!user ? (
+                <Button asChild size="lg" className="w-full">
+                  <Link href={loginHref}>Sign in to enroll</Link>
+                </Button>
+              ) : isEnrolled ? (
+                <div className="space-y-3">
+                  {startLearningHref && (
+                    <Button asChild size="lg" className="w-full">
+                      <Link href={startLearningHref}>Start learning</Link>
+                    </Button>
+                  )}
+                  <span className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle2 className="size-4" aria-hidden />
+                    Enrolled
+                  </span>
+                </div>
+              ) : (
+                <EnrollButton
+                  orgSlug={slug}
+                  courseSlug={course.slug}
+                  priceCents={course.price_cents}
+                  currency={course.currency}
+                  priceLabel={isPaid ? priceLabel : "Enroll for free"}
+                />
+              )}
+
+              {totalLessons > 0 && (
+                <div className="border-t pt-5">
+                  <p className="text-sm font-medium">This course includes</p>
+                  <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                    {CONTENT_TYPE_ORDER.map((type) => {
+                      const count = breakdown[type] ?? 0;
+                      if (count === 0) return null;
+                      const Icon = CONTENT_TYPE_ICONS[type];
+                      return (
+                        <li key={type} className="flex items-center gap-2">
+                          <Icon className="size-4 text-muted-foreground" aria-hidden />
+                          <span>{formatBreakdownEntry(type, count)}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </Card>
+        </aside>
+      </div>
+
+      <section className="mt-12 space-y-4 md:mt-16">
         <h2 className="font-heading text-2xl font-semibold tracking-tight">Curriculum</h2>
         {course.sections.length === 0 ? (
           <Card className="items-center p-10 text-center">

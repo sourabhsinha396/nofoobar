@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ApiError, apiPatch, apiPost } from "@/lib/api";
 import { tenantPath } from "@/lib/orgs";
 import { convertPpp } from "@/lib/pricing";
-import type { Currency } from "@/lib/tenant";
+import type { CourseLevel, Currency } from "@/lib/tenant";
 
 const SLUG_PATTERN = /^[a-z][a-z0-9-]{0,62}$/;
 
@@ -27,6 +27,9 @@ export interface CourseInitialValues {
   description: string | null;
   price_cents: number | null;
   currency: string;
+  logo_url: string | null;
+  level: CourseLevel;
+  tags: string[];
 }
 
 const CURRENCY_OPTIONS: ReadonlyArray<{ code: string; label: string }> = [
@@ -36,6 +39,27 @@ const CURRENCY_OPTIONS: ReadonlyArray<{ code: string; label: string }> = [
   { code: "INR", label: "INR (₹)" },
   { code: "AUD", label: "AUD (A$)" },
 ];
+
+const LEVEL_OPTIONS: ReadonlyArray<{ value: CourseLevel; label: string }> = [
+  { value: "beginner", label: "Beginner" },
+  { value: "intermediate", label: "Intermediate" },
+  { value: "advanced", label: "Advanced" },
+];
+
+// Submit-time normalization mirrors backend `normalize_tags`: trim, lowercase,
+// drop empties, dedupe. Server re-normalizes too so this is purely a UX nicety.
+function parseTagInput(raw: string): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const piece of raw.split(",")) {
+    const cleaned = piece.trim().toLowerCase();
+    if (cleaned && !seen.has(cleaned)) {
+      seen.add(cleaned);
+      out.push(cleaned);
+    }
+  }
+  return out;
+}
 
 interface CreateModeProps {
   mode: "create";
@@ -66,6 +90,9 @@ export function CourseForm(props: Props) {
   const [currency, setCurrency] = useState<Currency>(
     (initial?.currency as Currency) ?? "USD",
   );
+  const [logoUrl, setLogoUrl] = useState(initial?.logo_url ?? "");
+  const [level, setLevel] = useState<CourseLevel>(initial?.level ?? "beginner");
+  const [tagsRaw, setTagsRaw] = useState((initial?.tags ?? []).join(", "));
 
   // Swap currency + PPP-convert the price field so the creator gets a
   // sensible starting number in the new market (e.g. $29 → ₹1885, not
@@ -116,6 +143,9 @@ export function CourseForm(props: Props) {
       description: payloadDescription,
       price_cents: priceCents,
       currency,
+      logo_url: logoUrl.trim() || null,
+      level,
+      tags: parseTagInput(tagsRaw),
     };
 
     try {
@@ -244,6 +274,55 @@ export function CourseForm(props: Props) {
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
             />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-[1fr_180px]">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="logo_url" className="text-sm font-medium">
+                Logo URL <span className="text-muted-foreground">(optional)</span>
+              </Label>
+              <Input
+                id="logo_url"
+                type="url"
+                placeholder="https://example.com/logo.png"
+                maxLength={500}
+                value={logoUrl}
+                onChange={(e) => setLogoUrl(e.target.value)}
+                className="h-11 text-base"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="level" className="text-sm font-medium">
+                Level
+              </Label>
+              <select
+                id="level"
+                value={level}
+                onChange={(e) => setLevel(e.target.value as CourseLevel)}
+                className="h-11 rounded-md border border-input bg-background px-3 text-base"
+              >
+                {LEVEL_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="tags" className="text-sm font-medium">
+              Tags <span className="text-muted-foreground">(comma-separated, optional)</span>
+            </Label>
+            <Input
+              id="tags"
+              type="text"
+              placeholder="fastapi, python, web"
+              value={tagsRaw}
+              onChange={(e) => setTagsRaw(e.target.value)}
+              className="h-11 text-base"
+            />
+            <p className="text-xs text-muted-foreground">
+              Lowercased and deduped on save. Max 20 tags, 32 characters each.
+            </p>
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
           <Button type="submit" disabled={isSubmitting} size="lg">

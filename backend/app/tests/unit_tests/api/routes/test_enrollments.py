@@ -200,6 +200,9 @@ def test_enrollment_response_omits_updated_at(client, mock_session, fake_org, au
         "description",
         "price_cents",
         "currency",
+        "logo_url",
+        "level",
+        "tags",
     }
 
 

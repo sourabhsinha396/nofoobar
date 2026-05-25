@@ -1,3 +1,5 @@
+personal/
+
 # Node / pnpm
 node_modules/
 .pnp

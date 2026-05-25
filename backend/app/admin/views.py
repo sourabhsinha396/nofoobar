@@ -104,6 +104,7 @@ class CourseAdmin(ModelView, model=Course):
         Course.slug,
         Course.title,
         Course.visibility,
+        Course.level,
         Course.price_cents,
         Course.currency,
         Course.org_id,
@@ -114,6 +115,7 @@ class CourseAdmin(ModelView, model=Course):
         Course.slug,
         Course.title,
         Course.visibility,
+        Course.level,
         Course.price_cents,
         Course.created_at,
     ]
@@ -125,6 +127,9 @@ class CourseAdmin(ModelView, model=Course):
         Course.visibility,
         Course.price_cents,
         Course.currency,
+        Course.logo_url,
+        Course.level,
+        Course.tags,
     ]
     name = "Course"
     name_plural = "Courses"
