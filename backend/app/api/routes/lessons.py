@@ -118,6 +118,9 @@ async def create_lesson(
         content_type=payload.content.content_type,
         content=content_dump,
         position=next_position,
+        visibility=payload.visibility,
+        duration_seconds=payload.duration_seconds,
+        is_free_preview=payload.is_free_preview,
     )
     session.add(lesson)
     await session.commit()
@@ -216,6 +219,16 @@ async def update_lesson(
                 "content_type cannot change after creation — delete and recreate the lesson",
             )
         lesson.content = payload.content.model_dump(mode="json", exclude={"content_type"})
+
+    # Following the existing "None means no change" pattern. To clear
+    # duration_seconds explicitly, send 0 and the form layer can treat 0 as null
+    # on the display side — keeps the schema unambiguous without a sentinel.
+    if payload.visibility is not None:
+        lesson.visibility = payload.visibility
+    if payload.duration_seconds is not None:
+        lesson.duration_seconds = payload.duration_seconds
+    if payload.is_free_preview is not None:
+        lesson.is_free_preview = payload.is_free_preview
 
     await session.commit()
     await session.refresh(lesson)

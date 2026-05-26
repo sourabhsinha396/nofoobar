@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { ApiError, apiPatch, apiPost } from "@/lib/api";
 import { tenantPath } from "@/lib/orgs";
 import { EMPTY_TIPTAP_DOC } from "@/lib/tiptap-extensions";
-import type { LessonContentType } from "@/lib/tenant";
+import type { LessonContentType, LessonVisibility } from "@/lib/tenant";
 
 const SLUG_PATTERN = /^[a-z][a-z0-9-]{0,62}$/;
 
@@ -29,6 +29,9 @@ export interface LessonInitialValues {
   title: string;
   content_type: LessonContentType;
   content: Record<string, unknown>;
+  visibility: LessonVisibility;
+  duration_seconds: number | null;
+  is_free_preview: boolean;
 }
 
 interface CreateModeProps {
@@ -94,10 +97,25 @@ export function LessonForm(props: Props) {
       ? initial.content.url
       : "",
   );
-  const [durationSeconds, setDurationSeconds] = useState(
-    initial?.content_type === "video" && typeof initial.content.duration_seconds === "number"
-      ? String(initial.content.duration_seconds)
-      : "",
+  const [durationMinutes, setDurationMinutes] = useState(() => {
+    // Form input is in minutes (creator-friendly). Storage stays in seconds —
+    // see buildDurationSeconds() for the conversion at submit. Read from
+    // top-level Lesson.duration_seconds first; fall back to the legacy JSONB
+    // location for any data that hasn't been migrated yet.
+    const seconds =
+      typeof initial?.duration_seconds === "number"
+        ? initial.duration_seconds
+        : initial?.content_type === "video" &&
+            typeof initial.content.duration_seconds === "number"
+          ? initial.content.duration_seconds
+          : null;
+    return seconds === null ? "" : secondsToMinutesString(seconds);
+  });
+  const [visibility, setVisibility] = useState<LessonVisibility>(
+    initial?.visibility ?? "draft",
+  );
+  const [isFreePreview, setIsFreePreview] = useState<boolean>(
+    initial?.is_free_preview ?? false,
   );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -118,19 +136,19 @@ export function LessonForm(props: Props) {
         setError("Video URL is required.");
         return null;
       }
-      const payload: Record<string, unknown> = { content_type: "video", url: videoUrl.trim() };
-      if (durationSeconds.trim()) {
-        const parsed = Number.parseInt(durationSeconds, 10);
-        if (Number.isNaN(parsed) || parsed < 0) {
-          setError("Duration must be a non-negative integer.");
-          return null;
-        }
-        payload.duration_seconds = parsed;
-      }
-      return payload;
+      // duration_seconds is no longer nested inside content — it lives at the
+      // top of the Lesson row. See buildLessonPayload below.
+      return { content_type: "video", url: videoUrl.trim() };
     }
     // lab/quiz aren't edited via this form yet
     return null;
+  }
+
+  function buildDurationSeconds(): number | null | "INVALID" {
+    if (!durationMinutes.trim()) return null;
+    const minutes = Number.parseFloat(durationMinutes);
+    if (Number.isNaN(minutes) || minutes < 0) return "INVALID";
+    return Math.round(minutes * 60);
   }
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -147,12 +165,27 @@ export function LessonForm(props: Props) {
     const content = buildContent();
     if (!content) return;
 
+    const parsedDuration = buildDurationSeconds();
+    if (parsedDuration === "INVALID") {
+      setError("Duration must be a non-negative integer.");
+      return;
+    }
+
+    const payload = {
+      slug,
+      title,
+      content,
+      visibility,
+      duration_seconds: parsedDuration,
+      is_free_preview: isFreePreview,
+    };
+
     setIsSubmitting(true);
     try {
       if (props.mode === "create") {
         await apiPost<LessonResponse>(
           `/api/v1/courses/${props.courseSlug}/sections/${props.sectionSlug}/lessons`,
-          { slug, title, content },
+          payload,
           { headers: { "X-Tenant-Slug": props.orgSlug } },
         );
         router.push(
@@ -161,7 +194,7 @@ export function LessonForm(props: Props) {
       } else {
         await apiPatch<LessonResponse>(
           `/api/v1/courses/${props.courseSlug}/sections/${props.sectionSlug}/lessons/${props.lessonSlug}`,
-          { slug, title, content },
+          payload,
           { headers: { "X-Tenant-Slug": props.orgSlug } },
         );
         // Slug may have changed — navigate to the new URL.
@@ -290,37 +323,92 @@ export function LessonForm(props: Props) {
           )}
 
           {contentType === "video" && (
-            <>
-              <VideoLessonPicker
-                url={videoUrl}
-                orgSlug={props.orgSlug}
-                onBusyChange={setVideoPickerBusy}
-                onChange={(next) => {
-                  setVideoUrl(next.url);
-                  if (next.durationSeconds !== undefined) {
-                    // Auto-fill from Mux poll, but only if the creator hasn't
-                    // already typed one. Manual entries beat auto-fill.
-                    setDurationSeconds((prev) =>
-                      prev.trim() === "" ? String(next.durationSeconds) : prev,
-                    );
-                  }
-                }}
-              />
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="duration" className="text-sm font-medium">
-                  Duration <span className="text-muted-foreground">(seconds, optional)</span>
-                </Label>
-                <Input
-                  id="duration"
-                  type="number"
-                  min={0}
-                  value={durationSeconds}
-                  onChange={(e) => setDurationSeconds(e.target.value)}
-                  className="h-11 text-base"
-                />
-              </div>
-            </>
+            <VideoLessonPicker
+              url={videoUrl}
+              orgSlug={props.orgSlug}
+              onBusyChange={setVideoPickerBusy}
+              onChange={(next) => {
+                setVideoUrl(next.url);
+                if (next.durationSeconds !== undefined) {
+                  // Auto-fill from Mux poll, but only if the creator hasn't
+                  // already typed one. Manual entries beat auto-fill.
+                  const autofillMinutes = secondsToMinutesString(next.durationSeconds);
+                  setDurationMinutes((prev) => (prev.trim() === "" ? autofillMinutes : prev));
+                }
+              }}
+            />
           )}
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="duration" className="text-sm font-medium">
+              Duration <span className="text-muted-foreground">(minutes, optional)</span>
+            </Label>
+            <Input
+              id="duration"
+              type="number"
+              min={0}
+              step="0.1"
+              value={durationMinutes}
+              onChange={(e) => setDurationMinutes(e.target.value)}
+              className="h-11 text-base"
+              placeholder={
+                contentType === "video"
+                  ? "Auto-filled from upload when available"
+                  : "e.g. 5 for a 5-minute read"
+              }
+            />
+          </div>
+
+          <fieldset className="flex flex-col gap-2">
+            <Label className="text-sm font-medium">Visibility</Label>
+            <div
+              role="radiogroup"
+              aria-label="Visibility"
+              className="inline-flex w-full max-w-sm rounded-lg border border-input p-1"
+            >
+              {(["draft", "published"] as const).map((v) => (
+                <label
+                  key={v}
+                  className={`flex-1 cursor-pointer rounded-md px-3 py-1.5 text-center text-sm transition-colors ${
+                    visibility === v
+                      ? "bg-surface-subtle font-medium text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="visibility"
+                    value={v}
+                    checked={visibility === v}
+                    onChange={() => setVisibility(v)}
+                    className="sr-only"
+                  />
+                  {v === "draft" ? "Draft" : "Published"}
+                </label>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {visibility === "draft"
+                ? "Hidden from learners. Only authors can see this lesson."
+                : "Visible to enrolled learners (and to non-enrolled if Free preview is on)."}
+            </p>
+          </fieldset>
+
+          <label className="flex items-start gap-3 rounded-lg border border-input p-3">
+            <input
+              type="checkbox"
+              checked={isFreePreview}
+              onChange={(e) => setIsFreePreview(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span className="flex flex-col gap-0.5">
+              <span className="text-sm font-medium">Free preview</span>
+              <span className="text-xs text-muted-foreground">
+                On a paid course, lets non-enrolled learners view this lesson as a sample. No
+                effect on free courses.
+              </span>
+            </span>
+          </label>
 
           {error && <p className="text-sm text-red-500">{error}</p>}
           <Button type="submit" disabled={isSubmitting || videoPickerBusy} size="lg">
@@ -338,4 +426,14 @@ export function LessonForm(props: Props) {
       </CardContent>
     </Card>
   );
+}
+
+// Format seconds as a minutes string for the duration input. Round-numbered
+// minutes render without decimals ("5"); non-round (Mux auto-fill on short
+// clips) get up to two decimals ("0.7", "5.08"), preserving precision on
+// round-trip through buildDurationSeconds().
+function secondsToMinutesString(seconds: number): string {
+  if (seconds % 60 === 0) return String(seconds / 60);
+  const minutes = seconds / 60;
+  return minutes.toFixed(2).replace(/\.?0+$/, "");
 }

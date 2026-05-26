@@ -4,6 +4,7 @@ from sqlmodel import select
 
 from app.api.deps import CurrentOrgDep, SessionDep
 from app.db.models.course import Course, CourseVisibility
+from app.db.models.lesson import Lesson, LessonVisibility
 from app.db.models.section import Section
 from app.schemas.course import CourseLanding, CourseSummary
 
@@ -32,7 +33,11 @@ async def get_published_course(
         .where(Course.org_id == org.id)
         .where(Course.slug == slug)
         .where(Course.visibility == CourseVisibility.PUBLISHED)
-        .options(selectinload(Course.sections).selectinload(Section.lessons))
+        .options(
+            selectinload(Course.sections).selectinload(
+                Section.lessons.and_(Lesson.visibility == LessonVisibility.PUBLISHED)
+            )
+        )
     )
     course = result.first()
     if course is None:

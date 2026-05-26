@@ -39,6 +39,9 @@ export default async function EditLessonPage({ params }: Props) {
           title: lesson.title,
           content_type: lesson.content_type,
           content: lesson.content,
+          visibility: lesson.visibility,
+          duration_seconds: lesson.duration_seconds,
+          is_free_preview: lesson.is_free_preview,
         }}
       />
     </main>

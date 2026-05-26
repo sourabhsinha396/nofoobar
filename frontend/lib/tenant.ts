@@ -65,6 +65,8 @@ export interface CourseDetail extends Course {
 
 export type LessonContentType = "article" | "video" | "lab" | "quiz";
 
+export type LessonVisibility = "draft" | "published";
+
 export interface Lesson {
   id: string;
   org_id: string;
@@ -75,6 +77,9 @@ export interface Lesson {
   content_type: LessonContentType;
   content: Record<string, unknown>;
   position: number;
+  visibility: LessonVisibility;
+  duration_seconds: number | null;
+  is_free_preview: boolean;
 }
 
 export interface SectionDetail extends Section {
@@ -99,6 +104,9 @@ export interface PublishedLessonOutline {
   title: string;
   content_type: LessonContentType;
   position: number;
+  visibility: LessonVisibility;
+  duration_seconds: number | null;
+  is_free_preview: boolean;
 }
 
 export interface PublishedSectionOutline {

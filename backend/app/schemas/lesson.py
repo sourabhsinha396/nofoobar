@@ -4,7 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, StringConstraints
 from sqlmodel import SQLModel
 
-from app.db.models.lesson import ContentType
+from app.db.models.lesson import ContentType, LessonVisibility
 from app.schemas.common import Slug
 
 
@@ -59,12 +59,18 @@ class LessonCreate(BaseModel):
     slug: Slug
     title: Annotated[str, StringConstraints(min_length=1, max_length=255)]
     content: LessonContent
+    visibility: LessonVisibility = LessonVisibility.DRAFT
+    duration_seconds: Annotated[int, Field(ge=0)] | None = None
+    is_free_preview: bool = False
 
 
 class LessonUpdate(BaseModel):
     slug: Slug | None = None
     title: Annotated[str, StringConstraints(min_length=1, max_length=255)] | None = None
     content: LessonContent | None = None
+    visibility: LessonVisibility | None = None
+    duration_seconds: Annotated[int, Field(ge=0)] | None = None
+    is_free_preview: bool | None = None
 
 
 class LessonPublic(SQLModel):
@@ -77,6 +83,9 @@ class LessonPublic(SQLModel):
     content_type: ContentType
     content: dict[str, Any]
     position: int
+    visibility: LessonVisibility
+    duration_seconds: int | None = None
+    is_free_preview: bool
 
 
 class LessonOutline(SQLModel):
@@ -85,6 +94,9 @@ class LessonOutline(SQLModel):
     title: str
     content_type: ContentType
     position: int
+    visibility: LessonVisibility
+    duration_seconds: int | None = None
+    is_free_preview: bool
 
 
 class LessonReorderPayload(BaseModel):

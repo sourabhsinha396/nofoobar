@@ -21,6 +21,11 @@ class ContentType(StrEnum):
     QUIZ = "quiz"
 
 
+class LessonVisibility(StrEnum):
+    DRAFT = "draft"
+    PUBLISHED = "published"
+
+
 class Lesson(TimestampedModel, table=True):
     __tablename__ = "lessons"
     __table_args__ = (
@@ -41,6 +46,26 @@ class Lesson(TimestampedModel, table=True):
     )
     content: dict[str, Any] = Field(default_factory=dict, sa_type=JSONB)
     position: int = Field(default=0)
+    # Draft vs published per-lesson. Lets creators publish a course while keeping
+    # individual lessons hidden ("coming next week"). Mirrors Course.visibility.
+    visibility: LessonVisibility = Field(
+        default=LessonVisibility.DRAFT,
+        sa_type=SAEnum(
+            LessonVisibility,
+            name="lesson_visibility",
+            values_callable=lambda enum: [m.value for m in enum],
+        ),
+        sa_column_kwargs={"server_default": LessonVisibility.DRAFT.value},
+    )
+    # Estimated time-to-complete in seconds. Top-level (not nested in content)
+    # so it's queryable for course-total runtime. Auto-populated from Mux for
+    # video lessons; creator-set for articles/labs/quizzes.
+    duration_seconds: int | None = Field(default=None)
+    # On a paid course, free-preview lessons are viewable by non-enrolled
+    # learners as a sample. No effect on free courses (all lessons accessible).
+    is_free_preview: bool = Field(
+        default=False, sa_column_kwargs={"server_default": "false"}
+    )
 
     org: Organization = Relationship()
     section: "Section" = Relationship(back_populates="lessons")

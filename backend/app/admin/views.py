@@ -255,12 +255,20 @@ class LessonAdmin(ModelView, model=Lesson):
         Lesson.slug,
         Lesson.title,
         Lesson.content_type,
+        Lesson.visibility,
+        Lesson.is_free_preview,
+        Lesson.duration_seconds,
         Lesson.section_id,
         Lesson.position,
         Lesson.created_at,
     ]
     column_searchable_list = [Lesson.slug, Lesson.title]
-    column_sortable_list = [Lesson.position, Lesson.slug, Lesson.created_at]
+    column_sortable_list = [
+        Lesson.position,
+        Lesson.slug,
+        Lesson.created_at,
+        Lesson.visibility,
+    ]
     form_columns = [
         Lesson.org_id,
         Lesson.course_id,
@@ -270,6 +278,9 @@ class LessonAdmin(ModelView, model=Lesson):
         Lesson.content_type,
         Lesson.content,
         Lesson.position,
+        Lesson.visibility,
+        Lesson.duration_seconds,
+        Lesson.is_free_preview,
     ]
     name = "Lesson"
     name_plural = "Lessons"

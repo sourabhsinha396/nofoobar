@@ -113,7 +113,16 @@ def test_get_published_course_lesson_outline_omits_content_body(client, mock_ses
     response = client.get("/api/v1/public/courses/intro", headers={"Host": "localhost"})
     lesson = response.json()["sections"][0]["lessons"][0]
     assert "content" not in lesson
-    assert set(lesson.keys()) == {"id", "slug", "title", "content_type", "position"}
+    assert set(lesson.keys()) == {
+        "id",
+        "slug",
+        "title",
+        "content_type",
+        "position",
+        "visibility",
+        "duration_seconds",
+        "is_free_preview",
+    }
 
 
 def test_get_published_course_response_omits_visibility_and_org_id(client, mock_session, fake_org):

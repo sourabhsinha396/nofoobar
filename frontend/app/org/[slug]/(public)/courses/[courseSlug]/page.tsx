@@ -63,15 +63,30 @@ function formatBreakdownEntry(type: LessonContentType, count: number): string {
   return `${count} ${CONTENT_TYPE_PLURALS[type]}`;
 }
 
+function formatDuration(seconds: number): string {
+  if (seconds < 60) return "<1 min";
+  return `${Math.round(seconds / 60)} min`;
+}
+
 function LessonRow({ lesson, href }: { lesson: PublishedLessonOutline; href?: string }) {
   const Icon = CONTENT_TYPE_ICONS[lesson.content_type];
+  // Per-lesson content-type label removed — the icon already communicates
+  // type. Surfacing "ARTICLE" on the public landing made paid courses look
+  // like blogs and depressed enrollment intent.
   const body = (
     <>
       <Icon className="size-4 text-muted-foreground" aria-hidden />
       <span className="flex-1">{lesson.title}</span>
-      <span className="hidden text-xs uppercase tracking-wide text-muted-foreground sm:inline">
-        {CONTENT_TYPE_LABELS[lesson.content_type]}
-      </span>
+      {lesson.is_free_preview && (
+        <span className="hidden rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-500 ring-1 ring-emerald-500/30 sm:inline">
+          Free preview
+        </span>
+      )}
+      {lesson.duration_seconds != null && (
+        <span className="hidden text-xs tabular-nums text-muted-foreground sm:inline">
+          {formatDuration(lesson.duration_seconds)}
+        </span>
+      )}
       {!href && <Lock className="size-3.5 text-muted-foreground" aria-label="Locked" />}
     </>
   );
@@ -254,7 +269,7 @@ export default async function CourseLandingPage({ params, searchParams }: Props)
                 />
               )}
 
-              {totalLessons > 0 && (
+              {/* {totalLessons > 0 && (
                 <div className="border-t pt-5">
                   <p className="text-sm font-medium">This course includes</p>
                   <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
@@ -271,7 +286,7 @@ export default async function CourseLandingPage({ params, searchParams }: Props)
                     })}
                   </ul>
                 </div>
-              )}
+              )} */}
             </div>
           </Card>
         </aside>
@@ -309,7 +324,7 @@ export default async function CourseLandingPage({ params, searchParams }: Props)
                           <LessonRow
                             lesson={lesson}
                             href={
-                              isEnrolled
+                              isEnrolled || lesson.is_free_preview
                                 ? `${lessonHrefPrefix}/${section.slug}/lessons/${lesson.slug}`
                                 : undefined
                             }

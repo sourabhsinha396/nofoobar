@@ -1,6 +1,6 @@
 from app.db.models.course import Course, CourseVisibility
 from app.db.models.enrollment import Enrollment
-from app.db.models.lesson import ContentType, Lesson
+from app.db.models.lesson import ContentType, Lesson, LessonVisibility
 from app.db.models.membership import Role, UserOrgMembership
 from app.db.models.organization import Organization
 from app.db.models.payment_account import OrgPaymentAccount, PaymentProvider
@@ -15,6 +15,7 @@ __all__ = [
     "CourseVisibility",
     "Enrollment",
     "Lesson",
+    "LessonVisibility",
     "OrgPaymentAccount",
     "Organization",
     "PaymentAttempt",

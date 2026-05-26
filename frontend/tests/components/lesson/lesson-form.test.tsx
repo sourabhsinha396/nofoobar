@@ -63,13 +63,19 @@ const ARTICLE_INITIAL = {
   title: "Why async matters",
   content_type: "article" as const,
   content: { body: ARTICLE_BODY },
+  visibility: "draft" as const,
+  duration_seconds: null,
+  is_free_preview: false,
 };
 
 const VIDEO_INITIAL = {
   slug: "install",
   title: "Install Python",
   content_type: "video" as const,
-  content: { url: "https://youtu.be/abc123", duration_seconds: 240 },
+  content: { url: "https://youtu.be/abc123" },
+  visibility: "draft" as const,
+  duration_seconds: 240,
+  is_free_preview: false,
 };
 
 function renderEdit(initial: typeof ARTICLE_INITIAL | typeof VIDEO_INITIAL) {
@@ -98,12 +104,15 @@ describe("LessonForm — edit mode", () => {
   it("pre-populates fields from initial values (video)", () => {
     renderEdit(VIDEO_INITIAL);
     expect(screen.getByLabelText("Video URL")).toHaveValue("https://youtu.be/abc123");
-    expect(screen.getByLabelText(/Duration/)).toHaveValue(240);
+    // 240 seconds → 4 minutes in the input.
+    expect(screen.getByLabelText(/Duration/)).toHaveValue(4);
   });
 
   it("disables content_type radios so users can't switch types", () => {
     renderEdit(ARTICLE_INITIAL);
-    const radios = screen.getAllByRole("radio");
+    // Scope to the content-type radio group only — the form also has a
+    // separate visibility radio group that's editable.
+    const radios = screen.getAllByRole("radio", { name: /article|video/i });
     expect(radios).toHaveLength(2);
     for (const radio of radios) {
       expect(radio).toBeDisabled();
@@ -112,7 +121,7 @@ describe("LessonForm — edit mode", () => {
     expect(articleRadio).toBeChecked();
   });
 
-  it("submits a PATCH with article-shaped content payload (TipTap JSON)", async () => {
+  it("submits a PATCH with the full lesson payload (content + top-level fields)", async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse({ id: "1", slug: "intro" }));
     renderEdit(ARTICLE_INITIAL);
 
@@ -133,11 +142,31 @@ describe("LessonForm — edit mode", () => {
       slug: "intro",
       title: "New title",
       content: { content_type: "article", body: ARTICLE_BODY },
+      visibility: "draft",
+      duration_seconds: null,
+      is_free_preview: false,
     });
     expect(init.headers).toMatchObject({ "X-Tenant-Slug": "demo" });
   });
 
-  it("submits a PATCH with video-shaped content payload (omits empty duration)", async () => {
+  it("sends duration_seconds at the top level (not nested in video content)", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ id: "1", slug: "install" }));
+    renderEdit(VIDEO_INITIAL);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /save changes/i }));
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    // duration_seconds lives at the top of the payload now — content is just url.
+    expect(body.duration_seconds).toBe(240);
+    expect(body.content).toEqual({
+      content_type: "video",
+      url: "https://youtu.be/abc123",
+    });
+    expect(body.content.duration_seconds).toBeUndefined();
+  });
+
+  it("clears duration on submit when the input is emptied", async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse({ id: "1", slug: "install" }));
     renderEdit(VIDEO_INITIAL);
 
@@ -147,11 +176,7 @@ describe("LessonForm — edit mode", () => {
     await user.click(screen.getByRole("button", { name: /save changes/i }));
 
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-    expect(body.content).toEqual({
-      content_type: "video",
-      url: "https://youtu.be/abc123",
-    });
-    expect(body.content.duration_seconds).toBeUndefined();
+    expect(body.duration_seconds).toBeNull();
   });
 
   it("surfaces a 409 slug conflict to the user", async () => {

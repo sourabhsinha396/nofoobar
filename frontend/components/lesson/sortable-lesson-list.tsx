@@ -22,8 +22,10 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { Card } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { ApiError, apiPatch } from "@/lib/api";
-import type { Lesson, LessonContentType } from "@/lib/tenant";
+import type { Lesson, LessonContentType, LessonVisibility } from "@/lib/tenant";
+import { cn } from "@/lib/utils";
 
 interface Props {
   orgSlug: string;
@@ -65,9 +67,58 @@ interface RowProps {
   lesson: Lesson;
   index: number;
   href: string;
+  onToggleVisibility: (lesson: Lesson, next: LessonVisibility) => void;
+  isTogglingVisibility: boolean;
 }
 
-function SortableRow({ lesson, index, href }: RowProps) {
+function VisibilityToggle({
+  visibility,
+  onToggle,
+  disabled,
+}: {
+  visibility: LessonVisibility;
+  onToggle: (next: LessonVisibility) => void;
+  disabled: boolean;
+}) {
+  const isPublished = visibility === "published";
+  // Switch + label inside a bordered cluster — the chrome makes it visually
+  // distinct from the static badges (ARTICLE / FREE PREVIEW) sitting next to
+  // it, so creators read it as an interactive control rather than just another
+  // tag. The whole cluster is a <label> so clicking the text flips the switch.
+  return (
+    <label
+      className={cn(
+        "inline-flex items-center gap-2 rounded-md border border-input bg-card px-2 py-0.5 text-xs font-medium transition-colors",
+        "hover:bg-accent/50",
+        disabled && "cursor-not-allowed opacity-60",
+      )}
+      title={
+        isPublished
+          ? "Switch off to unpublish (hide from learners)"
+          : "Switch on to publish (make visible to learners)"
+      }
+    >
+      <Switch
+        size="sm"
+        checked={isPublished}
+        disabled={disabled}
+        onCheckedChange={(checked) => onToggle(checked ? "published" : "draft")}
+        aria-label={`Lesson visibility, currently ${isPublished ? "published" : "draft"}`}
+      />
+      <span className={isPublished ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}>
+        {isPublished ? "Published" : "Draft"}
+      </span>
+    </label>
+  );
+}
+
+function SortableRow({
+  lesson,
+  index,
+  href,
+  onToggleVisibility,
+  isTogglingVisibility,
+}: RowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: lesson.id });
   const style: React.CSSProperties = {
@@ -92,21 +143,35 @@ function SortableRow({ lesson, index, href }: RowProps) {
           <span className="mt-1 font-mono text-xs text-muted-foreground">
             {String(index + 1).padStart(2, "0")}
           </span>
-          <Link
-            href={href}
-            className="flex-1 transition-colors hover:text-foreground"
-          >
-            <div className="flex items-center gap-2">
-              <p className="font-medium">{lesson.title}</p>
+          {/* Title + badges live side-by-side. Only the title is a Link so the
+              visibility toggle (a <button>) isn't an invalid descendant of <a>. */}
+          <div className="flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href={href}
+                className="font-medium transition-colors hover:text-foreground"
+              >
+                {lesson.title}
+              </Link>
               <span className="inline-flex items-center rounded-full border border-border bg-surface-subtle px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {CONTENT_TYPE_LABELS[lesson.content_type]}
               </span>
+              <VisibilityToggle
+                visibility={lesson.visibility}
+                onToggle={(next) => onToggleVisibility(lesson, next)}
+                disabled={isTogglingVisibility}
+              />
+              {lesson.is_free_preview && (
+                <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide text-emerald-600 ring-1 ring-emerald-500/30 dark:text-emerald-400">
+                  Free preview
+                </span>
+              )}
             </div>
             <p className="text-sm text-muted-foreground">{lesson.slug}</p>
             {preview && (
               <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{preview}</p>
             )}
-          </Link>
+          </div>
         </div>
       </Card>
     </li>
@@ -122,6 +187,7 @@ export function SortableLessonList({
 }: Props) {
   const [lessons, setLessons] = useState(initialLessons);
   const [error, setError] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -154,6 +220,33 @@ export function SortableLessonList({
     }
   }
 
+  async function toggleVisibility(lesson: Lesson, next: LessonVisibility) {
+    if (togglingId) return; // ignore concurrent toggles on the same row
+    const previous = lessons;
+    setLessons((current) =>
+      current.map((l) => (l.id === lesson.id ? { ...l, visibility: next } : l)),
+    );
+    setError(null);
+    setTogglingId(lesson.id);
+
+    try {
+      await apiPatch(
+        `/api/v1/courses/${courseSlug}/sections/${sectionSlug}/lessons/${lesson.slug}`,
+        { visibility: next },
+        { headers: { "X-Tenant-Slug": orgSlug } },
+      );
+    } catch (err) {
+      setLessons(previous);
+      if (err instanceof ApiError && err.status === 403) {
+        setError("Only owners and instructors can change visibility.");
+      } else {
+        setError(err instanceof ApiError ? err.message : "Could not update visibility.");
+      }
+    } finally {
+      setTogglingId(null);
+    }
+  }
+
   return (
     <div className="space-y-3">
       {error && <p className="text-sm text-red-500">{error}</p>}
@@ -174,6 +267,8 @@ export function SortableLessonList({
                 lesson={lesson}
                 index={index}
                 href={`${lessonsPrefix}/${lesson.slug}`}
+                onToggleVisibility={toggleVisibility}
+                isTogglingVisibility={togglingId === lesson.id}
               />
             ))}
           </ol>

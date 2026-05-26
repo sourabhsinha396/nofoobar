@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from app.db.models.lesson import ContentType
+from app.db.models.lesson import ContentType, LessonVisibility
 from app.db.models.membership import Role
 from app.tests.factories.enrollment import EnrollmentFactory
 from app.tests.factories.lesson import LessonFactory, tiptap_doc
@@ -28,9 +28,19 @@ def test_learn_requires_authentication(client, mock_session, fake_org):
 # ---------- access paths ----------
 
 
+def _published_lesson(**overrides):
+    """LessonFactory.build with deterministic visibility/preview so access-path
+    tests don't get tripped by polyfactory's randomness on these fields."""
+    return LessonFactory.build(
+        visibility=LessonVisibility.PUBLISHED,
+        is_free_preview=False,
+        **overrides,
+    )
+
+
 @pytest.mark.parametrize("host", HOSTS)
 def test_enrolled_user_can_view_lesson(client, mock_session, fake_org, authed_user, host):
-    lesson = LessonFactory.build(
+    lesson = _published_lesson(
         org_id=fake_org.id, slug="welcome", title="Welcome", content_type=ContentType.ARTICLE
     )
     enrollment = EnrollmentFactory.build(
@@ -51,19 +61,39 @@ def test_enrolled_user_can_view_lesson(client, mock_session, fake_org, authed_us
 def test_org_member_without_enrollment_can_view_lesson(
     client, mock_session, fake_org, authed_user
 ):
-    lesson = LessonFactory.build(org_id=fake_org.id, slug="welcome")
+    # Published lesson; member but no enrollment → falls through enrollment
+    # lookup (None) to membership lookup (hit).
+    lesson = _published_lesson(org_id=fake_org.id, slug="welcome")
     membership = UserOrgMembershipFactory.build(
         user_id=authed_user.id, org_id=fake_org.id, role=Role.OWNER
     )
-    # exec order: lesson lookup, enrollment lookup (None), membership lookup
     mock_session.exec.side_effect = _exec_results(lesson, None, membership)
 
     response = client.get(LESSON_PATH, headers={"Host": "localhost"})
     assert response.status_code == 200
 
 
+def test_org_member_can_view_draft_lesson(client, mock_session, fake_org, authed_user):
+    # Drafts are author-only. Member access path: lesson is draft, so the
+    # enrollment check is skipped entirely; we go straight to membership.
+    lesson = LessonFactory.build(
+        org_id=fake_org.id,
+        slug="draft-lesson",
+        visibility=LessonVisibility.DRAFT,
+        is_free_preview=False,
+    )
+    membership = UserOrgMembershipFactory.build(
+        user_id=authed_user.id, org_id=fake_org.id, role=Role.OWNER
+    )
+    # exec order for draft path: lesson lookup, membership lookup (no enrollment call).
+    mock_session.exec.side_effect = _exec_results(lesson, membership)
+
+    response = client.get(LESSON_PATH, headers={"Host": "localhost"})
+    assert response.status_code == 200
+
+
 def test_instructor_member_can_view_lesson(client, mock_session, fake_org, authed_user):
-    lesson = LessonFactory.build(org_id=fake_org.id, slug="welcome")
+    lesson = _published_lesson(org_id=fake_org.id, slug="welcome")
     membership = UserOrgMembershipFactory.build(
         user_id=authed_user.id, org_id=fake_org.id, role=Role.INSTRUCTOR
     )
@@ -76,9 +106,44 @@ def test_instructor_member_can_view_lesson(client, mock_session, fake_org, authe
 def test_authed_user_without_enrollment_or_membership_gets_404(
     client, mock_session, fake_org, authed_user
 ):
-    lesson = LessonFactory.build(org_id=fake_org.id, slug="welcome")
+    lesson = _published_lesson(org_id=fake_org.id, slug="welcome")
     # lesson exists; no enrollment; no membership → leak-safe 404
     mock_session.exec.side_effect = _exec_results(lesson, None, None)
+
+    response = client.get(LESSON_PATH, headers={"Host": "localhost"})
+    assert response.status_code == 404
+
+
+def test_free_preview_lesson_accessible_without_enrollment(
+    client, mock_session, fake_org, authed_user
+):
+    # Free-preview lessons skip the enrollment/membership checks entirely —
+    # the gate fires only on the lesson's own attributes (published + preview).
+    lesson = LessonFactory.build(
+        org_id=fake_org.id,
+        slug="welcome",
+        visibility=LessonVisibility.PUBLISHED,
+        is_free_preview=True,
+    )
+    mock_session.exec.side_effect = _exec_results(lesson)
+
+    response = client.get(LESSON_PATH, headers={"Host": "localhost"})
+    assert response.status_code == 200
+    # Only one exec call: the lesson lookup. No enrollment, no membership.
+    assert mock_session.exec.call_count == 1
+
+
+def test_draft_lesson_returns_404_for_non_member(
+    client, mock_session, fake_org, authed_user
+):
+    lesson = LessonFactory.build(
+        org_id=fake_org.id,
+        slug="welcome",
+        visibility=LessonVisibility.DRAFT,
+        is_free_preview=False,
+    )
+    # exec order for draft path: lesson lookup, membership lookup (None).
+    mock_session.exec.side_effect = _exec_results(lesson, None)
 
     response = client.get(LESSON_PATH, headers={"Host": "localhost"})
     assert response.status_code == 404
@@ -127,7 +192,7 @@ def test_lesson_query_filters_by_org_published_and_path_slugs(
 def test_response_includes_full_lesson_content_body(
     client, mock_session, fake_org, authed_user
 ):
-    lesson = LessonFactory.build(
+    lesson = _published_lesson(
         org_id=fake_org.id,
         slug="welcome",
         content_type=ContentType.ARTICLE,
@@ -147,8 +212,8 @@ def test_response_includes_full_lesson_content_body(
 def test_enrolled_user_skips_membership_lookup(
     client, mock_session, fake_org, authed_user
 ):
-    """Enrolled users should short-circuit before the membership query."""
-    lesson = LessonFactory.build(org_id=fake_org.id, slug="welcome")
+    """Enrolled users on a published lesson short-circuit before membership."""
+    lesson = _published_lesson(org_id=fake_org.id, slug="welcome")
     enrollment = EnrollmentFactory.build(
         user_id=authed_user.id, org_id=fake_org.id, course_id=lesson.course_id
     )

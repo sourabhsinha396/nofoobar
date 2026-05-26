@@ -15,6 +15,9 @@ function videoLesson(content: Record<string, unknown>): Lesson {
     content_type: "video",
     content: { content_type: "video", ...content },
     position: 0,
+    visibility: "published",
+    duration_seconds: null,
+    is_free_preview: false,
   };
 }
 

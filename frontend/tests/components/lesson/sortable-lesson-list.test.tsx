@@ -1,8 +1,16 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SortableLessonList } from "@/components/lesson/sortable-lesson-list";
 import type { Lesson } from "@/lib/tenant";
+
+function jsonResponse(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
 
 const LESSONS: Lesson[] = [
   {
@@ -15,6 +23,9 @@ const LESSONS: Lesson[] = [
     content_type: "article",
     content: { body: "FastAPI is a modern web framework for building APIs with Python." },
     position: 0,
+    visibility: "draft",
+    duration_seconds: null,
+    is_free_preview: false,
   },
   {
     id: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
@@ -26,6 +37,9 @@ const LESSONS: Lesson[] = [
     content_type: "video",
     content: { url: "https://youtu.be/abc123" },
     position: 1,
+    visibility: "draft",
+    duration_seconds: null,
+    is_free_preview: false,
   },
   {
     id: "cccccccc-cccc-cccc-cccc-cccccccccccc",
@@ -37,6 +51,9 @@ const LESSONS: Lesson[] = [
     content_type: "quiz",
     content: { questions: [{}, {}, {}] },
     position: 2,
+    visibility: "draft",
+    duration_seconds: null,
+    is_free_preview: false,
   },
 ];
 
@@ -125,5 +142,68 @@ describe("SortableLessonList — smoke", () => {
   it("does not fire any fetch on initial mount", () => {
     renderList();
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("SortableLessonList — visibility toggle", () => {
+  it("renders a switch with the current visibility label for each lesson", () => {
+    renderList();
+    // All seeded lessons are draft (see LESSONS at top); each row has a switch
+    // with an aria-label that includes the current state.
+    const switches = screen.getAllByRole("switch", {
+      name: /lesson visibility, currently draft/i,
+    });
+    expect(switches).toHaveLength(3);
+    expect(
+      screen.queryByRole("switch", { name: /currently published/i }),
+    ).toBeNull();
+  });
+
+  it("PATCHes visibility to 'published' when a draft switch is toggled on", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ id: "x", slug: "welcome" }));
+    renderList();
+
+    const user = userEvent.setup();
+    const welcomeRow = screen.getAllByRole("listitem")[0];
+    const toggle = within(welcomeRow).getByRole("switch", {
+      name: /currently draft/i,
+    });
+    await user.click(toggle);
+
+    expect(fetchMock).toHaveBeenCalledOnce();
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe(
+      "http://localhost:8000/api/v1/courses/intro-fastapi/sections/getting-started/lessons/welcome",
+    );
+    expect(init.method).toBe("PATCH");
+    expect(JSON.parse(init.body)).toEqual({ visibility: "published" });
+    expect(init.headers).toMatchObject({ "X-Tenant-Slug": "demo" });
+
+    // Optimistic update: aria-label flips to "currently published".
+    await waitFor(() => {
+      expect(
+        within(welcomeRow).getByRole("switch", { name: /currently published/i }),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("reverts the switch on PATCH failure and surfaces an error message", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ detail: "Forbidden" }, 403));
+    renderList();
+
+    const user = userEvent.setup();
+    const welcomeRow = screen.getAllByRole("listitem")[0];
+    const toggle = within(welcomeRow).getByRole("switch", {
+      name: /currently draft/i,
+    });
+    await user.click(toggle);
+
+    expect(
+      await screen.findByText(/only owners and instructors/i),
+    ).toBeInTheDocument();
+    // Switch label flips back to draft.
+    expect(
+      within(welcomeRow).getByRole("switch", { name: /currently draft/i }),
+    ).toBeInTheDocument();
   });
 });
