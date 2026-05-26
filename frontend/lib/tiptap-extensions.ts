@@ -1,13 +1,59 @@
+import { Extension } from "@tiptap/core";
+import type { JSONContent } from "@tiptap/core";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import Image from "@tiptap/extension-image";
 import Youtube from "@tiptap/extension-youtube";
-import type { JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { common, createLowlight } from "lowlight";
 
 import { VideoEmbed } from "@/lib/tiptap-video-embed";
 
-// Shared TipTap extensions used by both the client editor and the server-side
-// HTML renderer. Keeping them in one list guarantees the renderer can
-// faithfully serialize anything the editor produces.
+// Shared lowlight instance — loads ~36 common languages (python, ts, js, go,
+// rust, bash, sql, yaml, json, html, css, diff, …). Same instance is used by
+// the editor for live highlighting and by the server-side post-processor in
+// lib/code-highlight.ts so creators and learners see identical output.
+export const lowlight = createLowlight(common);
+
+// Tab inside a codeBlock should indent (insert two spaces) instead of moving
+// focus out of the block — default ProseMirror behavior is unhelpful when
+// you're actually writing code. Shift-Tab dedent is intentionally deferred;
+// add it when creators ask.
+const CodeBlockTabHandling = Extension.create({
+  name: "codeBlockTabHandling",
+  addKeyboardShortcuts() {
+    return {
+      Tab: ({ editor }) => {
+        if (!editor.isActive("codeBlock")) return false;
+        return editor.commands.insertContent("  ");
+      },
+    };
+  },
+});
+
+// CodeBlockLowlight gains a `filename` attribute that round-trips through HTML
+// as `data-filename` (so generateHTML preserves it for the server-rendered
+// view). The NodeView that renders the filename + language picker UI in the
+// editor lives in lib/tiptap-editor-extensions.ts — it imports React and
+// can't ship through this module, which has to stay safe for Server Components.
+export const CodeBlock = CodeBlockLowlight.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      filename: {
+        default: null,
+        parseHTML: (el) => el.getAttribute("data-filename"),
+        renderHTML: (attrs) => {
+          const value = attrs.filename;
+          return value ? { "data-filename": value } : {};
+        },
+      },
+    };
+  },
+});
+
+// Single source of truth for the extension list shape. The editor calls this
+// with a NodeView-enhanced CodeBlock; the SSR renderer uses the plain CodeBlock.
+// This keeps Youtube/Image/VideoEmbed/etc. config identical across both paths.
 //
 // Youtube — nocookie variant (privacy-enhanced; no tracking cookies until the
 // learner hits play). The width/height attributes are still emitted but the
@@ -20,21 +66,29 @@ import { VideoEmbed } from "@/lib/tiptap-video-embed";
 // renders as plain <img>. Image bytes are uploaded to R2 via the backend
 // (POST /uploads/image with category=images), which returns the public URL
 // that we then store in the node's `src`.
-export const TIPTAP_EXTENSIONS = [
-  StarterKit,
-  Youtube.configure({
-    nocookie: true,
-    controls: true,
-    disableKBcontrols: false,
-    autoplay: false,
-    modestBranding: true,
-  }),
-  VideoEmbed,
-  Image.configure({
-    inline: false,
-    allowBase64: false,
-  }),
-];
+export function buildExtensions(codeBlock: typeof CodeBlock = CodeBlock) {
+  return [
+    StarterKit.configure({ codeBlock: false }),
+    codeBlock.configure({ lowlight, HTMLAttributes: { class: "hljs" } }),
+    CodeBlockTabHandling,
+    Youtube.configure({
+      nocookie: true,
+      controls: true,
+      disableKBcontrols: false,
+      autoplay: false,
+      modestBranding: true,
+    }),
+    VideoEmbed,
+    Image.configure({
+      inline: false,
+      allowBase64: false,
+    }),
+  ];
+}
+
+// SSR-safe extension list — what generateHTML (in Server Components) uses.
+// The editor imports EDITOR_TIPTAP_EXTENSIONS from tiptap-editor-extensions.ts.
+export const TIPTAP_EXTENSIONS = buildExtensions();
 
 export const EMPTY_TIPTAP_DOC: JSONContent = {
   type: "doc",

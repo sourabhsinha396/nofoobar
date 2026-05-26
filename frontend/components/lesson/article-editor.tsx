@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { TIPTAP_EXTENSIONS } from "@/lib/tiptap-extensions";
+import { EDITOR_TIPTAP_EXTENSIONS } from "@/lib/tiptap-editor-extensions";
 import { detectVideoProvider } from "@/lib/tiptap-video-embed";
 import {
   UploadCancelledError,
@@ -365,7 +365,7 @@ export function ArticleEditor({ value, onChange, orgSlug, id }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
-    extensions: TIPTAP_EXTENSIONS,
+    extensions: EDITOR_TIPTAP_EXTENSIONS,
     content: value,
     onUpdate: ({ editor }) => {
       onChange(editor.getJSON());
