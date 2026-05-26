@@ -26,7 +26,10 @@ async def current_tenant(org: CurrentOrgDep, session: SessionDep) -> Organizatio
         name=org.name,
         custom_domain=org.custom_domain,
         logo_url=org.logo_url,
-        primary_color=org.primary_color,
         description=org.description,
+        tagline=org.tagline,
+        footer_text=org.footer_text,
+        contact_email=org.contact_email,
+        social_links=org.social_links,
         payment_accounts=payment_accounts,
     )

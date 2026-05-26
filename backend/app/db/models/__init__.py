@@ -3,7 +3,9 @@ from app.db.models.enrollment import Enrollment
 from app.db.models.homepage_block import HomepageBlockType, OrganizationHomepageBlock
 from app.db.models.lesson import ContentType, Lesson, LessonVisibility
 from app.db.models.membership import Role, UserOrgMembership
+from app.db.models.nav_link import NavLinkLocation, OrganizationNavLink
 from app.db.models.organization import Organization
+from app.db.models.page import OrganizationPage, PageKind
 from app.db.models.payment_account import OrgPaymentAccount, PaymentProvider
 from app.db.models.payment_attempt import PaymentAttempt, PaymentStatus
 from app.db.models.section import Section
@@ -18,9 +20,13 @@ __all__ = [
     "HomepageBlockType",
     "Lesson",
     "LessonVisibility",
+    "NavLinkLocation",
     "OrgPaymentAccount",
     "Organization",
     "OrganizationHomepageBlock",
+    "OrganizationNavLink",
+    "OrganizationPage",
+    "PageKind",
     "PaymentAttempt",
     "PaymentProvider",
     "PaymentStatus",

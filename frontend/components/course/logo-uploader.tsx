@@ -18,10 +18,16 @@ interface UploadResponse {
   public_url: string;
 }
 
+// Mirrors backend `app.services.storage.s3.ImagePurpose`. The backend
+// requires this field on every upload — no default — so the bucket path
+// is meaningful (`uploads/images/<purpose>/…`).
+export type ImagePurpose = "organization_logo" | "course_logo" | "tiptap_inline";
+
 export interface LogoUploaderProps {
   orgSlug: string;
   value: string;
   onChange: (url: string) => void;
+  purpose: ImagePurpose;
 }
 
 type Mode = "upload" | "url";
@@ -33,11 +39,13 @@ function postFile(
   url: string,
   file: File,
   orgSlug: string,
+  purpose: ImagePurpose,
   onProgress: (pct: number) => void,
 ): Promise<UploadResponse> {
   return new Promise((resolve, reject) => {
     const form = new FormData();
     form.append("file", file);
+    form.append("purpose", purpose);
 
     const xhr = new XMLHttpRequest();
     xhr.upload.addEventListener("progress", (evt) => {
@@ -71,7 +79,7 @@ function postFile(
   });
 }
 
-export function LogoUploader({ orgSlug, value, onChange }: LogoUploaderProps) {
+export function LogoUploader({ orgSlug, value, onChange, purpose }: LogoUploaderProps) {
   const [mode, setMode] = useState<Mode>("upload");
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -100,6 +108,7 @@ export function LogoUploader({ orgSlug, value, onChange }: LogoUploaderProps) {
         `${API_URL}/api/v1/uploads/image`,
         file,
         orgSlug,
+        purpose,
         setProgress,
       );
       onChange(response.public_url);

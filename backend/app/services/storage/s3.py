@@ -1,10 +1,24 @@
 import asyncio
+from typing import Literal
 from uuid import UUID, uuid4
 
 import boto3
 from botocore.client import Config
 
 from app.core.config import settings
+
+# Domain-meaningful purposes for image uploads. Each value becomes a
+# subdirectory under `uploads/images/`. Routes require callers to declare
+# their purpose explicitly — no defaults — so we never end up with images
+# leaking into a generic "thumbnails" bucket again.
+#
+# Adding a new image use case = add the literal here and reference it from
+# the calling form. Keeps the namespace explicit and grep-able.
+ImagePurpose = Literal[
+    "organization_logo",
+    "course_logo",
+    "tiptap_inline",
+]
 
 # Allowed image upload extensions and their canonical Content-Type. The
 # client claims a filename; we look up the extension here, fail closed on
@@ -54,8 +68,15 @@ def normalize_extension(filename: str) -> str | None:
     return ext if ext in ALLOWED_EXTS else None
 
 
-def build_object_key(category: str, org_id: UUID, ext: str) -> str:
-    return f"uploads/{category}/{org_id}/{uuid4()}.{ext}"
+def build_image_key(purpose: ImagePurpose, org_id: UUID, ext: str) -> str:
+    """Bucket layout: `uploads/images/<purpose>/<org_id>/<uuid>.<ext>`.
+
+    The `uploads/images/` prefix is mandatory so future file types (docs,
+    scripts) get their own siblings (`uploads/docs/…`, `uploads/scripts/…`)
+    without polluting the image namespace. The `<purpose>` segment is
+    semantic — grep `organization_logo` and you find every org-logo upload.
+    """
+    return f"uploads/images/{purpose}/{org_id}/{uuid4()}.{ext}"
 
 
 def _put_object_sync(key: str, body: bytes, content_type: str) -> None:

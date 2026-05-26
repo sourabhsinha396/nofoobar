@@ -1,4 +1,4 @@
-import { CreditCard, LayoutTemplate } from "lucide-react";
+import { CreditCard, FileText, LayoutTemplate, Link2, Settings } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -25,12 +25,24 @@ export default async function TenantAdminDashboard({ params }: Props) {
     notFound();
   }
 
-  const [courses, newCourseHref, coursesPrefix, paymentsHref, homepageHref] = await Promise.all([
+  const [
+    courses,
+    newCourseHref,
+    coursesPrefix,
+    paymentsHref,
+    homepageHref,
+    settingsHref,
+    navLinksHref,
+    pagesHref,
+  ] = await Promise.all([
     getTenantCourses(slug),
     serverTenantPath(slug, "/admin/courses/new"),
     serverTenantPath(slug, "/admin/courses"),
     serverTenantPath(slug, "/admin/payments"),
     serverTenantPath(slug, "/admin/homepage"),
+    serverTenantPath(slug, "/admin/settings"),
+    serverTenantPath(slug, "/admin/nav-links"),
+    serverTenantPath(slug, "/admin/pages"),
   ]);
 
   // Org exists but membership-gated endpoints refused. Almost always: the
@@ -70,7 +82,22 @@ export default async function TenantAdminDashboard({ params }: Props) {
         )}
       </header>
 
-      <Card className="mb-8 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <Card className="mb-4 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-3">
+          <Settings className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+          <div>
+            <p className="font-medium">Brand &amp; contact</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Logo, tagline, footer text, contact email, and social links.
+            </p>
+          </div>
+        </div>
+        <Button asChild variant="outline">
+          <Link href={settingsHref}>Edit settings</Link>
+        </Button>
+      </Card>
+
+      <Card className="mb-4 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
           <LayoutTemplate className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
           <div>
@@ -82,6 +109,36 @@ export default async function TenantAdminDashboard({ params }: Props) {
         </div>
         <Button asChild variant="outline">
           <Link href={homepageHref}>Edit homepage</Link>
+        </Button>
+      </Card>
+
+      <Card className="mb-4 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-3">
+          <Link2 className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+          <div>
+            <p className="font-medium">Navigation links</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Add header and footer links (e.g. About, Blog, Pricing).
+            </p>
+          </div>
+        </div>
+        <Button asChild variant="outline">
+          <Link href={navLinksHref}>Edit links</Link>
+        </Button>
+      </Card>
+
+      <Card className="mb-8 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-3">
+          <FileText className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+          <div>
+            <p className="font-medium">Pages</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Terms, privacy, refund policy, contact, or any custom page.
+            </p>
+          </div>
+        </div>
+        <Button asChild variant="outline">
+          <Link href={pagesHref}>Manage pages</Link>
         </Button>
       </Card>
 

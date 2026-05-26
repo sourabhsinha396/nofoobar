@@ -66,11 +66,11 @@ If you later switch to browser-direct uploads with presigned URLs (see "Switchin
 
 ### 5. Lifecycle policy (optional but recommended)
 
-Uploads use opaque UUID keys (`{org_id}/uploads/{uuid}.{ext}`). When a creator replaces a course logo, the old object becomes an orphan — nothing references it but it still costs storage. R2 storage is cheap, but a lifecycle rule keeps the bucket tidy.
+Uploads use opaque UUID keys under a typed path: `uploads/images/<purpose>/<org_id>/<uuid>.<ext>`. The `<purpose>` segment is one of `organization_logo`, `course_logo`, `tiptap_inline` (see `s3.ImagePurpose`). The leading `uploads/images/` is mandatory so future file types (docs, scripts) get their own sibling namespaces (`uploads/docs/…`, `uploads/scripts/…`) without polluting images. When a creator replaces a logo, the old object becomes an orphan — nothing references it but it still costs storage. R2 storage is cheap, but a lifecycle rule keeps the bucket tidy.
 
 Bucket settings → **Object lifecycle rules** → **Create rule**:
 
-- Prefix: `` (apply to whole bucket) or `*/uploads/` if you ever add non-upload prefixes
+- Prefix: `uploads/` (covers all upload types) or scope to a single type (e.g. `uploads/images/`)
 - Action: **Abort multipart uploads** after 1 day (catches failed uploads)
 
 Hard-deleting orphaned objects is harder — we don't track which URLs are referenced. The cleanup would need a job that joins R2 keys against `courses.logo_url` (and any future image columns) and deletes the difference. Not implemented; flag for the future.
@@ -110,7 +110,7 @@ To switch to MinIO or Backblaze B2: just swap the four other env vars. No code c
 
 - **R2 credentials never leave the backend.** The frontend POSTs the file to FastAPI; only FastAPI has the `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY`. No signing happens in the browser.
 - **Server-side extension validation.** `app/services/storage/s3.ALLOWED_EXTS` is the source of truth. Anything else returns 422 before the bytes touch R2.
-- **Object key is server-picked.** Format: `{org_id}/uploads/{uuid}.{ext}`. The client can't choose its own key (no overwriting another tenant's path, no `../` escapes).
+- **Object key is server-picked.** Format: `uploads/images/<purpose>/<org_id>/<uuid>.<ext>` where `<purpose>` is constrained to a backend `Literal` allowlist. The client picks the `purpose` but cannot choose the `<org_id>` (taken from the authenticated membership) or the `<uuid>` (server-generated). No overwriting another tenant's path, no `../` escapes.
 - **2 MB hard cap.** Enforced server-side on the request body length. Client-side pre-check is a UX nicety, not a security gate.
 - **No server-side anti-virus or image-content validation.** Treat tenant-uploaded images as untrusted bytes; serve them on a separate origin (`S3_PUBLIC_URL_BASE`) so they can't read cookies on your app domain. Cloudflare's default R2 + custom-domain setup does this naturally.
 - **Bucket is enumerable with credentials.** Object keys are random UUIDs, so unauthenticated guessing is impractical, but anyone holding R2 API tokens can list everything. Don't store anything sensitive — these are public images by design.

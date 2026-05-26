@@ -1,5 +1,5 @@
 import logging
-from typing import Annotated, Literal
+from typing import Annotated
 from uuid import uuid4
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
@@ -22,19 +22,15 @@ router = APIRouter(prefix="/uploads", tags=["uploads"])
 # upload anything yet; if/when learner-submitted assets land, widen this.
 _AUTHOR_ROLES = {Role.OWNER, Role.INSTRUCTOR}
 
-# Allowed key prefixes. The literal values double as bucket-path segments
-# (uploads/{category}/{org_id}/{uuid}.{ext}). Add a new value here when a
-# new client wants to write to its own namespace.
-UploadCategory = Literal["thumbnails", "images"]
-
 
 @router.post("/image")
 async def upload_image(
     membership: CurrentMembershipDep,
     file: Annotated[UploadFile, File()],
-    # Default preserves the original course-logo upload path so the existing
-    # LogoUploader keeps working without changes.
-    category: Annotated[UploadCategory, Form()] = "thumbnails",
+    # Required — no default. Callers must declare what the image is for so
+    # the bucket path is meaningful (`uploads/images/<purpose>/…`) rather
+    # than landing in a catchall.
+    purpose: Annotated[s3.ImagePurpose, Form()],
 ) -> ImageUploadResponse:
     if membership.role not in _AUTHOR_ROLES:
         raise HTTPException(
@@ -66,7 +62,7 @@ async def upload_image(
         )
 
     content_type = s3.ALLOWED_EXTS[ext]
-    key = s3.build_object_key(category, membership.org_id, ext)
+    key = s3.build_image_key(purpose, membership.org_id, ext)
     await s3.put_object(key, body, content_type)
 
     return ImageUploadResponse(public_url=s3.public_url_for(key))

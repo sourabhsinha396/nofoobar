@@ -21,24 +21,27 @@ def test_normalize_extension_rejects_extensionless():
     assert s3.normalize_extension("logo") is None
 
 
-def test_build_object_key_uses_category_org_uuid_layout():
+def test_build_image_key_uses_images_purpose_org_uuid_layout():
     org_id = uuid4()
-    key = s3.build_object_key("thumbnails", org_id, "png")
-    assert key.startswith(f"uploads/thumbnails/{org_id}/")
+    key = s3.build_image_key("organization_logo", org_id, "png")
+    assert key.startswith(f"uploads/images/organization_logo/{org_id}/")
     assert key.endswith(".png")
 
 
-def test_build_object_key_unique_per_call():
+def test_build_image_key_unique_per_call():
     org_id = uuid4()
-    keys = {s3.build_object_key("thumbnails", org_id, "png") for _ in range(5)}
+    keys = {s3.build_image_key("course_logo", org_id, "png") for _ in range(5)}
     assert len(keys) == 5
 
 
-def test_build_object_key_supports_other_categories():
+def test_build_image_key_segments_by_purpose():
+    # The `<purpose>` segment is the whole point — different purposes land
+    # in different subdirectories under uploads/images/.
     org_id = uuid4()
-    key = s3.build_object_key("videos", org_id, "mp4")
-    assert key.startswith(f"uploads/videos/{org_id}/")
-    assert key.endswith(".mp4")
+    course = s3.build_image_key("course_logo", org_id, "png")
+    org = s3.build_image_key("organization_logo", org_id, "png")
+    assert "uploads/images/course_logo/" in course
+    assert "uploads/images/organization_logo/" in org
 
 
 def test_public_url_for_strips_trailing_slash_on_base(monkeypatch):

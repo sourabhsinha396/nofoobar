@@ -21,13 +21,28 @@ export interface PaymentAccount {
   key_id: string;
 }
 
+export type SocialPlatform =
+  | "twitter"
+  | "linkedin"
+  | "youtube"
+  | "github"
+  | "website";
+
+export interface SocialLink {
+  platform: SocialPlatform;
+  url: string;
+}
+
 export interface TenantOrg {
   id: string;
   slug: string;
   name: string;
   logo_url: string | null;
-  primary_color: string | null;
   description: string | null;
+  tagline: string | null;
+  footer_text: string | null;
+  contact_email: string | null;
+  social_links: SocialLink[];
   payment_accounts: PaymentAccount[];
 }
 
@@ -130,6 +145,35 @@ export interface Enrollment {
   created_at: string;
   expires_at: string | null;
   course: PublishedCourseSummary;
+}
+
+export type PageKind = "terms" | "privacy" | "refund" | "contact" | "custom";
+
+export interface OrganizationPageSummary {
+  id: string;
+  slug: string;
+  title: string;
+  kind: PageKind;
+  is_published: boolean;
+  show_in_footer: boolean;
+  footer_position: number;
+}
+
+export interface OrganizationPage extends OrganizationPageSummary {
+  org_id: string;
+  body: Record<string, unknown>;
+}
+
+export type NavLinkLocation = "header" | "footer";
+
+export interface NavLink {
+  id: string;
+  location: NavLinkLocation;
+  label: string;
+  href: string;
+  open_in_new_tab: boolean;
+  position: number;
+  is_enabled: boolean;
 }
 
 export type HomepageBlockType =
@@ -325,6 +369,118 @@ export async function getHomepageBlocks(slug: string): Promise<HomepageBlock[] |
       return null;
     }
     return (await response.json()) as HomepageBlock[];
+  } catch {
+    return null;
+  }
+}
+
+export async function getPublishedPages(
+  slug: string,
+): Promise<OrganizationPageSummary[]> {
+  // Footer composition + page-exists checks pull from this. A fetch failure
+  // shouldn't take down the surrounding layout, so any error returns [].
+  try {
+    const response = await fetch(`${API_URL}/api/v1/public/pages`, {
+      headers: await tenantHeaders(slug),
+      cache: "no-store",
+    });
+    if (!response.ok) return [];
+    return (await response.json()) as OrganizationPageSummary[];
+  } catch {
+    return [];
+  }
+}
+
+export async function getPublishedPage(
+  orgSlug: string,
+  pageSlug: string,
+): Promise<OrganizationPage | null> {
+  try {
+    const response = await fetch(
+      `${API_URL}/api/v1/public/pages/${pageSlug}`,
+      {
+        headers: await tenantHeaders(orgSlug),
+        cache: "no-store",
+      },
+    );
+    if (!response.ok) return null;
+    return (await response.json()) as OrganizationPage;
+  } catch {
+    return null;
+  }
+}
+
+export async function getAdminPages(
+  slug: string,
+): Promise<OrganizationPageSummary[] | null> {
+  try {
+    const response = await fetch(`${API_URL}/api/v1/admin/pages`, {
+      headers: await tenantHeaders(slug),
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
+    return (await response.json()) as OrganizationPageSummary[];
+  } catch {
+    return null;
+  }
+}
+
+export async function getAdminPage(
+  orgSlug: string,
+  pageSlug: string,
+): Promise<OrganizationPage | null> {
+  try {
+    const response = await fetch(`${API_URL}/api/v1/admin/pages/${pageSlug}`, {
+      headers: await tenantHeaders(orgSlug),
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
+    return (await response.json()) as OrganizationPage;
+  } catch {
+    return null;
+  }
+}
+
+export async function getNavLinks(
+  slug: string,
+  location: NavLinkLocation,
+): Promise<NavLink[]> {
+  // Public read: a fetch failure here shouldn't take down the whole navbar.
+  // Treat any error as "no links" rather than null — the navbar always
+  // renders, just without tenant-added items.
+  try {
+    const response = await fetch(
+      `${API_URL}/api/v1/public/nav-links?location=${location}`,
+      {
+        headers: await tenantHeaders(slug),
+        cache: "no-store",
+      },
+    );
+    if (!response.ok) {
+      return [];
+    }
+    return (await response.json()) as NavLink[];
+  } catch {
+    return [];
+  }
+}
+
+export async function getAdminNavLinks(
+  slug: string,
+  location: NavLinkLocation,
+): Promise<NavLink[] | null> {
+  try {
+    const response = await fetch(
+      `${API_URL}/api/v1/admin/nav-links?location=${location}`,
+      {
+        headers: await tenantHeaders(slug),
+        cache: "no-store",
+      },
+    );
+    if (!response.ok) {
+      return null;
+    }
+    return (await response.json()) as NavLink[];
   } catch {
     return null;
   }

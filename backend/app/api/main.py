@@ -9,10 +9,14 @@ from app.api.routes import (
     learn,
     lessons,
     me,
+    nav_links,
     orgs,
+    pages,
     payments,
     public_courses,
     public_homepage,
+    public_nav_links,
+    public_pages,
     sections,
     tenant,
     uploads,
@@ -31,6 +35,10 @@ api_router.include_router(lessons.router)
 api_router.include_router(public_courses.router)
 api_router.include_router(public_homepage.router)
 api_router.include_router(homepage.router)
+api_router.include_router(public_nav_links.router)
+api_router.include_router(nav_links.router)
+api_router.include_router(public_pages.router)
+api_router.include_router(pages.router)
 api_router.include_router(enrollments.router)
 api_router.include_router(learn.router)
 api_router.include_router(payments.router)

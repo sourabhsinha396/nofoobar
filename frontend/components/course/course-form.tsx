@@ -280,6 +280,7 @@ export function CourseForm(props: Props) {
             orgSlug={props.orgSlug}
             value={logoUrl}
             onChange={setLogoUrl}
+            purpose="course_logo"
           />
           <div className="flex flex-col gap-2 sm:max-w-[200px]">
             <Label htmlFor="level" className="text-sm font-medium">

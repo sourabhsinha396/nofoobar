@@ -8,7 +8,6 @@ export interface OrgSummary {
   slug: string;
   name: string;
   logo_url: string | null;
-  primary_color: string | null;
   description: string | null;
 }
 

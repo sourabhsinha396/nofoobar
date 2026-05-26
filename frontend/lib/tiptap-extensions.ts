@@ -85,8 +85,8 @@ function parseLineList(value: string | null): number[] {
 //
 // Image — official extension. Stored as a TipTap node with `src/alt/title`;
 // renders as plain <img>. Image bytes are uploaded to R2 via the backend
-// (POST /uploads/image with category=images), which returns the public URL
-// that we then store in the node's `src`.
+// (POST /uploads/image with purpose=tiptap_inline), which returns the public
+// URL that we then store in the node's `src`.
 export function buildExtensions(codeBlock: typeof CodeBlock = CodeBlock) {
   return [
     StarterKit.configure({ codeBlock: false }),

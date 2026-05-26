@@ -39,7 +39,7 @@ interface ImageUploadResponse {
 async function uploadImage(file: File, orgSlug: string): Promise<ImageUploadResponse> {
   const form = new FormData();
   form.append("file", file);
-  form.append("category", "images");
+  form.append("purpose", "tiptap_inline");
 
   const response = await fetch(`${API_URL}/api/v1/uploads/image`, {
     method: "POST",
