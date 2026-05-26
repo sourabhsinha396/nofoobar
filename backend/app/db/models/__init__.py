@@ -7,6 +7,7 @@ from app.db.models.payment_account import OrgPaymentAccount, PaymentProvider
 from app.db.models.payment_attempt import PaymentAttempt, PaymentStatus
 from app.db.models.section import Section
 from app.db.models.user import User
+from app.db.models.video_asset import VideoAsset, VideoAssetStatus, VideoProviderName
 
 __all__ = [
     "ContentType",
@@ -23,4 +24,7 @@ __all__ = [
     "Section",
     "User",
     "UserOrgMembership",
+    "VideoAsset",
+    "VideoAssetStatus",
+    "VideoProviderName",
 ]

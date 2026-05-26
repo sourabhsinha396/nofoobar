@@ -53,6 +53,29 @@ export function detectVideoProvider(url: string): DetectedVideo | null {
   return null;
 }
 
+// Normalise common YouTube URL shapes (watch?v=, youtu.be/, /shorts/, /embed/)
+// to the privacy-enhanced no-cookie embed form. Returns null if the URL isn't
+// a recognisable YouTube link. Used by lesson renderers and the upload-picker
+// preview to render YouTube in the same nocookie iframe @tiptap/extension-youtube
+// produces inside the article editor.
+export function youtubeEmbedSrc(url: string): string | null {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return null;
+  }
+  let id: string | null = null;
+  if (parsed.hostname === "youtu.be") {
+    id = parsed.pathname.slice(1) || null;
+  } else if (parsed.hostname.endsWith("youtube.com")) {
+    if (parsed.pathname === "/watch") id = parsed.searchParams.get("v");
+    else if (parsed.pathname.startsWith("/embed/")) id = parsed.pathname.slice("/embed/".length);
+    else if (parsed.pathname.startsWith("/shorts/")) id = parsed.pathname.slice("/shorts/".length);
+  }
+  return id ? `https://www.youtube-nocookie.com/embed/${id}` : null;
+}
+
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     videoEmbed: {

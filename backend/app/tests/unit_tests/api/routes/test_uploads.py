@@ -1,6 +1,10 @@
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
 
 from app.db.models.membership import Role
+from app.db.models.video_asset import VideoAsset, VideoAssetStatus, VideoProviderName
+from app.services.video.base import UploadHandle, VideoProviderAPIError
 
 HOSTS = ["localhost", "acme.algoholic.app"]
 
@@ -135,6 +139,87 @@ def test_upload_503_when_storage_not_configured(client, fake_membership, monkeyp
         headers={"Host": "localhost"},
     )
     assert response.status_code == 503
+
+
+# ---------- POST /uploads/video ----------
+
+
+@pytest.fixture
+def configured_mux(monkeypatch):
+    monkeypatch.setattr("app.services.video.mux_provider.settings.MUX_TOKEN_ID", "test_token_id")
+    monkeypatch.setattr(
+        "app.services.video.mux_provider.settings.MUX_TOKEN_SECRET", "test_token_secret"
+    )
+
+
+@pytest.fixture
+def fake_video_provider(monkeypatch):
+    """Replace get_provider() in the uploads route so create_upload is in-memory."""
+    fake = MagicMock()
+    fake.create_upload = AsyncMock(
+        return_value=UploadHandle(
+            upload_url="https://storage.googleapis.com/signed",
+            provider_upload_ref="upload_xyz",
+        )
+    )
+    monkeypatch.setattr("app.api.routes.uploads.get_provider", lambda name: fake)
+    return fake
+
+
+def test_video_upload_happy_path(
+    client, fake_membership, configured_mux, fake_video_provider, mock_session
+):
+    response = client.post("/api/v1/uploads/video", headers={"Host": "localhost"})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["upload_url"] == "https://storage.googleapis.com/signed"
+    assert body["provider"] == "mux"
+    assert "video_asset_id" in body
+
+    # create_upload was called with the same id we returned to the client.
+    create_call = fake_video_provider.create_upload.await_args
+    assert str(create_call.kwargs["video_asset_id"]) == body["video_asset_id"]
+    assert create_call.kwargs["org_id"] == fake_membership.org_id
+
+    # The DB row carries the upload ref from the provider.
+    added = [c.args[0] for c in mock_session.add.call_args_list]
+    persisted = [a for a in added if isinstance(a, VideoAsset)]
+    assert len(persisted) == 1
+    assert persisted[0].provider is VideoProviderName.MUX
+    assert persisted[0].provider_upload_ref == "upload_xyz"
+    assert persisted[0].status is VideoAssetStatus.PENDING
+    assert persisted[0].org_id == fake_membership.org_id
+
+
+def test_video_upload_requires_authentication(client, mock_session, configured_mux):
+    response = client.post("/api/v1/uploads/video", headers={"Host": "localhost"})
+    assert response.status_code == 401
+
+
+def test_video_upload_rejects_students(client, fake_membership, configured_mux):
+    fake_membership.role = Role.STUDENT
+    response = client.post("/api/v1/uploads/video", headers={"Host": "localhost"})
+    assert response.status_code == 403
+
+
+def test_video_upload_503_when_mux_not_configured(client, fake_membership, monkeypatch):
+    monkeypatch.setattr("app.services.video.mux_provider.settings.MUX_TOKEN_ID", "")
+    response = client.post("/api/v1/uploads/video", headers={"Host": "localhost"})
+    assert response.status_code == 503
+
+
+def test_video_upload_502_when_provider_errors(
+    client, fake_membership, configured_mux, monkeypatch, mock_session
+):
+    fake = MagicMock()
+    fake.create_upload = AsyncMock(side_effect=VideoProviderAPIError("Mux is down"))
+    monkeypatch.setattr("app.api.routes.uploads.get_provider", lambda name: fake)
+
+    response = client.post("/api/v1/uploads/video", headers={"Host": "localhost"})
+    assert response.status_code == 502
+
+
+# ---------- existing image upload tests below ----------
 
 
 def test_upload_accepts_jpeg_jpg_gif(client, fake_membership, configured_s3):

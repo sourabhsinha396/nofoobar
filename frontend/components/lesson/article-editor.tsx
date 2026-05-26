@@ -1,7 +1,7 @@
 "use client";
 
 import { EditorContent, useEditor, type Editor, type JSONContent } from "@tiptap/react";
-import { Bold, Code2, Heading1, ImagePlus, Italic, List, Play } from "lucide-react";
+import { Bold, Code2, Heading1, ImagePlus, Italic, List, Loader2, Play, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,14 @@ import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { TIPTAP_EXTENSIONS } from "@/lib/tiptap-extensions";
 import { detectVideoProvider } from "@/lib/tiptap-video-embed";
+import {
+  UploadCancelledError,
+  VideoPollError,
+  buildPlaybackUrl,
+  initiateVideoUpload,
+  pollVideoAsset,
+  uploadVideoBytes,
+} from "@/lib/video-upload";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const IMAGE_MAX_BYTES = 2 * 1024 * 1024;
@@ -143,18 +151,28 @@ interface VideoDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onInsert: (detected: NonNullable<ReturnType<typeof detectVideoProvider>>) => void;
+  orgSlug: string;
 }
 
-function VideoDialog({ open, onOpenChange, onInsert }: VideoDialogProps) {
+type UploadPhase = "idle" | "uploading" | "processing";
+
+function VideoDialog({ open, onOpenChange, onInsert, orgSlug }: VideoDialogProps) {
   const [url, setUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [phase, setPhase] = useState<UploadPhase>("idle");
+  const [fileName, setFileName] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   function reset() {
     setUrl("");
     setError(null);
+    setPhase("idle");
+    setFileName(null);
+    abortRef.current = null;
   }
 
-  function submit(event: React.FormEvent) {
+  function submitUrl(event: React.FormEvent) {
     event.preventDefault();
     // React Portal gotcha: even though Radix moves the dialog DOM to body,
     // React synthetic events still bubble through the React component
@@ -174,48 +192,170 @@ function VideoDialog({ open, onOpenChange, onInsert }: VideoDialogProps) {
     onOpenChange(false);
   }
 
+  async function handleFile(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setError(null);
+    setFileName(file.name);
+    setPhase("uploading");
+    const abort = new AbortController();
+    abortRef.current = abort;
+
+    try {
+      const init = await initiateVideoUpload(orgSlug);
+      await uploadVideoBytes(init.upload_url, file, abort.signal);
+
+      setPhase("processing");
+      const state = await pollVideoAsset(orgSlug, init.video_asset_id, {
+        signal: abort.signal,
+      });
+
+      if (!state.playback_ref) {
+        throw new Error("Video processed but no playback URL was returned.");
+      }
+
+      onInsert({
+        provider: "mux",
+        src: buildPlaybackUrl(state.provider, state.playback_ref),
+      });
+      reset();
+      onOpenChange(false);
+    } catch (err) {
+      if (err instanceof UploadCancelledError) {
+        reset();
+        return;
+      }
+      setError(friendlyVideoError(err));
+      setPhase("idle");
+      setFileName(null);
+    } finally {
+      abortRef.current = null;
+    }
+  }
+
+  function cancelUpload() {
+    abortRef.current?.abort();
+  }
+
+  function handleOpenChange(next: boolean) {
+    if (!next) {
+      // Closing the dialog cancels any in-flight upload. The provider gets
+      // a stranded asset; the backend's pending-stuck sweeper handles cleanup.
+      abortRef.current?.abort();
+      reset();
+    }
+    onOpenChange(next);
+  }
+
+  const isBusy = phase !== "idle";
+
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        if (!next) reset();
-        onOpenChange(next);
-      }}
-    >
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Embed video</DialogTitle>
+          <DialogTitle>Add video</DialogTitle>
           <DialogDescription>
-            Paste a YouTube, Vimeo, Loom, or Mux link, or a direct .mp4/.webm URL.
-            YouTube embeds use the privacy-enhanced (no-cookie) variant.
+            Upload a video file, or paste a YouTube, Vimeo, Loom, Mux, or direct .mp4/.webm URL.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={submit} className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="video-url">URL</Label>
-            <Input
-              id="video-url"
-              type="url"
-              placeholder="https://www.youtube.com/watch?v=… or https://vimeo.com/… or https://player.mux.com/… or https://…/video.mp4"
-              value={url}
-              onChange={(e) => {
-                setUrl(e.target.value);
-                if (error) setError(null);
-              }}
-              autoFocus
-            />
-            {error && <p className="text-sm text-red-500">{error}</p>}
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+
+        {phase === "idle" ? (
+          <div className="flex flex-col gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              className="h-20 flex-col gap-1"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="size-5" />
+              <span>Upload a video file</span>
             </Button>
-            <Button type="submit">Insert</Button>
-          </DialogFooter>
-        </form>
+
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="h-px flex-1 bg-border" />
+              <span>or paste a URL</span>
+              <span className="h-px flex-1 bg-border" />
+            </div>
+
+            <form onSubmit={submitUrl} className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="video-url" className="sr-only">
+                  URL
+                </Label>
+                <Input
+                  id="video-url"
+                  type="url"
+                  placeholder="https://www.youtube.com/watch?v=… or https://player.mux.com/…"
+                  value={url}
+                  onChange={(e) => {
+                    setUrl(e.target.value);
+                    if (error) setError(null);
+                  }}
+                  autoFocus
+                />
+                {error && <p className="text-sm text-red-500">{error}</p>}
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit">Insert</Button>
+              </DialogFooter>
+            </form>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-3 rounded-md border border-input bg-muted/40 p-3">
+              <Loader2 className="size-5 animate-spin text-muted-foreground" aria-hidden />
+              <div className="flex flex-col text-sm">
+                <span className="font-medium">
+                  {phase === "uploading" ? "Uploading…" : "Processing video…"}
+                </span>
+                {fileName && <span className="text-xs text-muted-foreground">{fileName}</span>}
+                {phase === "processing" && (
+                  <span className="text-xs text-muted-foreground">
+                    This usually takes under a minute.
+                  </span>
+                )}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={cancelUpload}>
+                Cancel upload
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="video/*"
+          className="sr-only"
+          onChange={handleFile}
+          disabled={isBusy}
+        />
       </DialogContent>
     </Dialog>
   );
+}
+
+function friendlyVideoError(err: unknown): string {
+  if (err instanceof ApiError) {
+    if (err.status === 503) return "Video uploads aren't configured on this instance.";
+    if (err.status === 403) return "Only owners and instructors can upload videos.";
+    if (err.status === 502) return "Video provider is unavailable. Try again in a moment.";
+    if (err.status === 401) return "Your session expired. Sign in and try again.";
+    return err.message;
+  }
+  if (err instanceof VideoPollError) {
+    if (err.state?.status === "errored")
+      return "Video processing failed. Try a different file or format.";
+    return err.message;
+  }
+  return err instanceof Error ? err.message : "Upload failed.";
 }
 
 export function ArticleEditor({ value, onChange, orgSlug, id }: Props) {
@@ -326,7 +466,12 @@ export function ArticleEditor({ value, onChange, orgSlug, id }: Props) {
       {imageError && (
         <p className="border-t border-input px-3 py-2 text-sm text-red-500">{imageError}</p>
       )}
-      <VideoDialog open={videoOpen} onOpenChange={setVideoOpen} onInsert={insertVideo} />
+      <VideoDialog
+        open={videoOpen}
+        onOpenChange={setVideoOpen}
+        onInsert={insertVideo}
+        orgSlug={orgSlug}
+      />
     </div>
   );
 }

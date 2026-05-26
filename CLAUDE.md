@@ -5,7 +5,7 @@ Open-source, multi-tenant learning management system for course creators. Long-t
 ## Repo layout
 
 - `frontend/` — Next.js 16 (App Router) marketing site and (eventually) tenant UI. See `frontend/AGENTS.md` for Next.js 16 caveats.
-- `backend/` — FastAPI + SQLModel + Postgres. **Not yet scaffolded.**
+- `backend/` — FastAPI + SQLModel + Postgres + Alembic + uv. Domain model covers orgs, users, memberships, courses, sections, lessons, enrollments, payments. Adapter modules under `app/services/` (e.g. `payments/`, `storage/`) are the established pattern for pluggable providers. See `backend/README.md` for the docker-compose dev loop.
 - `docs/` — architecture, backend, frontend, devops notes. See `docs/README.md`.
 - `interactive_labs/` — **lives in a separate repo (Django service).** Algoholic embeds labs through that service's `/api/embed/sessions` API. Don't reimplement labs here.
 

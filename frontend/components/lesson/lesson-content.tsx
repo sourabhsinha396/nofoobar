@@ -3,35 +3,71 @@ import type { JSONContent } from "@tiptap/react";
 import { ArticleRenderer } from "@/components/lesson/article-renderer";
 import { Card } from "@/components/ui/card";
 import type { Lesson } from "@/lib/tenant";
+import { detectVideoProvider, youtubeEmbedSrc } from "@/lib/tiptap-video-embed";
 
 interface Props {
   lesson: Lesson;
 }
 
-// Extract a YouTube video ID from common URL shapes; returns null otherwise so
-// we fall back to a generic link instead of embedding something unsupported.
-function youtubeId(url: string): string | null {
-  try {
-    const parsed = new URL(url);
-    if (parsed.hostname === "youtu.be") {
-      return parsed.pathname.slice(1) || null;
-    }
-    if (parsed.hostname.endsWith("youtube.com")) {
-      if (parsed.pathname === "/watch") {
-        return parsed.searchParams.get("v");
-      }
-      if (parsed.pathname.startsWith("/embed/")) {
-        return parsed.pathname.slice("/embed/".length);
-      }
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
 function isJsonContent(value: unknown): value is JSONContent {
   return typeof value === "object" && value !== null && "type" in value;
+}
+
+function VideoLessonPlayer({ url, title }: { url: string; title: string }) {
+  // YouTube: normalize to the privacy-enhanced (nocookie) embed, matching the
+  // article-editor's @tiptap/extension-youtube variant noted in CLAUDE.md.
+  const ytEmbed = youtubeEmbedSrc(url);
+  if (ytEmbed) {
+    return (
+      <div data-youtube-video>
+        <iframe
+          src={ytEmbed}
+          title={title}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+
+  const detected = detectVideoProvider(url);
+  if (!detected) {
+    return (
+      <Card className="p-6">
+        <p className="text-sm text-muted-foreground">Video URL:</p>
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-2 break-all font-mono text-sm hover:underline"
+        >
+          {url}
+        </a>
+      </Card>
+    );
+  }
+
+  // Native HTML5 video for direct .mp4/.webm/.ogg/.mov links.
+  if (detected.provider === "native") {
+    return (
+      <div data-video-embed="native">
+        <video src={detected.src} title={title} controls preload="metadata" playsInline />
+      </div>
+    );
+  }
+
+  // Iframe providers (vimeo, loom, mux). Same data attribute + CSS path as the
+  // tiptap VideoEmbed node, so the 16:9 wrapper in globals.css applies.
+  return (
+    <div data-video-embed={detected.provider}>
+      <iframe
+        src={detected.src}
+        title={title}
+        allow="autoplay; fullscreen; picture-in-picture"
+        allowFullScreen
+      />
+    </div>
+  );
 }
 
 export function LessonContent({ lesson }: Props) {
@@ -49,33 +85,7 @@ export function LessonContent({ lesson }: Props) {
 
   if (lesson.content_type === "video") {
     const url = typeof lesson.content.url === "string" ? lesson.content.url : "";
-    const ytId = youtubeId(url);
-    if (ytId) {
-      return (
-        <div className="aspect-video w-full overflow-hidden rounded-lg border border-border bg-black">
-          <iframe
-            src={`https://www.youtube.com/embed/${ytId}`}
-            title={lesson.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-            className="h-full w-full"
-          />
-        </div>
-      );
-    }
-    return (
-      <Card className="p-6">
-        <p className="text-sm text-muted-foreground">Video URL:</p>
-        <a
-          href={url}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-2 break-all font-mono text-sm hover:underline"
-        >
-          {url}
-        </a>
-      </Card>
-    );
+    return <VideoLessonPlayer url={url} title={lesson.title} />;
   }
 
   return (

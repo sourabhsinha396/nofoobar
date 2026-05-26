@@ -94,7 +94,7 @@ export function LessonView({
             maxSize={CONTENT_MAX}
           >
             <div className="h-full overflow-y-auto">
-              <div className="mx-auto w-full max-w-6xl px-6 py-12 md:py-16">
+              <div className="mx-auto w-full max-w-7xl px-6 py-12 md:py-16">
                 {children}
               </div>
             </div>

@@ -12,6 +12,7 @@ from app.admin.views import (
     SectionAdmin,
     UserAdmin,
     UserOrgMembershipAdmin,
+    VideoAssetAdmin,
 )
 from app.core.config import settings
 from app.db.db import async_engine
@@ -33,3 +34,4 @@ def register_admin(app: FastAPI) -> None:
     admin.add_view(LessonAdmin)
     admin.add_view(EnrollmentAdmin)
     admin.add_view(PaymentAttemptAdmin)
+    admin.add_view(VideoAssetAdmin)

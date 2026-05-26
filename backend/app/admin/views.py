@@ -9,6 +9,7 @@ from app.db.models.payment_account import OrgPaymentAccount
 from app.db.models.payment_attempt import PaymentAttempt
 from app.db.models.section import Section
 from app.db.models.user import User
+from app.db.models.video_asset import VideoAsset
 
 
 class OrganizationAdmin(ModelView, model=Organization):
@@ -214,6 +215,37 @@ class EnrollmentAdmin(ModelView, model=Enrollment):
     icon = "fa-solid fa-user-check"
     can_create = True
     can_edit = True
+    can_delete = True
+
+
+class VideoAssetAdmin(ModelView, model=VideoAsset):
+    # Read-only audit view. Rows are created by the upload route and updated
+    # by the polling endpoint that pulls from the provider; hand-editing
+    # state would desync the DB from Mux. Delete is allowed for stuck
+    # cleanup until the sweeper job ships.
+    column_list = [
+        VideoAsset.id,
+        VideoAsset.org_id,
+        VideoAsset.provider,
+        VideoAsset.status,
+        VideoAsset.provider_asset_ref,
+        VideoAsset.duration_seconds,
+        VideoAsset.max_resolution_height,
+        VideoAsset.ready_at,
+        VideoAsset.created_at,
+    ]
+    column_searchable_list = [VideoAsset.provider_asset_ref, VideoAsset.provider_upload_ref]
+    column_sortable_list = [
+        VideoAsset.created_at,
+        VideoAsset.ready_at,
+        VideoAsset.status,
+        VideoAsset.provider,
+    ]
+    name = "Video asset"
+    name_plural = "Video assets"
+    icon = "fa-solid fa-video"
+    can_create = False
+    can_edit = False
     can_delete = True
 
 

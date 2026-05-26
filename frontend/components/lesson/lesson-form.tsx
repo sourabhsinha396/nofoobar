@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { ArticleEditor } from "@/components/lesson/article-editor";
+import { VideoLessonPicker } from "@/components/lesson/video-lesson-picker";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -100,6 +101,7 @@ export function LessonForm(props: Props) {
   );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [videoPickerBusy, setVideoPickerBusy] = useState(false);
 
   const slugLooksValid = slug === "" || SLUG_PATTERN.test(slug);
 
@@ -289,20 +291,21 @@ export function LessonForm(props: Props) {
 
           {contentType === "video" && (
             <>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="video_url" className="text-sm font-medium">
-                  Video URL
-                </Label>
-                <Input
-                  id="video_url"
-                  type="url"
-                  required
-                  value={videoUrl}
-                  onChange={(e) => setVideoUrl(e.target.value)}
-                  className="h-11 text-base"
-                  placeholder="https://..."
-                />
-              </div>
+              <VideoLessonPicker
+                url={videoUrl}
+                orgSlug={props.orgSlug}
+                onBusyChange={setVideoPickerBusy}
+                onChange={(next) => {
+                  setVideoUrl(next.url);
+                  if (next.durationSeconds !== undefined) {
+                    // Auto-fill from Mux poll, but only if the creator hasn't
+                    // already typed one. Manual entries beat auto-fill.
+                    setDurationSeconds((prev) =>
+                      prev.trim() === "" ? String(next.durationSeconds) : prev,
+                    );
+                  }
+                }}
+              />
               <div className="flex flex-col gap-2">
                 <Label htmlFor="duration" className="text-sm font-medium">
                   Duration <span className="text-muted-foreground">(seconds, optional)</span>
@@ -320,14 +323,16 @@ export function LessonForm(props: Props) {
           )}
 
           {error && <p className="text-sm text-red-500">{error}</p>}
-          <Button type="submit" disabled={isSubmitting} size="lg">
-            {isSubmitting
-              ? props.mode === "create"
-                ? "Creating..."
-                : "Saving..."
-              : props.mode === "create"
-                ? "Create lesson"
-                : "Save changes"}
+          <Button type="submit" disabled={isSubmitting || videoPickerBusy} size="lg">
+            {videoPickerBusy
+              ? "Wait for upload to finish…"
+              : isSubmitting
+                ? props.mode === "create"
+                  ? "Creating..."
+                  : "Saving..."
+                : props.mode === "create"
+                  ? "Create lesson"
+                  : "Save changes"}
           </Button>
         </form>
       </CardContent>

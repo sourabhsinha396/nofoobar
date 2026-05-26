@@ -19,6 +19,7 @@ dependencies = [
     "cryptography>=44",
     "razorpay>=1.4",
     "boto3>=1.43.14",
+    "httpx>=0.27",
 ]
 
 [dependency-groups]

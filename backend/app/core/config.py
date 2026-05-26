@@ -53,6 +53,12 @@ class Settings(BaseSettings):
     # DB is built as {S3_PUBLIC_URL_BASE}/{object-key}.
     S3_PUBLIC_URL_BASE: str = ""
 
+    # Mux centralized credentials. One platform account, not BYO — see
+    # docs/backend/video.md. Empty values disable Mux integration; the upload
+    # route checks is_configured() and fails closed.
+    MUX_TOKEN_ID: str = ""
+    MUX_TOKEN_SECRET: str = ""
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def DATABASE_URL(self) -> str:

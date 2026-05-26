@@ -14,6 +14,7 @@ from app.api.routes import (
     sections,
     tenant,
     uploads,
+    video_assets,
 )
 
 api_router = APIRouter()
@@ -30,3 +31,4 @@ api_router.include_router(enrollments.router)
 api_router.include_router(learn.router)
 api_router.include_router(payments.router)
 api_router.include_router(uploads.router)
+api_router.include_router(video_assets.router)
