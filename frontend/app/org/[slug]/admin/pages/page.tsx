@@ -75,7 +75,7 @@ export default async function AdminPagesIndex({ params }: Props) {
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
               Static pages for legal docs (terms, privacy, refund) and anything
-              else your tenant needs (about, contact, …).
+              else your tenant needs..
             </p>
           </div>
           <Button asChild>

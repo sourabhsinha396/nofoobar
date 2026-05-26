@@ -30,7 +30,6 @@ algoholic uses a curated subset of Magic UI. Do not propose or install component
 
 Allowed Magic UI components:
 
-- Bento Grid
 - Dock
 - Globe
 - Tweet Card

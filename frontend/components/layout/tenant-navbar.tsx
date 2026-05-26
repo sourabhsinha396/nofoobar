@@ -24,7 +24,7 @@ export async function TenantNavbar({ slug, orgName, logoUrl }: Props) {
     ]);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/80 shadow shadow-gray-500">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 md:px-8">
         <div className="flex items-center gap-6">
           <Link href={homeHref} className="flex items-center">
@@ -47,7 +47,7 @@ export async function TenantNavbar({ slug, orgName, logoUrl }: Props) {
           </Link>
           <Link
             href={coursesHref}
-            className="text-muted-foreground transition-colors hover:text-foreground"
+            className="text-foreground transition-colors hover:text-foreground"
           >
             Courses
           </Link>
@@ -57,7 +57,7 @@ export async function TenantNavbar({ slug, orgName, logoUrl }: Props) {
               href={link.href}
               target={link.open_in_new_tab ? "_blank" : undefined}
               rel={link.open_in_new_tab ? "noopener noreferrer" : undefined}
-              className="text-muted-foreground transition-colors hover:text-foreground"
+              className="text-foreground transition-colors hover:text-foreground"
             >
               {link.label}
             </Link>
@@ -67,14 +67,14 @@ export async function TenantNavbar({ slug, orgName, logoUrl }: Props) {
         <nav className="flex items-center gap-2 md:gap-4">
           <AnimatedThemeToggler
             variant="circle"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground [&_svg]:h-4 [&_svg]:w-4"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-foreground transition-colors hover:bg-accent hover:text-foreground [&_svg]:h-4 [&_svg]:w-4"
           />
 
           {user ? (
             <>
               <Link
                 href={myLearningHref}
-                className="px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                className="px-3 py-1.5 text-foreground transition-colors hover:text-foreground"
               >
                 My Learning
               </Link>
@@ -84,7 +84,7 @@ export async function TenantNavbar({ slug, orgName, logoUrl }: Props) {
             <>
               <Link
                 href={loginHref}
-                className="px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                className="px-3 py-1.5 text-foreground transition-colors hover:text-foreground"
               >
                 Sign in
               </Link>

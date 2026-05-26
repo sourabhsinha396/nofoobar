@@ -15,7 +15,7 @@ export function TestimonialsBlock({ config }: { config: TestimonialsConfig }) {
               {/* Stagger beam delays so cards don't pulse in unison. The
                   beam is purely decorative and `pointer-events-none` so it
                   doesn't interfere with anything inside the card. */}
-              <BorderBeam duration={8} delay={idx * 1.5} />
+              <BorderBeam duration={8} delay={idx * 1.5} colorFrom="#b3e40f" colorTo="#0bf5ce" />
               <blockquote className="text-sm leading-relaxed text-muted-foreground">
                 &ldquo;{item.quote}&rdquo;
               </blockquote>

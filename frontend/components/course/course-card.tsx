@@ -1,3 +1,4 @@
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 import { LEVEL_CLASSES, LEVEL_LABELS, fallbackHue } from "@/lib/course-display";
@@ -16,7 +17,7 @@ export function CourseCard({ course, href }: CourseCardProps) {
 
   return (
     <Link href={href} className="group block h-full">
-      <article className="flex h-full flex-col overflow-hidden rounded-lg border bg-card transition-colors hover:border-foreground/30">
+      <article className="flex h-full hover:shadow-lime-300 hover:shadow-md flex-col overflow-hidden rounded-lg border bg-card transition-colors hover:border-foreground/30">
         <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
           {course.logo_url ? (
             // eslint-disable-next-line @next/next/no-img-element -- arbitrary user-supplied URL; swap to next/image once R2 upload pipeline lands and we know the host
@@ -70,6 +71,17 @@ export function CourseCard({ course, href }: CourseCardProps) {
               )}
             </ul>
           )}
+
+          {/* Visual CTA. The whole card is already a <Link>, so this can't
+              be a nested anchor/button — render a styled <span> that picks
+              up the card-wide hover state via `group-*` selectors. */}
+          <span
+            className="mt-auto inline-flex w-fit items-center gap-1.5 pt-5 text-sm font-medium text-lime-500 transition-colors group-hover:text-foreground"
+            aria-hidden
+          >
+            View course
+            <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+          </span>
         </div>
       </article>
     </Link>

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
-
+import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { TenantFooter } from "@/components/layout/tenant-footer";
 import { TenantNavbar } from "@/components/layout/tenant-navbar";
 import { getTenantOrg } from "@/lib/tenant";

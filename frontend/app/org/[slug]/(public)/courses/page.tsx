@@ -43,7 +43,7 @@ export default async function TenantCourseCatalog({ params }: Props) {
         <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map((course) => (
             <li key={course.id}>
-              <CourseCard course={course} href={`${coursesPrefix}/${course.slug}`} />
+                <CourseCard course={course} href={`${coursesPrefix}/${course.slug}`} />
             </li>
           ))}
         </ul>
