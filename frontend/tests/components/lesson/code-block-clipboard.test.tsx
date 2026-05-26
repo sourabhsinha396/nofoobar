@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   copyToClipboard,
+  extractCodeText,
   handleCopyClick,
 } from "@/components/lesson/code-block-clipboard";
 
@@ -43,6 +44,33 @@ describe("copyToClipboard", () => {
   it("writes through navigator.clipboard.writeText when available", async () => {
     await copyToClipboard("hello");
     expect(writeText).toHaveBeenCalledWith("hello");
+  });
+});
+
+describe("extractCodeText", () => {
+  it("joins .line span text with newlines (matches the renderer's line wrapping)", () => {
+    const code = document.createElement("code");
+    code.innerHTML =
+      '<span class="line">a = 1</span>' +
+      '<span class="line">b = 2</span>' +
+      '<span class="line">c = 3</span>';
+    expect(extractCodeText(code)).toBe("a = 1\nb = 2\nc = 3");
+  });
+
+  it("falls back to textContent when there are no .line spans", () => {
+    const code = document.createElement("code");
+    code.textContent = "legacy text without line wrappers";
+    expect(extractCodeText(code)).toBe("legacy text without line wrappers");
+  });
+
+  it("ignores .line elements nested inside other line spans (uses direct children only)", () => {
+    const code = document.createElement("code");
+    code.innerHTML =
+      '<span class="line">outer<span class="line">inner</span></span>' +
+      '<span class="line">next</span>';
+    // Outer .line owns both "outer" and "inner" as its text content; we don't
+    // want to count "inner" twice.
+    expect(extractCodeText(code)).toBe("outerinner\nnext");
   });
 });
 

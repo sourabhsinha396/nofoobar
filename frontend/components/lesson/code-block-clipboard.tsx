@@ -29,10 +29,23 @@ export function handleCopyClick(event: MouseEvent): void {
   const code = wrapper?.querySelector("pre code");
   if (!code) return;
 
-  const text = code.textContent ?? "";
+  const text = extractCodeText(code);
   copyToClipboard(text)
     .then(() => flash(btn, "code-copy-copied"))
     .catch(() => flash(btn, "code-copy-error"));
+}
+
+// Each source line is wrapped in <span class="line"> with no \n separators
+// (the line breaks come from CSS .line { display: block }). textContent on the
+// whole <code> would concatenate everything with no newlines, so join the line
+// spans explicitly. Falls back to textContent if there are no line spans
+// (e.g. when older content predates the line-wrapping post-processor).
+export function extractCodeText(code: Element): string {
+  const lineEls = code.querySelectorAll(":scope > .line");
+  if (lineEls.length === 0) return code.textContent ?? "";
+  return Array.from(lineEls)
+    .map((el) => el.textContent ?? "")
+    .join("\n");
 }
 
 export async function copyToClipboard(text: string): Promise<void> {

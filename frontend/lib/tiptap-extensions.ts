@@ -47,9 +47,30 @@ export const CodeBlock = CodeBlockLowlight.extend({
           return value ? { "data-filename": value } : {};
         },
       },
+      // 1-indexed line numbers the creator marked as "look at this". Stored as
+      // a number[] on the JSON; round-trips through HTML as a comma-separated
+      // string so the SSR post-processor can read it back. See
+      // lib/code-highlight.ts for the rendering pass.
+      highlightedLines: {
+        default: [] as number[],
+        parseHTML: (el) => parseLineList(el.getAttribute("data-highlighted-lines")),
+        renderHTML: (attrs) => {
+          const value = attrs.highlightedLines as number[] | undefined;
+          if (!value || value.length === 0) return {};
+          return { "data-highlighted-lines": value.join(",") };
+        },
+      },
     };
   },
 });
+
+function parseLineList(value: string | null): number[] {
+  if (!value) return [];
+  return value
+    .split(",")
+    .map((s) => Number.parseInt(s.trim(), 10))
+    .filter((n) => Number.isFinite(n) && n > 0);
+}
 
 // Single source of truth for the extension list shape. The editor calls this
 // with a NodeView-enhanced CodeBlock; the SSR renderer uses the plain CodeBlock.

@@ -229,6 +229,26 @@
      itself is light. Invisible (same colour) in dark mode. */
   border: 1px solid oklch(0.92 0.004 250 / 0.4);
 }
+
+/* Per-line wrappers emitted by lib/code-highlight.ts. Each line is a block so
+   we can stretch a highlight background to the full width of the pre's content
+   area; the negative margin + matching padding trick lets a highlighted line
+   bleed past the pre's text padding so the highlight stripe goes edge-to-edge. */
+.prose pre code .line {
+  display: block;
+  /* Bleed past the pre's 1.25rem horizontal padding so highlights fill width. */
+  margin-left: -1.25rem;
+  margin-right: -1.25rem;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  /* Empty lines (deliberate blank lines in the source) must still occupy one
+     line of vertical space, otherwise `display: block` collapses them to 0. */
+  min-height: 1lh;
+}
+.prose pre code .line[data-highlighted="true"] {
+  background: oklch(0.42 0.09 250 / 0.18);
+  box-shadow: inset 2px 0 0 oklch(0.72 0.13 220);
+}
 .dark .prose pre,
 .dark .prose .code-block-wrapper > pre {
   border-color: oklch(0.3 0.012 250);
@@ -350,6 +370,63 @@
   background: oklch(0.3 0.012 250);
   border-color: oklch(0.55 0.018 255);
   outline: none;
+}
+
+/* Right-side cluster in the editor toolbar: highlight count → toggle button →
+   language select. Grouped so they sit together flush-right. */
+.code-block-toolbar-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+.code-block-highlight-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.35rem;
+  background: oklch(0.42 0.09 250 / 0.55);
+  color: oklch(0.96 0 0);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid oklch(0.72 0.13 220 / 0.5);
+}
+.code-block-highlight-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  background: oklch(0.22 0.012 250);
+  border: 1px solid oklch(0.42 0.018 255);
+  color: oklch(0.78 0 0);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+.code-block-highlight-toggle:hover,
+.code-block-highlight-toggle:focus-visible {
+  color: oklch(0.97 0 0);
+  background: oklch(0.3 0.012 250);
+  border-color: oklch(0.55 0.018 255);
+  outline: none;
+}
+
+/* Editor-side per-line highlight — inline span emitted by the
+   line-highlight ProseMirror plugin. Text-width tint only (no full-bleed)
+   because making this display:block would conflict with white-space:pre and
+   produce extra vertical gaps. The rendered view goes full-bleed via the
+   .line[data-highlighted] rule below. */
+.cm-line-highlighted {
+  background: oklch(0.42 0.09 250 / 0.22);
+  border-radius: 2px;
+  box-shadow: inset 2px 0 0 oklch(0.72 0.13 220);
+  padding-left: 0.25rem;
+  margin-left: -0.25rem;
 }
 
 .code-copy {
