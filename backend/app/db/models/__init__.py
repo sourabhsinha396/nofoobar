@@ -1,5 +1,6 @@
 from app.db.models.course import Course, CourseVisibility
 from app.db.models.enrollment import Enrollment
+from app.db.models.homepage_block import HomepageBlockType, OrganizationHomepageBlock
 from app.db.models.lesson import ContentType, Lesson, LessonVisibility
 from app.db.models.membership import Role, UserOrgMembership
 from app.db.models.organization import Organization
@@ -14,10 +15,12 @@ __all__ = [
     "Course",
     "CourseVisibility",
     "Enrollment",
+    "HomepageBlockType",
     "Lesson",
     "LessonVisibility",
     "OrgPaymentAccount",
     "Organization",
+    "OrganizationHomepageBlock",
     "PaymentAttempt",
     "PaymentProvider",
     "PaymentStatus",

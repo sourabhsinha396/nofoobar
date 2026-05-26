@@ -20,9 +20,35 @@ def _exec_results(*first_values):
 # ---------- auth gate ----------
 
 
-def test_learn_requires_authentication(client, mock_session, fake_org):
+def test_learn_requires_authentication_for_non_preview(client, mock_session, fake_org):
+    # Non-free-preview lesson + no session → 401. Lesson lookup happens before
+    # the auth check now, so we have to feed the mock a real lesson first.
+    lesson = LessonFactory.build(
+        org_id=fake_org.id,
+        slug="welcome",
+        visibility=LessonVisibility.PUBLISHED,
+        is_free_preview=False,
+    )
+    mock_session.exec.side_effect = _exec_results(lesson)
+
     response = client.get(LESSON_PATH, headers={"Host": "localhost"})
     assert response.status_code == 401
+
+
+def test_unauthenticated_user_can_view_free_preview_lesson(client, mock_session, fake_org):
+    # Free-preview lessons are open: no session required, no enrollment lookup,
+    # no membership lookup. Only the lesson lookup runs.
+    lesson = LessonFactory.build(
+        org_id=fake_org.id,
+        slug="welcome",
+        visibility=LessonVisibility.PUBLISHED,
+        is_free_preview=True,
+    )
+    mock_session.exec.side_effect = _exec_results(lesson)
+
+    response = client.get(LESSON_PATH, headers={"Host": "localhost"})
+    assert response.status_code == 200
+    assert mock_session.exec.call_count == 1
 
 
 # ---------- access paths ----------

@@ -3,7 +3,13 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from fastapi.testclient import TestClient
 
-from app.api.deps import get_current_membership, get_current_org, get_current_user, get_session
+from app.api.deps import (
+    get_current_membership,
+    get_current_org,
+    get_current_user,
+    get_current_user_optional,
+    get_session,
+)
 from app.core.security import hash_password
 from app.db.models.membership import Role, UserOrgMembership
 from app.db.models.organization import Organization
@@ -61,6 +67,7 @@ def authed_user(fake_user: User) -> User:
         return fake_user
 
     app.dependency_overrides[get_current_user] = _override
+    app.dependency_overrides[get_current_user_optional] = _override
     return fake_user
 
 

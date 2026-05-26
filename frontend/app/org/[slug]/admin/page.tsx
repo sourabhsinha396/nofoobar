@@ -1,4 +1,4 @@
-import { CreditCard } from "lucide-react";
+import { CreditCard, LayoutTemplate } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -25,11 +25,12 @@ export default async function TenantAdminDashboard({ params }: Props) {
     notFound();
   }
 
-  const [courses, newCourseHref, coursesPrefix, paymentsHref] = await Promise.all([
+  const [courses, newCourseHref, coursesPrefix, paymentsHref, homepageHref] = await Promise.all([
     getTenantCourses(slug),
     serverTenantPath(slug, "/admin/courses/new"),
     serverTenantPath(slug, "/admin/courses"),
     serverTenantPath(slug, "/admin/payments"),
+    serverTenantPath(slug, "/admin/homepage"),
   ]);
 
   // Org exists but membership-gated endpoints refused. Almost always: the
@@ -68,6 +69,21 @@ export default async function TenantAdminDashboard({ params }: Props) {
           <p className="mt-2 max-w-2xl text-muted-foreground">{org.description}</p>
         )}
       </header>
+
+      <Card className="mb-8 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-3">
+          <LayoutTemplate className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+          <div>
+            <p className="font-medium">Customize your homepage</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Add hero, stats, featured courses, testimonials, and FAQs to your tenant landing page.
+            </p>
+          </div>
+        </div>
+        <Button asChild variant="outline">
+          <Link href={homepageHref}>Edit homepage</Link>
+        </Button>
+      </Card>
 
       {org.payment_accounts.length === 0 && (
         <Card className="mb-8 flex flex-col gap-3 border-amber-500/30 bg-amber-500/10 p-5 sm:flex-row sm:items-center sm:justify-between">

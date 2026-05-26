@@ -5,12 +5,14 @@ from app.api.routes import (
     courses,
     enrollments,
     health,
+    homepage,
     learn,
     lessons,
     me,
     orgs,
     payments,
     public_courses,
+    public_homepage,
     sections,
     tenant,
     uploads,
@@ -27,6 +29,8 @@ api_router.include_router(courses.router)
 api_router.include_router(sections.router)
 api_router.include_router(lessons.router)
 api_router.include_router(public_courses.router)
+api_router.include_router(public_homepage.router)
+api_router.include_router(homepage.router)
 api_router.include_router(enrollments.router)
 api_router.include_router(learn.router)
 api_router.include_router(payments.router)

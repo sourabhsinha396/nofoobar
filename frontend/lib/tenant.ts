@@ -132,6 +132,79 @@ export interface Enrollment {
   course: PublishedCourseSummary;
 }
 
+export type HomepageBlockType =
+  | "hero"
+  | "stats"
+  | "featured_courses"
+  | "testimonials"
+  | "faqs";
+
+export interface HeroConfig {
+  type: "hero";
+  headline: string;
+  subheadline: string | null;
+  cta_label: string | null;
+  cta_href: string | null;
+  background_image_url: string | null;
+}
+
+export interface StatItem {
+  value: string;
+  label: string;
+}
+
+export interface StatsConfig {
+  type: "stats";
+  heading: string | null;
+  items: StatItem[];
+}
+
+export interface FeaturedCoursesConfig {
+  type: "featured_courses";
+  heading: string | null;
+  course_ids: string[];
+}
+
+export interface TestimonialItem {
+  quote: string;
+  name: string;
+  role: string | null;
+  photo_url: string | null;
+  course_id: string | null;
+}
+
+export interface TestimonialsConfig {
+  type: "testimonials";
+  heading: string | null;
+  items: TestimonialItem[];
+}
+
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+export interface FaqsConfig {
+  type: "faqs";
+  heading: string | null;
+  items: FaqItem[];
+}
+
+export type HomepageBlockConfig =
+  | HeroConfig
+  | StatsConfig
+  | FeaturedCoursesConfig
+  | TestimonialsConfig
+  | FaqsConfig;
+
+export interface HomepageBlock {
+  id: string;
+  type: HomepageBlockType;
+  position: number;
+  is_enabled: boolean;
+  config: HomepageBlockConfig;
+}
+
 async function tenantHeaders(slug: string): Promise<HeadersInit> {
   const cookieStore = await cookies();
   return {
@@ -237,6 +310,39 @@ export async function getPublishedCourses(
       return null;
     }
     return (await response.json()) as PublishedCourseSummary[];
+  } catch {
+    return null;
+  }
+}
+
+export async function getHomepageBlocks(slug: string): Promise<HomepageBlock[] | null> {
+  try {
+    const response = await fetch(`${API_URL}/api/v1/public/homepage`, {
+      headers: await tenantHeaders(slug),
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      return null;
+    }
+    return (await response.json()) as HomepageBlock[];
+  } catch {
+    return null;
+  }
+}
+
+// Admin variant — returns ALL blocks (including is_enabled=false) for editing.
+// 403 → caller is not an org member; treat the same as "no data" so the page
+// can render an appropriate "not a member" message.
+export async function getAdminHomepageBlocks(slug: string): Promise<HomepageBlock[] | null> {
+  try {
+    const response = await fetch(`${API_URL}/api/v1/admin/homepage`, {
+      headers: await tenantHeaders(slug),
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      return null;
+    }
+    return (await response.json()) as HomepageBlock[];
   } catch {
     return null;
   }

@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { LessonContent } from "@/components/lesson/lesson-content";
 import { LessonView } from "@/components/lesson/lesson-view";
 import { Button } from "@/components/ui/button";
-import { getCurrentUser } from "@/lib/auth";
 import {
   getLearnerLesson,
   getPublishedCourse,
@@ -71,11 +70,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function LessonPage({ params }: Props) {
   const { slug, courseSlug, sectionSlug, lessonSlug } = await params;
-
-  const user = await getCurrentUser();
-  if (!user) {
-    redirect(await serverTenantPath(slug, "/login"));
-  }
 
   const [lesson, course, backToCourseHref, sectionsPrefix] = await Promise.all([
     getLearnerLesson(slug, courseSlug, sectionSlug, lessonSlug),

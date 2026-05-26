@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from sqlmodel import select
 
-from app.api.deps import CurrentOrgDep, CurrentUserDep, SessionDep
+from app.api.deps import CurrentOrgDep, OptionalCurrentUserDep, SessionDep
 from app.db.models.course import Course, CourseVisibility
 from app.db.models.enrollment import Enrollment
 from app.db.models.lesson import Lesson, LessonVisibility
@@ -17,7 +17,7 @@ async def get_lesson_for_learner(
     course_slug: str,
     section_slug: str,
     lesson_slug: str,
-    user: CurrentUserDep,
+    user: OptionalCurrentUserDep,
     org: CurrentOrgDep,
     session: SessionDep,
 ) -> LessonPublic:
@@ -36,8 +36,7 @@ async def get_lesson_for_learner(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Lesson not found")
 
     # Access gate, ordered cheapest → costliest so the common case ends fast:
-    #   1. Free-preview: any authenticated learner can view a published
-    #      free-preview lesson. No DB.
+    #   1. Free-preview: open to everyone, including anonymous visitors. No DB.
     #   2. Enrolled + published: the bread-and-butter case, one DB query.
     #   3. Org member: owners/instructors get unrestricted access to anything
     #      in their org, drafts included — for previewing what they're authoring.
@@ -46,6 +45,9 @@ async def get_lesson_for_learner(
 
     if is_published and lesson.is_free_preview:
         return lesson
+
+    if user is None:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not authenticated")
 
     if is_published:
         enrollment_result = await session.exec(

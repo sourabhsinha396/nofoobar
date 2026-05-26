@@ -82,6 +82,21 @@ async def get_current_user(request: Request, session: SessionDep) -> User:
 CurrentUserDep = Annotated[User, Depends(get_current_user)]
 
 
+async def get_current_user_optional(request: Request, session: SessionDep) -> User | None:
+    user_id_str = request.session.get("user_id")
+    if not user_id_str:
+        return None
+    try:
+        user_id = UUID(user_id_str)
+    except (ValueError, TypeError):
+        return None
+    result = await session.exec(select(User).where(User.id == user_id))
+    return result.first()
+
+
+OptionalCurrentUserDep = Annotated[User | None, Depends(get_current_user_optional)]
+
+
 async def get_current_membership(
     user: CurrentUserDep, org: CurrentOrgDep, session: SessionDep
 ) -> UserOrgMembership:
