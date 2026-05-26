@@ -56,6 +56,26 @@ describe("detectVideoProvider", () => {
     });
   });
 
+  it("detects Mux player URLs", () => {
+    expect(
+      detectVideoProvider("https://player.mux.com/EVa02GuwVnMAiG8aSNFSTguHYMsJME7JxzuKeb02B00efQ"),
+    ).toEqual({
+      provider: "mux",
+      src: "https://player.mux.com/EVa02GuwVnMAiG8aSNFSTguHYMsJME7JxzuKeb02B00efQ",
+    });
+  });
+
+  it("preserves Mux query parameters (analytics metadata, player config)", () => {
+    expect(
+      detectVideoProvider(
+        "https://player.mux.com/EVa02GuwVnMAiG8aSNFSTguHYMsJME7JxzuKeb02B00efQ?metadata-video-title=Squirel&video-title=Squirel",
+      ),
+    ).toEqual({
+      provider: "mux",
+      src: "https://player.mux.com/EVa02GuwVnMAiG8aSNFSTguHYMsJME7JxzuKeb02B00efQ?metadata-video-title=Squirel&video-title=Squirel",
+    });
+  });
+
   it("detects direct .mp4 URLs", () => {
     expect(detectVideoProvider("https://cdn.example.com/lessons/intro.mp4")).toEqual({
       provider: "native",

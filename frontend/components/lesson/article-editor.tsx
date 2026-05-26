@@ -165,7 +165,7 @@ function VideoDialog({ open, onOpenChange, onInsert }: VideoDialogProps) {
     const detected = detectVideoProvider(url);
     if (!detected) {
       setError(
-        "Unrecognized URL. Supported: YouTube, Vimeo, Loom, or a direct .mp4/.webm/.ogg/.mov link.",
+        "Unrecognized URL. Supported: YouTube, Vimeo, Loom, Mux, or a direct .mp4/.webm/.ogg/.mov link.",
       );
       return;
     }
@@ -186,7 +186,7 @@ function VideoDialog({ open, onOpenChange, onInsert }: VideoDialogProps) {
         <DialogHeader>
           <DialogTitle>Embed video</DialogTitle>
           <DialogDescription>
-            Paste a YouTube, Vimeo, or Loom link, or a direct .mp4/.webm URL.
+            Paste a YouTube, Vimeo, Loom, or Mux link, or a direct .mp4/.webm URL.
             YouTube embeds use the privacy-enhanced (no-cookie) variant.
           </DialogDescription>
         </DialogHeader>
@@ -196,7 +196,7 @@ function VideoDialog({ open, onOpenChange, onInsert }: VideoDialogProps) {
             <Input
               id="video-url"
               type="url"
-              placeholder="https://www.youtube.com/watch?v=… or https://vimeo.com/… or https://…/video.mp4"
+              placeholder="https://www.youtube.com/watch?v=… or https://vimeo.com/… or https://player.mux.com/… or https://…/video.mp4"
               value={url}
               onChange={(e) => {
                 setUrl(e.target.value);

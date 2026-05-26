@@ -26,11 +26,11 @@ interface Props {
 // side of "always show lesson titles" without letting the sidebar steal too
 // much real estate from the content.
 const SIDEBAR_DEFAULT = "15%";
-const SIDEBAR_MIN = "15%";
-const SIDEBAR_MAX = "32%";
-const CONTENT_DEFAULT = "78%";
-const CONTENT_MIN = "68%";
-const CONTENT_MAX = "85%";
+const SIDEBAR_MIN = "5%";
+const SIDEBAR_MAX = "30%";
+const CONTENT_DEFAULT = "85%";
+const CONTENT_MIN = "70%";
+const CONTENT_MAX = "95%";
 
 export function LessonView({
   course,
@@ -94,7 +94,7 @@ export function LessonView({
             maxSize={CONTENT_MAX}
           >
             <div className="h-full overflow-y-auto">
-              <div className="mx-auto w-full max-w-5xl px-6 py-12 md:py-16">
+              <div className="mx-auto w-full max-w-6xl px-6 py-12 md:py-16">
                 {children}
               </div>
             </div>

@@ -2,7 +2,7 @@ import { Node, mergeAttributes } from "@tiptap/core";
 
 // Providers we render ourselves. YouTube is handled by @tiptap/extension-youtube
 // and isn't part of this node — see detectVideoProvider() for the dispatch.
-export type VideoProvider = "vimeo" | "loom" | "native";
+export type VideoProvider = "vimeo" | "loom" | "mux" | "native";
 
 export type DetectedVideo =
   | { provider: "youtube"; src: string }
@@ -34,6 +34,14 @@ export function detectVideoProvider(url: string): DetectedVideo | null {
   const loom = trimmed.match(/^https?:\/\/(?:www\.)?loom\.com\/(?:share|embed)\/([a-f0-9]+)/i);
   if (loom) {
     return { provider: "loom", src: `https://www.loom.com/embed/${loom[1]}` };
+  }
+
+  // Mux — player.mux.com/<playback_id> with optional query string preserved
+  // (Mux uses query params for Mux Data metadata and player config like
+  // autoplay/primary-color, so we keep them rather than stripping).
+  const mux = trimmed.match(/^https?:\/\/(?:www\.)?player\.mux\.com\/([\w-]+)(\?[^#]*)?/i);
+  if (mux) {
+    return { provider: "mux", src: `https://player.mux.com/${mux[1]}${mux[2] ?? ""}` };
   }
 
   // Direct media file. mp4/webm are the safe bets; mov/ogg work in most
