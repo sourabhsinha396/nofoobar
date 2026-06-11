@@ -22,7 +22,7 @@ async def get_lesson_for_learner(
     session: SessionDep,
 ) -> LessonPublic:
     lesson_result = await session.exec(
-        select(Lesson)
+        select(Lesson, Course.price_cents)
         .join(Section, Section.id == Lesson.section_id)
         .join(Course, Course.id == Section.course_id)
         .where(Lesson.org_id == org.id)
@@ -31,19 +31,26 @@ async def get_lesson_for_learner(
         .where(Section.slug == section_slug)
         .where(Lesson.slug == lesson_slug)
     )
-    lesson = lesson_result.first()
-    if lesson is None:
+    row = lesson_result.first()
+    if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Lesson not found")
+    lesson, price_cents = row
 
     # Access gate, ordered cheapest → costliest so the common case ends fast:
     #   1. Free-preview: open to everyone, including anonymous visitors. No DB.
-    #   2. Enrolled + published: the bread-and-butter case, one DB query.
-    #   3. Org member: owners/instructors get unrestricted access to anything
+    #   2. Free course ($0 / unpriced): every published lesson is open access —
+    #      no enrollment, no sign-in. Price came back with the lesson, so no
+    #      extra DB hit.
+    #   3. Enrolled + published: the bread-and-butter case, one DB query.
+    #   4. Org member: owners/instructors get unrestricted access to anything
     #      in their org, drafts included — for previewing what they're authoring.
     # On failure, return 404 — not 403 — so we don't leak existence.
     is_published = lesson.visibility == LessonVisibility.PUBLISHED
 
     if is_published and lesson.is_free_preview:
+        return lesson
+
+    if is_published and (price_cents is None or price_cents == 0):
         return lesson
 
     if user is None:

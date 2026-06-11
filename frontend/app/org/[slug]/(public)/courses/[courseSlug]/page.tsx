@@ -159,10 +159,11 @@ export default async function CourseLandingPage({ params, searchParams }: Props)
 
   const firstSection = course.sections[0];
   const firstLesson = firstSection?.lessons[0];
-  const startLearningHref =
-    isEnrolled && firstSection && firstLesson
+  const firstLessonHref =
+    firstSection && firstLesson
       ? `${coursesPrefix}/${course.slug}/sections/${firstSection.slug}/lessons/${firstLesson.slug}`
       : null;
+  const startLearningHref = isEnrolled ? firstLessonHref : null;
 
   const lessonHrefPrefix = `${coursesPrefix}/${course.slug}/sections`;
   const hue = fallbackHue(course.slug);
@@ -243,7 +244,19 @@ export default async function CourseLandingPage({ params, searchParams }: Props)
                 {priceLabel}
               </p>
 
-              {!user ? (
+              {!isPaid ? (
+                // Free course: open access, no enrollment. Jump straight into
+                // the first lesson — works for signed-out visitors too.
+                firstLessonHref ? (
+                  <Button asChild size="lg" className="w-full">
+                    <Link href={firstLessonHref}>Start learning</Link>
+                  </Button>
+                ) : (
+                  <Button size="lg" className="w-full" disabled>
+                    No lessons yet
+                  </Button>
+                )
+              ) : !user ? (
                 <Button asChild size="lg" className="w-full">
                   <Link href={loginHref}>Sign in to enroll</Link>
                 </Button>
@@ -265,7 +278,7 @@ export default async function CourseLandingPage({ params, searchParams }: Props)
                   courseSlug={course.slug}
                   priceCents={course.price_cents}
                   currency={course.currency}
-                  priceLabel={isPaid ? priceLabel : "Enroll for free"}
+                  priceLabel={priceLabel}
                 />
               )}
 
@@ -324,7 +337,7 @@ export default async function CourseLandingPage({ params, searchParams }: Props)
                           <LessonRow
                             lesson={lesson}
                             href={
-                              isEnrolled || lesson.is_free_preview
+                              !isPaid || isEnrolled || lesson.is_free_preview
                                 ? `${lessonHrefPrefix}/${section.slug}/lessons/${lesson.slug}`
                                 : undefined
                             }

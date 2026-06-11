@@ -12,6 +12,10 @@ HOSTS = ["localhost", "acme.nofoobar.app"]
 
 LESSON_PATH = "/api/v1/learn/courses/intro/sections/getting-started/lessons/welcome"
 
+# A non-zero price so a lesson's course counts as *paid* — i.e. the open-access
+# free-course gate does not fire and the enrollment/membership paths are tested.
+PAID = 1000
+
 
 def _exec_results(*first_values):
     return [MagicMock(first=MagicMock(return_value=v)) for v in first_values]
@@ -21,15 +25,15 @@ def _exec_results(*first_values):
 
 
 def test_learn_requires_authentication_for_non_preview(client, mock_session, fake_org):
-    # Non-free-preview lesson + no session → 401. Lesson lookup happens before
-    # the auth check now, so we have to feed the mock a real lesson first.
+    # Non-free-preview lesson on a paid course + no session → 401. Lesson lookup
+    # happens before the auth check now, so we feed the mock a lesson row first.
     lesson = LessonFactory.build(
         org_id=fake_org.id,
         slug="welcome",
         visibility=LessonVisibility.PUBLISHED,
         is_free_preview=False,
     )
-    mock_session.exec.side_effect = _exec_results(lesson)
+    mock_session.exec.side_effect = _exec_results((lesson, PAID))
 
     response = client.get(LESSON_PATH, headers={"Host": "localhost"})
     assert response.status_code == 401
@@ -44,14 +48,55 @@ def test_unauthenticated_user_can_view_free_preview_lesson(client, mock_session,
         visibility=LessonVisibility.PUBLISHED,
         is_free_preview=True,
     )
-    mock_session.exec.side_effect = _exec_results(lesson)
+    mock_session.exec.side_effect = _exec_results((lesson, PAID))
 
     response = client.get(LESSON_PATH, headers={"Host": "localhost"})
     assert response.status_code == 200
     assert mock_session.exec.call_count == 1
 
 
-# ---------- access paths ----------
+# ---------- free-course open access ----------
+
+
+@pytest.mark.parametrize("price_cents", [None, 0])
+def test_anonymous_user_can_view_free_course_lesson(
+    client, mock_session, fake_org, price_cents
+):
+    # Free course ($0 or unpriced): every published lesson is open to anyone,
+    # no session and no enrollment. Only the lesson lookup runs.
+    lesson = LessonFactory.build(
+        org_id=fake_org.id,
+        slug="welcome",
+        visibility=LessonVisibility.PUBLISHED,
+        is_free_preview=False,
+    )
+    mock_session.exec.side_effect = _exec_results((lesson, price_cents))
+
+    response = client.get(LESSON_PATH, headers={"Host": "localhost"})
+    assert response.status_code == 200
+    # No enrollment / membership lookup — the price came back with the lesson.
+    assert mock_session.exec.call_count == 1
+
+
+def test_authed_user_views_free_course_lesson_without_enrollment(
+    client, mock_session, fake_org, authed_user
+):
+    # Signed-in but not enrolled: a free course is still open access, so we
+    # return before ever querying enrollment or membership.
+    lesson = LessonFactory.build(
+        org_id=fake_org.id,
+        slug="welcome",
+        visibility=LessonVisibility.PUBLISHED,
+        is_free_preview=False,
+    )
+    mock_session.exec.side_effect = _exec_results((lesson, 0))
+
+    response = client.get(LESSON_PATH, headers={"Host": "localhost"})
+    assert response.status_code == 200
+    assert mock_session.exec.call_count == 1
+
+
+# ---------- access paths (paid courses) ----------
 
 
 def _published_lesson(**overrides):
@@ -73,7 +118,7 @@ def test_enrolled_user_can_view_lesson(client, mock_session, fake_org, authed_us
         user_id=authed_user.id, org_id=fake_org.id, course_id=lesson.course_id
     )
     # exec order: lesson lookup, enrollment lookup
-    mock_session.exec.side_effect = _exec_results(lesson, enrollment)
+    mock_session.exec.side_effect = _exec_results((lesson, PAID), enrollment)
 
     response = client.get(LESSON_PATH, headers={"Host": host})
     assert response.status_code == 200
@@ -87,13 +132,13 @@ def test_enrolled_user_can_view_lesson(client, mock_session, fake_org, authed_us
 def test_org_member_without_enrollment_can_view_lesson(
     client, mock_session, fake_org, authed_user
 ):
-    # Published lesson; member but no enrollment → falls through enrollment
+    # Published paid lesson; member but no enrollment → falls through enrollment
     # lookup (None) to membership lookup (hit).
     lesson = _published_lesson(org_id=fake_org.id, slug="welcome")
     membership = UserOrgMembershipFactory.build(
         user_id=authed_user.id, org_id=fake_org.id, role=Role.OWNER
     )
-    mock_session.exec.side_effect = _exec_results(lesson, None, membership)
+    mock_session.exec.side_effect = _exec_results((lesson, PAID), None, membership)
 
     response = client.get(LESSON_PATH, headers={"Host": "localhost"})
     assert response.status_code == 200
@@ -112,7 +157,7 @@ def test_org_member_can_view_draft_lesson(client, mock_session, fake_org, authed
         user_id=authed_user.id, org_id=fake_org.id, role=Role.OWNER
     )
     # exec order for draft path: lesson lookup, membership lookup (no enrollment call).
-    mock_session.exec.side_effect = _exec_results(lesson, membership)
+    mock_session.exec.side_effect = _exec_results((lesson, PAID), membership)
 
     response = client.get(LESSON_PATH, headers={"Host": "localhost"})
     assert response.status_code == 200
@@ -123,7 +168,7 @@ def test_instructor_member_can_view_lesson(client, mock_session, fake_org, authe
     membership = UserOrgMembershipFactory.build(
         user_id=authed_user.id, org_id=fake_org.id, role=Role.INSTRUCTOR
     )
-    mock_session.exec.side_effect = _exec_results(lesson, None, membership)
+    mock_session.exec.side_effect = _exec_results((lesson, PAID), None, membership)
 
     response = client.get(LESSON_PATH, headers={"Host": "localhost"})
     assert response.status_code == 200
@@ -133,8 +178,8 @@ def test_authed_user_without_enrollment_or_membership_gets_404(
     client, mock_session, fake_org, authed_user
 ):
     lesson = _published_lesson(org_id=fake_org.id, slug="welcome")
-    # lesson exists; no enrollment; no membership → leak-safe 404
-    mock_session.exec.side_effect = _exec_results(lesson, None, None)
+    # paid lesson exists; no enrollment; no membership → leak-safe 404
+    mock_session.exec.side_effect = _exec_results((lesson, PAID), None, None)
 
     response = client.get(LESSON_PATH, headers={"Host": "localhost"})
     assert response.status_code == 404
@@ -151,7 +196,7 @@ def test_free_preview_lesson_accessible_without_enrollment(
         visibility=LessonVisibility.PUBLISHED,
         is_free_preview=True,
     )
-    mock_session.exec.side_effect = _exec_results(lesson)
+    mock_session.exec.side_effect = _exec_results((lesson, PAID))
 
     response = client.get(LESSON_PATH, headers={"Host": "localhost"})
     assert response.status_code == 200
@@ -169,7 +214,7 @@ def test_draft_lesson_returns_404_for_non_member(
         is_free_preview=False,
     )
     # exec order for draft path: lesson lookup, membership lookup (None).
-    mock_session.exec.side_effect = _exec_results(lesson, None)
+    mock_session.exec.side_effect = _exec_results((lesson, PAID), None)
 
     response = client.get(LESSON_PATH, headers={"Host": "localhost"})
     assert response.status_code == 404
@@ -228,7 +273,7 @@ def test_response_includes_full_lesson_content_body(
     enrollment = EnrollmentFactory.build(
         user_id=authed_user.id, org_id=fake_org.id, course_id=lesson.course_id
     )
-    mock_session.exec.side_effect = _exec_results(lesson, enrollment)
+    mock_session.exec.side_effect = _exec_results((lesson, PAID), enrollment)
 
     response = client.get(LESSON_PATH, headers={"Host": "localhost"})
     body = response.json()
@@ -238,12 +283,12 @@ def test_response_includes_full_lesson_content_body(
 def test_enrolled_user_skips_membership_lookup(
     client, mock_session, fake_org, authed_user
 ):
-    """Enrolled users on a published lesson short-circuit before membership."""
+    """Enrolled users on a paid published lesson short-circuit before membership."""
     lesson = _published_lesson(org_id=fake_org.id, slug="welcome")
     enrollment = EnrollmentFactory.build(
         user_id=authed_user.id, org_id=fake_org.id, course_id=lesson.course_id
     )
-    mock_session.exec.side_effect = _exec_results(lesson, enrollment)
+    mock_session.exec.side_effect = _exec_results((lesson, PAID), enrollment)
 
     client.get(LESSON_PATH, headers={"Host": "localhost"})
     # Exactly two exec calls: lesson, enrollment. No membership lookup.
