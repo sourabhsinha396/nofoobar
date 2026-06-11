@@ -6,6 +6,7 @@ import Youtube from "@tiptap/extension-youtube";
 import StarterKit from "@tiptap/starter-kit";
 import { common, createLowlight } from "lowlight";
 
+import { AlgoholiaLab } from "@/lib/tiptap-lab-embed";
 import { VideoEmbed } from "@/lib/tiptap-video-embed";
 
 // Shared lowlight instance — loads ~36 common languages (python, ts, js, go,
@@ -83,6 +84,10 @@ function parseLineList(value: string | null): number[] {
 // VideoEmbed — our custom node for Vimeo / Loom iframes and HTML5 <video> for
 // direct .mp4 URLs. YouTube intentionally stays in its dedicated extension.
 //
+// AlgoholiaLab — our custom node for embedded interactive labs (algoholia.com).
+// Stores {org, embedId}; rebuilds the iframe src at render time. See
+// lib/tiptap-lab-embed.ts.
+//
 // Image — official extension. Stored as a TipTap node with `src/alt/title`;
 // renders as plain <img>. Image bytes are uploaded to R2 via the backend
 // (POST /uploads/image with purpose=tiptap_inline), which returns the public
@@ -100,6 +105,7 @@ export function buildExtensions(codeBlock: typeof CodeBlock = CodeBlock) {
       modestBranding: true,
     }),
     VideoEmbed,
+    AlgoholiaLab,
     Image.configure({
       inline: false,
       allowBase64: false,

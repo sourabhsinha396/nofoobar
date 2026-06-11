@@ -142,7 +142,7 @@ export async function TenantFooter({ slug, org }: Props) {
           </div>
 
           {(hasSocials || hasContact) && (
-            <div>
+            <div className="md:text-right">
               <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-foreground">
                 Contact
               </h3>
@@ -156,7 +156,7 @@ export async function TenantFooter({ slug, org }: Props) {
                 </a>
               )}
               {hasSocials && (
-                <ul className="mt-4 flex flex-wrap gap-2">
+                <ul className="mt-4 flex flex-wrap gap-2 md:justify-end">
                   {org.social_links.map((social, idx) => {
                     const Icon = SOCIAL_ICONS[social.platform];
                     return (
@@ -178,8 +178,8 @@ export async function TenantFooter({ slug, org }: Props) {
             </div>
           )}
 
-                    {hasLinks && (
-            <div>
+          {hasLinks && (
+            <div className="md:text-right">
               <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-foreground">
                 Links
               </h3>
@@ -206,12 +206,12 @@ export async function TenantFooter({ slug, org }: Props) {
           <p>
             Powered by{" "}
             <Link
-              href="https://github.com/sourabhsinha396/algoholic"
+              href="https://github.com/sourabhsinha396/nofoobar"
               target="_blank"
               rel="noopener noreferrer"
               className="text-foreground transition-opacity hover:opacity-80"
             >
-              algoholic
+              nofoobar
             </Link>
           </p>
         </div>

@@ -211,6 +211,45 @@
   object-fit: contain;
 }
 
+/* TipTap algoholia lab embeds — interactive lab iframe (terminal + editor), so
+   it's taller than the 16:9 video wrapper. Height clamps down on small screens
+   while keeping the lab usable. See lib/tiptap-lab-embed.ts. */
+[data-lab-embed] {
+  position: relative;
+  width: 100%;
+  height: clamp(420px, 70vh, 640px);
+  margin: 1.5em 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--muted);
+  border: 1px solid var(--border);
+}
+
+[data-lab-embed] iframe {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  border: 0;
+}
+
+/* Inside the learner lesson view (which sets a `lesson-content` query container
+   spanning the full content panel), the lab breaks out of the centered
+   max-width + px-6 reading column to fill the panel, leaving a px-2 gutter.
+   100cqw = panel width; 100% = the lab's reading-column width, so the gap to
+   each panel edge is (100cqw - 100%) / 2 = 50cqw - 50%. We pull the margins out
+   by that, less the 0.5rem gutter, written division-free as `50% - 50cqw +
+   0.5rem` so the build's CSS minifier can't fold the `/ -2` and drop the rem
+   term. Only the iframe extends; surrounding article elements stay in the
+   column. The editor preview has no such container, so this no-ops there and the
+   lab keeps its column width. */
+@container lesson-content (min-width: 0) {
+  [data-lab-embed] {
+    width: auto;
+    margin-inline: calc(50% - 50cqw + 0.5rem);
+  }
+}
+
 /* TipTap code blocks — wrapper styling for both editor and rendered articles.
    Editor uses CodeBlockLowlight; renderer post-processes the same way. The
    .hljs class lands on the inner <code> via HTMLAttributes config and the

@@ -1,7 +1,18 @@
 "use client";
 
 import { EditorContent, useEditor, type Editor, type JSONContent } from "@tiptap/react";
-import { Bold, Code2, Heading1, ImagePlus, Italic, List, Loader2, Play, Upload } from "lucide-react";
+import {
+  Bold,
+  Code2,
+  FlaskConical,
+  Heading1,
+  ImagePlus,
+  Italic,
+  List,
+  Loader2,
+  Play,
+  Upload,
+} from "lucide-react";
 import { useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -18,6 +29,7 @@ import { Label } from "@/components/ui/label";
 import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { EDITOR_TIPTAP_EXTENSIONS } from "@/lib/tiptap-editor-extensions";
+import { type ParsedLabEmbed, parseLabEmbed } from "@/lib/tiptap-lab-embed";
 import { detectVideoProvider } from "@/lib/tiptap-video-embed";
 import {
   UploadCancelledError,
@@ -88,11 +100,12 @@ function ToolbarButton({ onClick, isActive = false, label, children }: ToolbarBu
 interface ToolbarProps {
   editor: Editor | null;
   onOpenVideo: () => void;
+  onOpenLab: () => void;
   onPickImage: () => void;
   isUploadingImage: boolean;
 }
 
-function Toolbar({ editor, onOpenVideo, onPickImage, isUploadingImage }: ToolbarProps) {
+function Toolbar({ editor, onOpenVideo, onOpenLab, onPickImage, isUploadingImage }: ToolbarProps) {
   if (!editor) return null;
   return (
     <div className="flex items-center gap-1 border-b border-input p-1">
@@ -142,6 +155,9 @@ function Toolbar({ editor, onOpenVideo, onPickImage, isUploadingImage }: Toolbar
       </ToolbarButton>
       <ToolbarButton onClick={onOpenVideo} label="Embed video">
         <Play className="size-4" />
+      </ToolbarButton>
+      <ToolbarButton onClick={onOpenLab} label="Embed lab">
+        <FlaskConical className="size-4" />
       </ToolbarButton>
     </div>
   );
@@ -358,8 +374,103 @@ function friendlyVideoError(err: unknown): string {
   return err instanceof Error ? err.message : "Upload failed.";
 }
 
+interface LabDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onInsert: (parsed: ParsedLabEmbed) => void;
+}
+
+function LabDialog({ open, onOpenChange, onInsert }: LabDialogProps) {
+  const [code, setCode] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [parsed, setParsed] = useState<ParsedLabEmbed | null>(null);
+
+  function reset() {
+    setCode("");
+    setError(null);
+    setParsed(null);
+  }
+
+  function handleChange(value: string) {
+    setCode(value);
+    setError(null);
+    // Live preview of what we detected, so the creator sees the lab is valid
+    // before inserting.
+    setParsed(value.trim() ? parseLabEmbed(value) : null);
+  }
+
+  function submit(event: React.FormEvent) {
+    event.preventDefault();
+    // See the matching note in VideoDialog.submitUrl — stop the submit from
+    // bubbling to the surrounding LessonForm's <form>.
+    event.stopPropagation();
+    const result = parseLabEmbed(code);
+    if (!result) {
+      setError("Couldn't find an algoholia lab embed. Paste the iframe code from the lab page.");
+      return;
+    }
+    onInsert(result);
+    reset();
+    onOpenChange(false);
+  }
+
+  function handleOpenChange(next: boolean) {
+    if (!next) reset();
+    onOpenChange(next);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Embed a lab</DialogTitle>
+          <DialogDescription>
+            Paste the embed code from your algoholia lab. We&apos;ll detect it and render it inline.
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={submit} className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="lab-embed-code" className="sr-only">
+              Lab embed code
+            </Label>
+            <textarea
+              id="lab-embed-code"
+              rows={4}
+              placeholder='<iframe src="https://algoholia.com/fastapi/embed/…" …></iframe>'
+              value={code}
+              onChange={(e) => handleChange(e.target.value)}
+              autoFocus
+              className={cn(
+                "w-full resize-none rounded-md border border-input bg-background px-3 py-2",
+                "font-mono text-sm focus:outline-none focus:ring-2 focus:ring-ring",
+              )}
+            />
+            {parsed && (
+              <p className="text-sm text-muted-foreground">
+                Detected lab <span className="font-medium text-foreground">{parsed.org}</span>{" "}
+                · <code className="text-xs">{parsed.embedId}</code>
+              </p>
+            )}
+            {error && <p className="text-sm text-red-500">{error}</p>}
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={!parsed}>
+              Insert
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function ArticleEditor({ value, onChange, orgSlug, id }: Props) {
   const [videoOpen, setVideoOpen] = useState(false);
+  const [labOpen, setLabOpen] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -399,6 +510,11 @@ export function ArticleEditor({ value, onChange, orgSlug, id }: Props) {
     }
   }
 
+  function insertLab(parsed: ParsedLabEmbed) {
+    if (!editor) return;
+    editor.chain().focus().setAlgoholiaLab(parsed).run();
+  }
+
   // Blur the editor before opening the dialog. Without this, the focused
   // ProseMirror node is a descendant of the sidebar-wrapper that Radix
   // marks aria-hidden when the modal opens — Chrome's a11y validator
@@ -407,6 +523,11 @@ export function ArticleEditor({ value, onChange, orgSlug, id }: Props) {
   function openVideoDialog() {
     editor?.commands.blur();
     setVideoOpen(true);
+  }
+
+  function openLabDialog() {
+    editor?.commands.blur();
+    setLabOpen(true);
   }
 
   function pickImage() {
@@ -452,6 +573,7 @@ export function ArticleEditor({ value, onChange, orgSlug, id }: Props) {
       <Toolbar
         editor={editor}
         onOpenVideo={openVideoDialog}
+        onOpenLab={openLabDialog}
         onPickImage={pickImage}
         isUploadingImage={imageUploading}
       />
@@ -472,6 +594,7 @@ export function ArticleEditor({ value, onChange, orgSlug, id }: Props) {
         onInsert={insertVideo}
         orgSlug={orgSlug}
       />
+      <LabDialog open={labOpen} onOpenChange={setLabOpen} onInsert={insertLab} />
     </div>
   );
 }
