@@ -1,6 +1,6 @@
 # nofoobar
+Live Demo [FastAPITutorial](https://fastapitutorial.com/).
 
-![lms homepage](frontend/public/public-assets/lms-demo.png)
 ![courses page](frontend/public/public-assets/lms-courses.png)
 Open-source, multi-tenant learning management system for course creators.
 
