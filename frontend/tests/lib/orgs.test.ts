@@ -14,10 +14,10 @@ describe("tenantUrl", () => {
   });
 
   it("builds a subdomain URL when NEXT_PUBLIC_TENANT_HOST is set", () => {
-    vi.stubEnv("NEXT_PUBLIC_TENANT_HOST", "algoholic.io");
+    vi.stubEnv("NEXT_PUBLIC_TENANT_HOST", "nofoobar.io");
     vi.stubEnv("NEXT_PUBLIC_TENANT_PROTOCOL", "https");
-    expect(tenantUrl("acme")).toBe("https://acme.algoholic.io/");
-    expect(tenantUrl("acme", "/admin")).toBe("https://acme.algoholic.io/admin");
+    expect(tenantUrl("acme")).toBe("https://acme.nofoobar.io/");
+    expect(tenantUrl("acme", "/admin")).toBe("https://acme.nofoobar.io/admin");
   });
 
   it("honors NEXT_PUBLIC_TENANT_PROTOCOL=http for local dev", () => {

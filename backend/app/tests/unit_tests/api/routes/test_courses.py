@@ -6,7 +6,7 @@ from app.db.models.course import CourseLevel, CourseVisibility
 from app.db.models.membership import Role
 from app.tests.factories.course import CourseFactory
 
-HOSTS = ["localhost", "acme.algoholic.app"]
+HOSTS = ["localhost", "acme.nofoobar.app"]
 
 
 @pytest.mark.parametrize("role", [Role.OWNER, Role.INSTRUCTOR])

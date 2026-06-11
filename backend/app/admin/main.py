@@ -23,7 +23,7 @@ def register_admin(app: FastAPI) -> None:
         app,
         async_engine,
         authentication_backend=AdminAuth(secret_key=settings.SESSION_SECRET),
-        title="Algoholic Admin",
+        title="Nofoobar Admin",
     )
     admin.add_view(OrganizationAdmin)
     admin.add_view(OrgPaymentAccountAdmin)

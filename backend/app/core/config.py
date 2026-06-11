@@ -10,7 +10,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    PROJECT_NAME: str = "algoholic"
+    PROJECT_NAME: str = "nofoobar"
     API_V1_STR: str = "/api/v1"
 
     POSTGRES_SERVER: str
@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     SESSION_SECRET: str
     SESSION_COOKIE_DOMAIN: str | None = None
 
-    APEX_DOMAIN: str = "algoholic.io"
+    APEX_DOMAIN: str = "nofoobar.io"
 
     # Single regex covers apex + every tenant subdomain. Default matches localhost dev
     # without subdomains; override in .env for the dev-subdomains workflow or prod.
@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     SECRETS_ENCRYPTION_KEY: str = ""
 
     # S3-compatible object storage for tenant-uploaded images (course logos,
-    # later: lesson covers, org logos). Algoholic uses Cloudflare R2 in
+    # later: lesson covers, org logos). Nofoobar uses Cloudflare R2 in
     # practice but everything goes through the boto3 client so any
     # S3-compatible provider works (AWS S3, Backblaze B2, MinIO, etc.).
     #

@@ -38,7 +38,7 @@ export function CtaFinal() {
             </ShimmerButton>
           </Link>
           <Link
-            href="https://github.com/sourabhsinha396/algoholic"
+            href="https://github.com/sourabhsinha396/nofoobar"
             className="inline-flex items-center gap-2 rounded-full border border-background/20 bg-transparent px-6 py-3 text-sm font-medium text-background transition-colors hover:bg-background/10"
           >
             Star on GitHub

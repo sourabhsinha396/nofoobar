@@ -46,7 +46,7 @@ export function SignupForm({ redirectTo = "/me" }: Props = {}) {
     <Card className="w-full max-w-lg p-2">
       <CardHeader className="space-y-2">
         <CardTitle className="text-3xl font-semibold tracking-tight">Create your account</CardTitle>
-        <CardDescription className="text-base">Get started with algoholic.</CardDescription>
+        <CardDescription className="text-base">Get started with nofoobar.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="flex flex-col gap-5">

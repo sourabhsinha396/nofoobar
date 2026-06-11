@@ -1,6 +1,6 @@
-# algoholic frontend
+# nofoobar frontend
 
-Next.js 16 (App Router) frontend for algoholic.
+Next.js 16 (App Router) frontend for nofoobar.
 
 ## Requirements
 
@@ -29,7 +29,7 @@ pnpm lint         # eslint
 
 ## UI library policy
 
-Algoholic uses shadcn primitives without restriction and a **curated subset** of Magic UI components. See the allowlist in [`../CLAUDE.md`](../CLAUDE.md#magic-ui-allowlist). Don't reach outside the list without explicit approval.
+Nofoobar uses shadcn primitives without restriction and a **curated subset** of Magic UI components. See the allowlist in [`../CLAUDE.md`](../CLAUDE.md#magic-ui-allowlist). Don't reach outside the list without explicit approval.
 
 ## Next.js 16
 

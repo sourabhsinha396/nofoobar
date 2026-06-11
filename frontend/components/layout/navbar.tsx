@@ -14,7 +14,7 @@ export async function Navbar() {
           href="/"
           className="font-heading text-2xl leading-none tracking-tight text-foreground"
         >
-          algoholic
+          nofoobar
         </Link>
 
         <nav className="flex items-center gap-2 text-sm md:gap-6">
@@ -31,7 +31,7 @@ export async function Navbar() {
             Docs
           </Link>
           <Link
-            href="https://github.com/sourabhsinha396/algoholic"
+            href="https://github.com/sourabhsinha396/nofoobar"
             className="hidden text-muted-foreground transition-colors hover:text-foreground sm:inline-block"
           >
             GitHub

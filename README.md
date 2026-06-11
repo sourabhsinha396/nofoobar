@@ -1,6 +1,6 @@
-# algoholic
+# nofoobar
 
-![algoholic homepage](frontend/public/public-assets/lms-home.png)
+![nofoobar homepage](frontend/public/public-assets/lms-home.png)
 
 Open-source, multi-tenant learning management system for course creators.
 

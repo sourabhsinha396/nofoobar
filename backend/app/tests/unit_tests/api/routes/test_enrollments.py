@@ -9,7 +9,7 @@ from app.tests.factories.course import CourseFactory
 from app.tests.factories.enrollment import EnrollmentFactory
 from app.tests.factories.membership import UserOrgMembershipFactory
 
-HOSTS = ["localhost", "acme.algoholic.app"]
+HOSTS = ["localhost", "acme.nofoobar.app"]
 
 
 def _exec_results(*first_values):

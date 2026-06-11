@@ -2,7 +2,7 @@ import pytest
 
 from app.tests.factories.page import PageFactory
 
-HOSTS = ["localhost", "acme.algoholic.app"]
+HOSTS = ["localhost", "acme.nofoobar.app"]
 PATH = "/api/v1/public/pages"
 
 

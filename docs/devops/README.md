@@ -1,6 +1,6 @@
 # DevOps
 
-Operational notes for running algoholic locally and in production.
+Operational notes for running nofoobar locally and in production.
 
 Lives here:
 

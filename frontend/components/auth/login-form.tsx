@@ -45,7 +45,7 @@ export function LoginForm({ redirectTo = "/me" }: Props = {}) {
     <Card className="w-full max-w-lg p-2">
       <CardHeader className="space-y-2">
         <CardTitle className="text-3xl font-semibold tracking-tight">Welcome back</CardTitle>
-        <CardDescription className="text-base">Sign in to algoholic.</CardDescription>
+        <CardDescription className="text-base">Sign in to nofoobar.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="flex flex-col gap-5">

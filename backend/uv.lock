@@ -22,7 +22,7 @@ wheels = [
 ]
 
 [[package]]
-name = "algoholic-backend"
+name = "nofoobar-backend"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

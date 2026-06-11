@@ -6,7 +6,7 @@ from app.db.models.membership import Role
 from app.db.models.video_asset import VideoAsset, VideoAssetStatus, VideoProviderName
 from app.services.video.base import UploadHandle, VideoProviderAPIError
 
-HOSTS = ["localhost", "acme.algoholic.app"]
+HOSTS = ["localhost", "acme.nofoobar.app"]
 
 
 @pytest.fixture

@@ -1,6 +1,6 @@
-# algoholic docs
+# nofoobar docs
 
-Working notes and reference material for the algoholic codebase. Each subfolder owns a concern:
+Working notes and reference material for the nofoobar codebase. Each subfolder owns a concern:
 
 - [architecture/](architecture/) — system overview, multi-tenancy, data model decisions, ADRs.
 - [backend/](backend/) — FastAPI conventions, SQLModel patterns, migrations, testing.

@@ -58,7 +58,7 @@ export function CreateOrgForm() {
         <CardTitle className="text-3xl font-semibold tracking-tight">Create an organization</CardTitle>
         <CardDescription className="text-base">
           The slug becomes your subdomain — e.g. <span className="font-mono">acme</span> →{" "}
-          <span className="font-mono">acme.algoholic.app</span>.
+          <span className="font-mono">acme.nofoobar.app</span>.
         </CardDescription>
       </CardHeader>
       <CardContent>

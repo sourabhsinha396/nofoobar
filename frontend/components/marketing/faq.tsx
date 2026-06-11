@@ -14,7 +14,7 @@ const faqs: ReadonlyArray<{ question: string; answer: string }> = [
   {
     question: "Do you charge transaction fees on top of Stripe?",
     answer:
-      "No. Stripe's standard fee (2.9% + 30¢ in the US, varies by country) is what you pay on a sale. Algoholic takes nothing on payments — only the monthly hosting subscription if you're on Starter or Pro.",
+      "No. Stripe's standard fee (2.9% + 30¢ in the US, varies by country) is what you pay on a sale. Nofoobar takes nothing on payments — only the monthly hosting subscription if you're on Starter or Pro.",
   },
   {
     question: "What's included in the AI features?",

@@ -12,7 +12,7 @@ const columns: ReadonlyArray<FooterColumn> = [
       { label: "Features", href: "#features" },
       { label: "Roadmap", href: "/roadmap" },
       { label: "Docs", href: "/docs" },
-      { label: "GitHub", href: "https://github.com/sourabhsinha396/algoholic" },
+      { label: "GitHub", href: "https://github.com/sourabhsinha396/nofoobar" },
     ],
   },
   {
@@ -21,7 +21,7 @@ const columns: ReadonlyArray<FooterColumn> = [
       { label: "Self-hosting guide", href: "/docs/self-hosting" },
       { label: "Architecture", href: "/docs/architecture" },
       { label: "Changelog", href: "/changelog" },
-      { label: "Issues", href: "https://github.com/sourabhsinha396/algoholic/issues" },
+      { label: "Issues", href: "https://github.com/sourabhsinha396/nofoobar/issues" },
     ],
   },
   {
@@ -30,7 +30,7 @@ const columns: ReadonlyArray<FooterColumn> = [
       { label: "License (Apache 2.0)", href: "/LICENSE" },
       { label: "Privacy", href: "/privacy" },
       { label: "Terms", href: "/terms" },
-      { label: "Contact", href: "mailto:hi@algoholic.com" },
+      { label: "Contact", href: "mailto:hi@nofoobar.com" },
     ],
   },
 ];
@@ -45,7 +45,7 @@ export function Footer() {
               href="/"
               className="font-heading text-3xl leading-none tracking-tight text-foreground"
             >
-              algoholic
+              nofoobar
             </Link>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
               An open-source platform for publishing courses, blogs, and
@@ -77,7 +77,7 @@ export function Footer() {
         </div>
 
         <div className="mt-14 flex flex-col items-start justify-between gap-4 border-t border-border/60 pt-8 text-xs text-muted-foreground md:flex-row md:items-center">
-          <p>© {new Date().getFullYear()} algoholic. Apache 2.0.</p>
+          <p>© {new Date().getFullYear()} nofoobar. Apache 2.0.</p>
           <p>
             Built in public by{" "}
             <Link

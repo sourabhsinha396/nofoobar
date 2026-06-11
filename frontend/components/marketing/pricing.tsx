@@ -26,7 +26,7 @@ const plans: ReadonlyArray<Plan> = [
       "Community support",
       "Bring your own AI keys",
     ],
-    cta: { label: "Get the code", href: "https://github.com/sourabhsinha396/algoholic" },
+    cta: { label: "Get the code", href: "https://github.com/sourabhsinha396/nofoobar" },
   },
   {
     name: "Starter",
@@ -157,7 +157,7 @@ export function Pricing() {
         <p className="mt-10 text-center text-sm text-muted-foreground">
           Multiple instructors or 5,000+ students?{" "}
           <Link
-            href="mailto:hi@algoholic.com"
+            href="mailto:hi@nofoobar.com"
             className="text-foreground underline underline-offset-4 hover:opacity-80"
           >
             Talk to us

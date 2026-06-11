@@ -3,7 +3,7 @@ import pytest
 from app.db.models.nav_link import NavLinkLocation
 from app.tests.factories.nav_link import NavLinkFactory
 
-HOSTS = ["localhost", "acme.algoholic.app"]
+HOSTS = ["localhost", "acme.nofoobar.app"]
 PATH = "/api/v1/public/nav-links"
 
 

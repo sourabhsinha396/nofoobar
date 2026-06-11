@@ -4,7 +4,7 @@ from app.db.models.membership import Role
 from app.db.models.organization import Organization
 from app.tests.factories.organization import OrganizationFactory
 
-HOSTS = ["localhost", "acme.algoholic.app"]
+HOSTS = ["localhost", "acme.nofoobar.app"]
 
 
 @pytest.mark.parametrize("host", HOSTS)

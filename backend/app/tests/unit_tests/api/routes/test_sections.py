@@ -6,7 +6,7 @@ from app.db.models.membership import Role
 from app.tests.factories.course import CourseFactory
 from app.tests.factories.section import SectionFactory
 
-HOSTS = ["localhost", "acme.algoholic.app"]
+HOSTS = ["localhost", "acme.nofoobar.app"]
 
 
 def _exec_results(*first_values):

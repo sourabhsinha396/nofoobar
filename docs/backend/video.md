@@ -1,6 +1,6 @@
 # Video uploads
 
-How algoholic handles creator-uploaded video. Provider-agnostic by design: Mux is the first integration, but the architecture must let us swap to Bunny, Cloudflare Stream, or any other direct-upload-capable provider without schema or API changes leaking through.
+How nofoobar handles creator-uploaded video. Provider-agnostic by design: Mux is the first integration, but the architecture must let us swap to Bunny, Cloudflare Stream, or any other direct-upload-capable provider without schema or API changes leaking through.
 
 ## The constraint
 

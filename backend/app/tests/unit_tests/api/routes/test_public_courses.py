@@ -5,7 +5,7 @@ from app.tests.factories.course import CourseFactory
 from app.tests.factories.lesson import LessonFactory
 from app.tests.factories.section import SectionFactory
 
-HOSTS = ["localhost", "acme.algoholic.app"]
+HOSTS = ["localhost", "acme.nofoobar.app"]
 
 
 # ---------- GET /public/courses ----------

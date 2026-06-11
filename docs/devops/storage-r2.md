@@ -1,6 +1,6 @@
 # Object storage — Cloudflare R2
 
-Tenant-uploaded images (course logos, later: lesson covers, org logos) live in an S3-compatible bucket. Algoholic uses Cloudflare R2 in practice — no egress fees and the API is S3-compatible — but the backend code in `app/services/storage/s3.py` talks plain boto3, so any S3-compatible provider (AWS S3, Backblaze B2, MinIO, Wasabi, …) works by swapping env vars.
+Tenant-uploaded images (course logos, later: lesson covers, org logos) live in an S3-compatible bucket. Nofoobar uses Cloudflare R2 in practice — no egress fees and the API is S3-compatible — but the backend code in `app/services/storage/s3.py` talks plain boto3, so any S3-compatible provider (AWS S3, Backblaze B2, MinIO, Wasabi, …) works by swapping env vars.
 
 **Upload architecture: server-proxied.** The browser POSTs `multipart/form-data` to `POST /api/v1/uploads/image`; the FastAPI backend validates the file (extension, size, role) and pushes the bytes to R2 via boto3. No browser ↔ R2 calls, no CORS configuration needed on the bucket. Trade-off: image bytes flow through the FastAPI process. Fine for logos (≤2 MB); revisit if/when video uploads land.
 
@@ -28,7 +28,7 @@ docker compose restart web
 
 ### 1. Create the bucket
 
-R2 dashboard → **R2 Object Storage** → **Create bucket**. Pick a name (e.g. `algoholic-uploads-prod`). Default region is fine.
+R2 dashboard → **R2 Object Storage** → **Create bucket**. Pick a name (e.g. `nofoobar-uploads-prod`). Default region is fine.
 
 ### 2. Create an API token
 
@@ -82,7 +82,7 @@ Hard-deleting orphaned objects is harder — we don't track which URLs are refer
 | `S3_ENDPOINT_URL` | The S3-compatible API endpoint. Account-scoped on R2. | `https://abc123.r2.cloudflarestorage.com` |
 | `S3_ACCESS_KEY_ID` | API token access key from step 2. | `0123456789abcdef…` |
 | `S3_SECRET_ACCESS_KEY` | API token secret from step 2. | `0123…` |
-| `S3_BUCKET` | Bucket name (case-sensitive). | `algoholic-uploads-prod` |
+| `S3_BUCKET` | Bucket name (case-sensitive). | `nofoobar-uploads-prod` |
 | `S3_PUBLIC_URL_BASE` | Public URL prefix written into `courses.logo_url`. No trailing slash needed. | `https://cdn.your-tenant.com` |
 
 All five must be set. If any is empty, `s3.is_configured()` returns `False` and the upload endpoint short-circuits to 503.
@@ -93,7 +93,7 @@ Three reasonable workflows:
 
 **No object storage at all.** Leave the `S3_*` env vars unset. The uploader UI renders but switches to URL-paste mode on the first attempt. Use this when you don't care about exercising the upload path.
 
-**Real R2 dev bucket.** Create a separate bucket (`algoholic-uploads-dev`), generate dev-only tokens, point your local `backend/.env` at it. Exercises the full pipeline; uploaded files are real and persistent.
+**Real R2 dev bucket.** Create a separate bucket (`nofoobar-uploads-dev`), generate dev-only tokens, point your local `backend/.env` at it. Exercises the full pipeline; uploaded files are real and persistent.
 
 **MinIO via docker-compose.** Add a MinIO service to `backend/docker-compose.yml`, then point `S3_ENDPOINT_URL` at `http://minio:9000`. Fully offline, slightly more friction. Not currently scripted — pull it in if `r2.dev` URLs become a blocker.
 

@@ -56,7 +56,7 @@ export function Hero() {
               Get started
             </ShimmerButton>
           <Link
-            href="https://github.com/sourabhsinha396/algoholic"
+            href="https://github.com/sourabhsinha396/nofoobar"
             className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
           >
             <GithubMark className="h-4 w-4" />

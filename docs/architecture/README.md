@@ -1,6 +1,6 @@
 # Architecture
 
-System-level decisions and diagrams for algoholic.
+System-level decisions and diagrams for nofoobar.
 
 Lives here:
 

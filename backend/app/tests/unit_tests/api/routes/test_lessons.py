@@ -7,7 +7,7 @@ from app.db.models.membership import Role
 from app.tests.factories.lesson import LessonFactory, tiptap_doc
 from app.tests.factories.section import SectionFactory
 
-HOSTS = ["localhost", "acme.algoholic.app"]
+HOSTS = ["localhost", "acme.nofoobar.app"]
 
 ARTICLE_BODY = tiptap_doc("Hello, world.")
 ARTICLE_PAYLOAD = {

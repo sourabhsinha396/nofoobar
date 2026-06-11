@@ -8,7 +8,7 @@ from app.tests.factories.enrollment import EnrollmentFactory
 from app.tests.factories.lesson import LessonFactory, tiptap_doc
 from app.tests.factories.membership import UserOrgMembershipFactory
 
-HOSTS = ["localhost", "acme.algoholic.app"]
+HOSTS = ["localhost", "acme.nofoobar.app"]
 
 LESSON_PATH = "/api/v1/learn/courses/intro/sections/getting-started/lessons/welcome"
 

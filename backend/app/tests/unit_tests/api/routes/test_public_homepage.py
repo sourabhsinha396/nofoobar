@@ -3,7 +3,7 @@ import pytest
 from app.db.models.homepage_block import HomepageBlockType
 from app.tests.factories.homepage_block import HomepageBlockFactory
 
-HOSTS = ["localhost", "acme.algoholic.app"]
+HOSTS = ["localhost", "acme.nofoobar.app"]
 HOMEPAGE_PATH = "/api/v1/public/homepage"
 
 

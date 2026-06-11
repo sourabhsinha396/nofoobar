@@ -1,6 +1,6 @@
-# algoholic backend
+# nofoobar backend
 
-FastAPI + SQLModel + Postgres backend for algoholic.
+FastAPI + SQLModel + Postgres backend for nofoobar.
 
 ## Requirements
 - Docker (for the full dev stack: Postgres + web)

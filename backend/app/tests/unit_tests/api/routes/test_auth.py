@@ -1,6 +1,6 @@
 import pytest
 
-HOSTS = ["localhost", "acme.algoholic.app"]
+HOSTS = ["localhost", "acme.nofoobar.app"]
 
 
 @pytest.mark.parametrize("host", HOSTS)
