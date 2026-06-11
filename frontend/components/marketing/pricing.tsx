@@ -23,8 +23,9 @@ const plans: ReadonlyArray<Plan> = [
     features: [
       "Every feature, no limits",
       "Your servers, your scale",
-      "Community support",
       "Bring your own AI keys",
+      "Zero Support because you did not pay :(",
+      "Write a praise mail, I might support :)",
     ],
     cta: { label: "Get the code", href: "https://github.com/sourabhsinha396/nofoobar" },
   },

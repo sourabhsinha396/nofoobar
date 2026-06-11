@@ -28,12 +28,15 @@ SessionDep = Annotated[AsyncSession, Depends(get_session)]
 def _resolve_tenant(request: Request) -> TenantLookup:
     host = request.headers.get("host", "").split(":")[0].lower()
     apex = settings.APEX_DOMAIN.lower()
+    api_host = settings.API_HOST.lower()
 
-    # Trusted hosts (local-dev loopbacks + the apex itself) carry the tenant
-    # in an X-Tenant-Slug header. The apex case covers server-to-server calls
-    # from the Next frontend, which fetches the backend at apex:port and tells
-    # us which tenant the originating request belonged to via the header.
-    if host in _LOCAL_HOSTS or host == apex:
+    # Trusted hosts (local-dev loopbacks, the apex, and the API's own public
+    # hostname) carry the tenant in an X-Tenant-Slug header. The apex case
+    # covers dev server-to-server calls from the Next frontend at apex:port;
+    # API_HOST covers prod, where both the Next server and the browser reach
+    # the API at e.g. backend.nofoobar.com — which must not fall through to
+    # the subdomain branch below and be misread as tenant slug "backend".
+    if host in _LOCAL_HOSTS or host == apex or (api_host and host == api_host):
         slug = request.headers.get("x-tenant-slug", "").strip().lower()
         if not slug:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Missing X-Tenant-Slug header")

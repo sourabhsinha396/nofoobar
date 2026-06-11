@@ -70,3 +70,33 @@ def test_apex_without_slug_header_raises_400():
     with pytest.raises(HTTPException) as exc:
         _resolve_tenant(_request(settings.APEX_DOMAIN))
     assert exc.value.status_code == 400
+
+
+def test_api_host_with_slug_header_uses_slug_lookup(monkeypatch):
+    # Prod: the frontend (server and browser) reaches the API at its public
+    # hostname under the apex. The header must win over the subdomain branch.
+    monkeypatch.setattr(settings, "API_HOST", f"backend.{settings.APEX_DOMAIN}")
+    assert _resolve_tenant(_request(f"backend.{settings.APEX_DOMAIN}", "demo")) == ("slug", "demo")
+
+
+def test_api_host_match_is_case_insensitive(monkeypatch):
+    monkeypatch.setattr(settings, "API_HOST", f"backend.{settings.APEX_DOMAIN}")
+    assert _resolve_tenant(
+        _request(f"BACKEND.{settings.APEX_DOMAIN.upper()}", "demo")
+    ) == ("slug", "demo")
+
+
+def test_api_host_without_slug_header_raises_400(monkeypatch):
+    monkeypatch.setattr(settings, "API_HOST", f"backend.{settings.APEX_DOMAIN}")
+    with pytest.raises(HTTPException) as exc:
+        _resolve_tenant(_request(f"backend.{settings.APEX_DOMAIN}"))
+    assert exc.value.status_code == 400
+
+
+def test_unset_api_host_keeps_subdomain_resolution():
+    # Without the carve-out configured, a "backend" subdomain is just a tenant
+    # slug like any other — the default must not change existing behavior.
+    assert _resolve_tenant(_request(f"backend.{settings.APEX_DOMAIN}", "demo")) == (
+        "slug",
+        "backend",
+    )

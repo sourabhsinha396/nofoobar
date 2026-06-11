@@ -24,7 +24,13 @@ class Settings(BaseSettings):
     SESSION_SECRET: str
     SESSION_COOKIE_DOMAIN: str | None = None
 
-    APEX_DOMAIN: str = "nofoobar.io"
+    APEX_DOMAIN: str = "nofoobar.com"
+
+    # Public hostname the API itself is served at (e.g. backend.nofoobar.com).
+    # Requests addressed to this host carry the tenant in X-Tenant-Slug, same
+    # as the apex — without this, an API host under the apex would be
+    # misread as tenant subdomain "backend". Empty disables the carve-out.
+    API_HOST: str = ""
 
     # Single regex covers apex + every tenant subdomain. Default matches localhost dev
     # without subdomains; override in .env for the dev-subdomains workflow or prod.
