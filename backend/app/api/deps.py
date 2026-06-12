@@ -31,23 +31,30 @@ def _resolve_tenant(request: Request) -> TenantLookup:
     api_host = settings.API_HOST.lower()
 
     # Trusted hosts (local-dev loopbacks, the apex, and the API's own public
-    # hostname) carry the tenant in an X-Tenant-Slug header. The apex case
-    # covers dev server-to-server calls from the Next frontend at apex:port;
-    # API_HOST covers prod, where both the Next server and the browser reach
-    # the API at e.g. backend.nofoobar.com — which must not fall through to
-    # the subdomain branch below and be misread as tenant slug "backend".
+    # hostname) name the tenant explicitly instead of via their own hostname:
+    # either an X-Tenant-Slug header, or — when the Next server proxied a
+    # browser request on behalf of a visitor — the visitor's original host in
+    # X-Forwarded-Host, resolved like a direct public host. Without this
+    # carve-out, an API host under the apex (e.g. backend.<apex>) would be
+    # misread as tenant subdomain "backend".
     if host in _LOCAL_HOSTS or host == apex or (api_host and host == api_host):
         slug = request.headers.get("x-tenant-slug", "").strip().lower()
-        if not slug:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Missing X-Tenant-Slug header")
-        return ("slug", slug)
+        if slug:
+            return ("slug", slug)
+        forwarded = request.headers.get("x-forwarded-host", "").split(":")[0].strip().lower()
+        if forwarded and forwarded != apex:
+            return _lookup_for_public_host(forwarded, apex)
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Missing X-Tenant-Slug header")
 
+    return _lookup_for_public_host(host, apex)
+
+
+def _lookup_for_public_host(host: str, apex: str) -> TenantLookup:
     if host.endswith(f".{apex}"):
         slug = host[: -len(apex) - 1]
         if not slug or "." in slug:
             raise HTTPException(status.HTTP_404_NOT_FOUND, f"Invalid tenant subdomain: {host}")
         return ("slug", slug)
-
     return ("domain", host)
 
 

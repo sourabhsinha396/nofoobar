@@ -1,4 +1,7 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// Browser-side client: paths are relative, so requests go to the current
+// origin and are proxied to the backend by app/api/v1/[...path]/route.ts.
+// This keeps cookies first-party on every host (subdomains, custom domains).
+const API_URL = "";
 
 export class ApiError extends Error {
   status: number;

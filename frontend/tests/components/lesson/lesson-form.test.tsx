@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+﻿import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -91,7 +91,7 @@ function renderEdit(initial: typeof ARTICLE_INITIAL | typeof VIDEO_INITIAL) {
   );
 }
 
-describe("LessonForm — edit mode", () => {
+describe("LessonForm â€” edit mode", () => {
   it("pre-populates fields from initial values (article)", () => {
     renderEdit(ARTICLE_INITIAL);
     expect(screen.getByLabelText("Title")).toHaveValue("Why async matters");
@@ -104,13 +104,13 @@ describe("LessonForm — edit mode", () => {
   it("pre-populates fields from initial values (video)", () => {
     renderEdit(VIDEO_INITIAL);
     expect(screen.getByLabelText("Video URL")).toHaveValue("https://youtu.be/abc123");
-    // 240 seconds → 4 minutes in the input.
+    // 240 seconds â†’ 4 minutes in the input.
     expect(screen.getByLabelText(/Duration/)).toHaveValue(4);
   });
 
   it("disables content_type radios so users can't switch types", () => {
     renderEdit(ARTICLE_INITIAL);
-    // Scope to the content-type radio group only — the form also has a
+    // Scope to the content-type radio group only â€” the form also has a
     // separate visibility radio group that's editable.
     const radios = screen.getAllByRole("radio", { name: /article|video/i });
     expect(radios).toHaveLength(2);
@@ -134,7 +134,7 @@ describe("LessonForm — edit mode", () => {
     expect(fetchMock).toHaveBeenCalledOnce();
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe(
-      "http://localhost:8000/api/v1/courses/intro-fastapi/sections/getting-started/lessons/intro",
+      "/api/v1/courses/intro-fastapi/sections/getting-started/lessons/intro",
     );
     expect(init.method).toBe("PATCH");
     const body = JSON.parse(init.body);
@@ -157,7 +157,7 @@ describe("LessonForm — edit mode", () => {
     await user.click(screen.getByRole("button", { name: /save changes/i }));
 
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-    // duration_seconds lives at the top of the payload now — content is just url.
+    // duration_seconds lives at the top of the payload now â€” content is just url.
     expect(body.duration_seconds).toBe(240);
     expect(body.content).toEqual({
       content_type: "video",

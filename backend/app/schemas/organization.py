@@ -2,7 +2,7 @@ from enum import StrEnum
 from typing import Annotated
 from uuid import UUID
 
-from pydantic import BaseModel, Field, HttpUrl, StringConstraints
+from pydantic import BaseModel, BeforeValidator, Field, HttpUrl, StringConstraints
 from sqlmodel import SQLModel
 
 from app.schemas.common import Slug
@@ -13,6 +13,25 @@ from app.schemas.payment_account import OrgPaymentAccountPublic
 # the tenant; we don't send mail from it. Tighten later if we need to.
 _EMAIL_PATTERN = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
 EmailLike = Annotated[str, StringConstraints(pattern=_EMAIL_PATTERN, max_length=255)]
+
+# Hostname for tenant custom domains: lowercase labels, at least one dot, no
+# scheme/port/path. Normalization runs in a BeforeValidator because pydantic
+# checks `pattern` against the raw input, before to_lower/strip transforms.
+# (No lookaheads — pydantic compiles patterns with the Rust regex engine.)
+_DOMAIN_PATTERN = r"^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$"
+
+
+def _normalize_domain(value: object) -> object:
+    if isinstance(value, str):
+        return value.strip().lower().rstrip(".")
+    return value
+
+
+DomainName = Annotated[
+    str,
+    BeforeValidator(_normalize_domain),
+    StringConstraints(pattern=_DOMAIN_PATTERN, max_length=253),
+]
 
 
 class SocialPlatform(StrEnum):
@@ -49,6 +68,23 @@ class OrganizationUpdate(BaseModel):
     footer_text: Annotated[str, StringConstraints(max_length=500)] | None = None
     contact_email: EmailLike | None = None
     social_links: Annotated[list[SocialLinkItem], Field(max_length=16)] | None = None
+    # Owner-editable custom domain. Route-level checks add what the type
+    # can't express: not a platform (sub)domain, not claimed by another org.
+    custom_domain: DomainName | None = None
+
+
+class DomainStatus(BaseModel):
+    """Live DNS connection state for the org's custom domain, shown in the
+    settings UI. `configured` is whether a domain is set at all; `connected`
+    is whether its DNS currently points at the platform."""
+
+    configured: bool
+    domain: str | None = None
+    expected_target: str | None = None
+    connected: bool = False
+    resolved_ips: list[str] = []
+    expected_ips: list[str] = []
+    message: str | None = None
 
 
 class OrganizationPublic(SQLModel):

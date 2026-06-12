@@ -32,6 +32,12 @@ class Settings(BaseSettings):
     # misread as tenant subdomain "backend". Empty disables the carve-out.
     API_HOST: str = ""
 
+    # Where tenants point their custom-domain DNS (e.g. domains.nofoobar.com,
+    # a DNS-only record on the server IP). Used by the live DNS check in org
+    # settings and shown to tenants as the CNAME target. Empty disables
+    # checking. See docs/devops/custom-domains-caddy.md.
+    DOMAINS_CNAME_TARGET: str = ""
+
     # Single regex covers apex + every tenant subdomain. Default matches localhost dev
     # without subdomains; override in .env for the dev-subdomains workflow or prod.
     CORS_ORIGIN_REGEX: str = r"^http://(localhost|127\.0\.0\.1):3000$"

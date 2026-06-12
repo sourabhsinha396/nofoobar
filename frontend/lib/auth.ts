@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+import { INTERNAL_API_URL as API_URL } from "@/lib/api-internal";
+
 export const SESSION_COOKIE = "session";
 
 export interface CurrentUser {

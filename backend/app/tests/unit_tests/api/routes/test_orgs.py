@@ -1,10 +1,20 @@
+from unittest.mock import MagicMock
+
 import pytest
 
+from app.core.config import settings
 from app.db.models.membership import Role
 from app.db.models.organization import Organization
+from app.services.domains import DomainDnsStatus
 from app.tests.factories.organization import OrganizationFactory
 
 HOSTS = ["localhost", "acme.nofoobar.app"]
+
+
+def _result(value) -> MagicMock:
+    m = MagicMock()
+    m.first.return_value = value
+    return m
 
 
 @pytest.mark.parametrize("host", HOSTS)
@@ -204,3 +214,126 @@ def test_patch_org_caps_social_link_count(client, mock_session, fake_membership)
         headers={"Host": "localhost"},
     )
     assert response.status_code == 422
+
+
+# ---------- custom_domain via PATCH /orgs/{slug} ----------
+
+
+def test_patch_org_sets_and_normalizes_custom_domain(client, mock_session, fake_membership):
+    fake_membership.role = Role.OWNER
+    org = OrganizationFactory.build(id=fake_membership.org_id, slug="acme")
+    org.custom_domain = None
+    # First exec: org fetch. Second: uniqueness check (no other claimant).
+    mock_session.exec.side_effect = [_result(org), _result(None)]
+    response = client.patch(
+        _patch_path(),
+        json={"custom_domain": "  Learn.ACME.com "},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 200
+    assert org.custom_domain == "learn.acme.com"
+
+
+def test_patch_org_clears_custom_domain_with_null(client, mock_session, fake_membership):
+    fake_membership.role = Role.OWNER
+    org = OrganizationFactory.build(id=fake_membership.org_id, slug="acme")
+    org.custom_domain = "learn.acme.com"
+    mock_session.exec.return_value.first.return_value = org
+    response = client.patch(
+        _patch_path(),
+        json={"custom_domain": None},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 200
+    assert org.custom_domain is None
+
+
+def test_patch_org_rejects_platform_domains(client, mock_session, fake_membership):
+    fake_membership.role = Role.OWNER
+    org = OrganizationFactory.build(id=fake_membership.org_id, slug="acme")
+    apex = settings.APEX_DOMAIN.lower()
+    for claimed in [apex, f"demo.{apex}"]:
+        mock_session.exec.side_effect = [_result(org)]
+        response = client.patch(
+            _patch_path(),
+            json={"custom_domain": claimed},
+            headers={"Host": "localhost"},
+        )
+        assert response.status_code == 400, claimed
+
+
+def test_patch_org_rejects_domain_claimed_by_another_org(client, mock_session, fake_membership):
+    fake_membership.role = Role.OWNER
+    org = OrganizationFactory.build(id=fake_membership.org_id, slug="acme")
+    other = OrganizationFactory.build(slug="rival")
+    other.custom_domain = "learn.acme.com"
+    mock_session.exec.side_effect = [_result(org), _result(other)]
+    response = client.patch(
+        _patch_path(),
+        json={"custom_domain": "learn.acme.com"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 409
+
+
+@pytest.mark.parametrize(
+    "bad_domain",
+    ["no-dots", "http://learn.acme.com", "learn.acme.com/path", "-bad.com", "a b.com"],
+)
+def test_patch_org_rejects_invalid_domain_shapes(
+    client, mock_session, fake_membership, bad_domain
+):
+    fake_membership.role = Role.OWNER
+    response = client.patch(
+        _patch_path(),
+        json={"custom_domain": bad_domain},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 422, bad_domain
+
+
+# ---------- GET /orgs/{slug}/domain-status ----------
+
+
+def _status_path(slug: str = "acme") -> str:
+    return f"/api/v1/orgs/{slug}/domain-status"
+
+
+def test_domain_status_unconfigured(client, mock_session, fake_membership):
+    org = OrganizationFactory.build(id=fake_membership.org_id, slug="acme")
+    org.custom_domain = None
+    mock_session.exec.return_value.first.return_value = org
+    response = client.get(_status_path(), headers={"Host": "localhost"})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["configured"] is False
+    assert body["connected"] is False
+
+
+def test_domain_status_runs_live_dns_check(client, mock_session, fake_membership, monkeypatch):
+    org = OrganizationFactory.build(id=fake_membership.org_id, slug="acme")
+    org.custom_domain = "learn.acme.com"
+    mock_session.exec.return_value.first.return_value = org
+
+    async def fake_check(domain: str, target: str) -> DomainDnsStatus:
+        return DomainDnsStatus(
+            domain=domain,
+            expected_target="domains.nofoobar.com",
+            connected=True,
+            resolved_ips=["1.2.3.4"],
+            expected_ips=["1.2.3.4"],
+        )
+
+    monkeypatch.setattr("app.api.routes.orgs.check_domain_dns", fake_check)
+    response = client.get(_status_path(), headers={"Host": "localhost"})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["configured"] is True
+    assert body["connected"] is True
+    assert body["domain"] == "learn.acme.com"
+    assert body["expected_target"] == "domains.nofoobar.com"
+
+
+def test_domain_status_requires_authentication(client, mock_session):
+    response = client.get(_status_path(), headers={"Host": "localhost"})
+    assert response.status_code == 401

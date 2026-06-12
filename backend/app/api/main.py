@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.api.routes import (
     auth,
     courses,
+    domains,
     enrollments,
     health,
     homepage,
@@ -25,6 +26,7 @@ from app.api.routes import (
 
 api_router = APIRouter()
 api_router.include_router(health.router)
+api_router.include_router(domains.router)
 api_router.include_router(tenant.router)
 api_router.include_router(auth.router)
 api_router.include_router(me.router)

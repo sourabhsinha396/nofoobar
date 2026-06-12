@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+﻿import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -80,7 +80,7 @@ describe("DeleteLessonButton", () => {
     expect(fetchMock).toHaveBeenCalledOnce();
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe(
-      "http://localhost:8000/api/v1/courses/intro-fastapi/sections/getting-started/lessons/install-python",
+      "/api/v1/courses/intro-fastapi/sections/getting-started/lessons/install-python",
     );
     expect(init.method).toBe("DELETE");
     expect(init.headers).toEqual({ "X-Tenant-Slug": "demo" });

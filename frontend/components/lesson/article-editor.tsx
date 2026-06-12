@@ -40,7 +40,8 @@ import {
   uploadVideoBytes,
 } from "@/lib/video-upload";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// Relative paths — proxied to the backend by app/api/v1/[...path]/route.ts.
+const API_URL = "";
 const IMAGE_MAX_BYTES = 2 * 1024 * 1024;
 const IMAGE_ACCEPT = "image/png,image/jpeg,image/gif";
 

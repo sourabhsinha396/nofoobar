@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ApiError } from "@/lib/api";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// Relative paths — proxied to the backend by app/api/v1/[...path]/route.ts.
+const API_URL = "";
 
 // Client-side pre-check before sending the request — the backend is the
 // authoritative cap (matches s3.MAX_UPLOAD_BYTES on the server).

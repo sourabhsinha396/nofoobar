@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+﻿import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -81,7 +81,7 @@ function renderList() {
   );
 }
 
-describe("SortableLessonList — smoke", () => {
+describe("SortableLessonList â€” smoke", () => {
   it("renders every lesson in the initial order", () => {
     renderList();
     const items = screen.getAllByRole("listitem");
@@ -145,7 +145,7 @@ describe("SortableLessonList — smoke", () => {
   });
 });
 
-describe("SortableLessonList — visibility toggle", () => {
+describe("SortableLessonList â€” visibility toggle", () => {
   it("renders a switch with the current visibility label for each lesson", () => {
     renderList();
     // All seeded lessons are draft (see LESSONS at top); each row has a switch
@@ -173,7 +173,7 @@ describe("SortableLessonList — visibility toggle", () => {
     expect(fetchMock).toHaveBeenCalledOnce();
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe(
-      "http://localhost:8000/api/v1/courses/intro-fastapi/sections/getting-started/lessons/welcome",
+      "/api/v1/courses/intro-fastapi/sections/getting-started/lessons/welcome",
     );
     expect(init.method).toBe("PATCH");
     expect(JSON.parse(init.body)).toEqual({ visibility: "published" });

@@ -2,10 +2,9 @@ import "server-only";
 
 import { cookies } from "next/headers";
 
+import { INTERNAL_API_URL as API_URL } from "@/lib/api-internal";
 import { SESSION_COOKIE } from "@/lib/auth";
 import type { Membership } from "@/lib/orgs";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 export async function getMyOrgs(): Promise<Membership[]> {
   const cookieStore = await cookies();

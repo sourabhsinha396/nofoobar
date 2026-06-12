@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+﻿import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -61,7 +61,7 @@ describe("EnrollButton", () => {
 
     expect(fetchMock).toHaveBeenCalledOnce();
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe("http://localhost:8000/api/v1/courses/intro-fastapi/enroll");
+    expect(url).toBe("/api/v1/courses/intro-fastapi/enroll");
     expect(init.method).toBe("POST");
     expect(init.headers).toMatchObject({ "X-Tenant-Slug": "demo" });
     expect(refreshMock).toHaveBeenCalled();

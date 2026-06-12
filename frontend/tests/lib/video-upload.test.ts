@@ -10,7 +10,9 @@ import {
   uploadVideoBytes,
 } from "@/lib/video-upload";
 
-const API_BASE = "http://localhost:8000";
+// Browser calls are same-origin relative paths, served by the API proxy
+// route handler (app/api/v1/[...path]/route.ts).
+const API_BASE = "";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {

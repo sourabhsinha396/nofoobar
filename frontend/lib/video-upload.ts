@@ -1,6 +1,7 @@
 import { ApiError } from "@/lib/api";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// Relative paths — proxied to the backend by app/api/v1/[...path]/route.ts.
+const API_URL = "";
 
 export type VideoProviderName = "mux" | "bunny" | "cloudflare";
 

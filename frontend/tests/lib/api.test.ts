@@ -2,7 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError, apiDelete, apiGet, apiPatch, apiPost } from "@/lib/api";
 
-const FETCH_BASE = "http://localhost:8000";
+// Browser calls are same-origin relative paths, served by the API proxy
+// route handler (app/api/v1/[...path]/route.ts).
+const FETCH_BASE = "";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {

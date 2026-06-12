@@ -4,6 +4,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
+import { DomainStatusPanel } from "@/components/admin/settings/domain-status-panel";
 import { LogoUploader } from "@/components/course/logo-uploader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -34,6 +35,7 @@ interface FormState {
   footer_text: string;
   contact_email: string;
   social_links: SocialLink[];
+  custom_domain: string;
 }
 
 function toFormState(org: TenantOrg): FormState {
@@ -45,6 +47,7 @@ function toFormState(org: TenantOrg): FormState {
     footer_text: org.footer_text ?? "",
     contact_email: org.contact_email ?? "",
     social_links: org.social_links,
+    custom_domain: org.custom_domain ?? "",
   };
 }
 
@@ -108,6 +111,7 @@ export function SettingsEditor({ orgSlug, initial }: Props) {
           footer_text: nullable(form.footer_text),
           contact_email: nullable(form.contact_email),
           social_links: cleanedSocials,
+          custom_domain: nullable(form.custom_domain),
         },
         { headers: { "X-Tenant-Slug": orgSlug } },
       );
@@ -119,8 +123,12 @@ export function SettingsEditor({ orgSlug, initial }: Props) {
     } catch (err) {
       if (err instanceof ApiError && err.status === 403) {
         setError("Only owners can edit organization settings.");
+      } else if (err instanceof ApiError && (err.status === 400 || err.status === 409)) {
+        // Domain guard errors carry actionable detail (platform domain,
+        // already claimed) — show them verbatim.
+        setError(err.message);
       } else if (err instanceof ApiError && err.status === 422) {
-        setError("One of the fields failed validation. Check email and URLs.");
+        setError("One of the fields failed validation. Check email, URLs, and domain.");
       } else {
         setError(err instanceof Error ? err.message : "Could not save.");
       }
@@ -220,6 +228,24 @@ export function SettingsEditor({ orgSlug, initial }: Props) {
             placeholder="© 2026 Acme Academy. All rights reserved."
           />
         </Field>
+      </Section>
+
+      <Section title="Custom domain">
+        <Field
+          label="Domain"
+          hint="Your own domain for this site (e.g. learn.yourdomain.com or yourdomain.com) — no https:// or paths. Clear and save to disconnect."
+        >
+          <Input
+            value={form.custom_domain}
+            onChange={(e) => patchForm({ custom_domain: e.target.value })}
+            maxLength={253}
+            placeholder="learn.yourdomain.com"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+          />
+        </Field>
+        <DomainStatusPanel orgSlug={orgSlug} />
       </Section>
 
       <Section title="Social links">

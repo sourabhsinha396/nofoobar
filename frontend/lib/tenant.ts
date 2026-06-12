@@ -1,12 +1,18 @@
 import { cookies, headers } from "next/headers";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+import { INTERNAL_API_URL as API_URL } from "@/lib/api-internal";
 
 // Server-side companion to `tenantPath` in lib/orgs.ts. The browser's URL
-// shape depends on whether we're in subdomain mode (`demo.host/admin`) or
-// path mode (`apex/org/demo/admin`); the request `Host` header tells us which.
+// shape depends on whether we're on a tenant site (`demo.host/admin` or a
+// custom domain — bare paths) or in apex path mode (`apex/org/demo/admin`).
+// The proxy marks every request it rewrote into /org/[slug] with the
+// x-tenant-site header; the Host check stays as a fallback for subdomains.
 export async function serverTenantPath(slug: string, path: string): Promise<string> {
-  const host = (await headers()).get("host")?.toLowerCase();
+  const requestHeaders = await headers();
+  if (requestHeaders.get("x-tenant-site") === slug) {
+    return path;
+  }
+  const host = requestHeaders.get("host")?.toLowerCase();
   const tenantHost = process.env.NEXT_PUBLIC_TENANT_HOST?.toLowerCase();
   if (host && tenantHost && host !== tenantHost && host.endsWith(`.${tenantHost}`)) {
     return path;
@@ -37,6 +43,7 @@ export interface TenantOrg {
   id: string;
   slug: string;
   name: string;
+  custom_domain: string | null;
   logo_url: string | null;
   description: string | null;
   tagline: string | null;

@@ -7,11 +7,17 @@ from app.api.deps import _resolve_tenant
 from app.core.config import settings
 
 
-def _request(host: str, slug_header: str | None = None) -> MagicMock:
+def _request(
+    host: str,
+    slug_header: str | None = None,
+    forwarded_host: str | None = None,
+) -> MagicMock:
     request = MagicMock()
     headers = {"host": host}
     if slug_header is not None:
         headers["x-tenant-slug"] = slug_header
+    if forwarded_host is not None:
+        headers["x-forwarded-host"] = forwarded_host
     request.headers = headers
     return request
 
@@ -91,6 +97,48 @@ def test_api_host_without_slug_header_raises_400(monkeypatch):
     with pytest.raises(HTTPException) as exc:
         _resolve_tenant(_request(f"backend.{settings.APEX_DOMAIN}"))
     assert exc.value.status_code == 400
+
+
+def test_forwarded_subdomain_host_resolves_slug():
+    # Next proxies a browser request from a tenant subdomain: the original
+    # host arrives in X-Forwarded-Host and resolves like a direct visit.
+    assert _resolve_tenant(
+        _request("localhost", forwarded_host=f"acme.{settings.APEX_DOMAIN}")
+    ) == ("slug", "acme")
+
+
+def test_forwarded_custom_domain_resolves_domain_lookup():
+    assert _resolve_tenant(
+        _request("localhost", forwarded_host="learn.acme.com")
+    ) == ("domain", "learn.acme.com")
+
+
+def test_forwarded_host_strips_port():
+    assert _resolve_tenant(
+        _request("localhost", forwarded_host=f"acme.{settings.APEX_DOMAIN}:3000")
+    ) == ("slug", "acme")
+
+
+def test_slug_header_wins_over_forwarded_host():
+    assert _resolve_tenant(
+        _request("localhost", "demo", forwarded_host="learn.acme.com")
+    ) == ("slug", "demo")
+
+
+def test_forwarded_apex_host_still_requires_slug_header():
+    # Apex pages are not tenant sites — a proxied apex request without an
+    # explicit slug must fail the same way a direct apex request does.
+    with pytest.raises(HTTPException) as exc:
+        _resolve_tenant(_request("localhost", forwarded_host=settings.APEX_DOMAIN))
+    assert exc.value.status_code == 400
+
+
+def test_forwarded_host_ignored_on_untrusted_hosts():
+    # A public tenant subdomain can't redirect resolution elsewhere by
+    # spoofing X-Forwarded-Host; its own hostname wins.
+    assert _resolve_tenant(
+        _request(f"acme.{settings.APEX_DOMAIN}", forwarded_host="evil.example.com")
+    ) == ("slug", "acme")
 
 
 def test_unset_api_host_keeps_subdomain_resolution():
