@@ -16,7 +16,7 @@ pnpm dev
 
 Open http://localhost:3000.
 
-The backend (FastAPI) must be running for any API-driven features — see [`../backend/README.md`](../backend/README.md).
+The backend (FastAPI) must be running for any API-driven features - see [`../backend/README.md`](../backend/README.md).
 
 ## Common commands
 
@@ -33,4 +33,4 @@ Nofoobar uses shadcn primitives without restriction and a **curated subset** of 
 
 ## Next.js 16
 
-This project is on Next.js 16, which has breaking changes from earlier versions — APIs, conventions, and file structure differ from training data and many tutorials. Read the relevant guide in `node_modules/next/dist/docs/` before writing new code. See [`AGENTS.md`](AGENTS.md).
+This project is on Next.js 16, which has breaking changes from earlier versions - APIs, conventions, and file structure differ from training data and many tutorials. Read the relevant guide in `node_modules/next/dist/docs/` before writing new code. See [`AGENTS.md`](AGENTS.md).

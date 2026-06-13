@@ -69,7 +69,7 @@ export default async function AdminNavLinksPage({ params }: Props) {
           orgSlug={slug}
           location="header"
           title="Header"
-          description="Top navbar links. Keep this short — 2–4 items reads best."
+          description="Top navbar links. Keep this short; 2–4 items reads best."
           initialLinks={headerLinks}
         />
         <NavLinksEditor

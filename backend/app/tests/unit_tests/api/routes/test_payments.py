@@ -147,7 +147,7 @@ def test_upsert_account_updates_existing(
     assert response.status_code == 200
     assert response.json()["key_id"] == "pk_test_new"
     assert existing.key_id == "pk_test_new"
-    # No new account added — existing row was mutated.
+    # No new account added - existing row was mutated.
     added_accounts = [
         c.args[0]
         for c in mock_session.add.call_args_list
@@ -619,7 +619,7 @@ def test_verify_400_when_account_disconnected(
         status=PaymentStatus.PENDING,
         provider=PaymentProvider.STRIPE,
     )
-    # Tenant has since disconnected — account lookup returns None.
+    # Tenant has since disconnected - account lookup returns None.
     mock_session.exec.side_effect = _exec_results(attempt, None)
     response = client.post(
         f"/api/v1/payment-attempts/{attempt.id}/verify",
@@ -678,7 +678,7 @@ def test_verify_idempotent_when_already_paid(
         )
     assert response.status_code == 200
     assert response.json()["enrolled"] is True
-    # No Stripe API call needed — short-circuit fast path.
+    # No Stripe API call needed - short-circuit fast path.
     retrieve.assert_not_called()
 
 

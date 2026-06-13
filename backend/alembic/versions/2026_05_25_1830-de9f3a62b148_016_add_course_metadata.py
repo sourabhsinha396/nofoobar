@@ -2,7 +2,7 @@
 
 Adds Course.tags (TEXT[]), Course.logo_url (VARCHAR), Course.level (enum).
 The level enum is created before the column is added (matches the pattern
-in 008_add_course_visibility — ALTER TABLE ADD COLUMN can't auto-create an
+in 008_add_course_visibility - ALTER TABLE ADD COLUMN can't auto-create an
 enum type the way CREATE TABLE can).
 
 Revision ID: de9f3a62b148

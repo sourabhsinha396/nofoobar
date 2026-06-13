@@ -36,7 +36,7 @@ describe("DomainStatusPanel", () => {
   it("fetches status on mount with the tenant header", async () => {
     fetchMock.mockResolvedValueOnce(statusResponse({ connected: true }));
     render(<DomainStatusPanel orgSlug="fastapi" />);
-    expect(await screen.findByText(/connected —/i)).toBeInTheDocument();
+    expect(await screen.findByText(/connected\./i)).toBeInTheDocument();
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe("/api/v1/orgs/fastapi/domain-status");
     expect(init.headers).toMatchObject({ "X-Tenant-Slug": "fastapi" });
@@ -68,7 +68,7 @@ describe("DomainStatusPanel", () => {
     await screen.findByText(/not connected yet/i);
     fetchMock.mockResolvedValue(statusResponse({ connected: true }));
     await userEvent.click(screen.getByRole("button", { name: /check again/i }));
-    expect(await screen.findByText(/connected —/i)).toBeInTheDocument();
+    expect(await screen.findByText(/connected\./i)).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 

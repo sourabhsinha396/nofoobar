@@ -113,7 +113,7 @@ def test_enroll_treats_draft_course_as_missing(
     client, mock_session, fake_org, authed_user
 ):
     # The query filters by visibility=published, so a draft course just returns
-    # None at the route layer — the same 404 path as a missing course.
+    # None at the route layer - the same 404 path as a missing course.
     mock_session.exec.side_effect = _exec_results(None)
     response = client.post("/api/v1/courses/draft-only/enroll", headers={"Host": "localhost"})
     assert response.status_code == 404

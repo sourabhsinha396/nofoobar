@@ -27,7 +27,7 @@ export default async function EditLessonPage({ params }: Props) {
   }
 
   return (
-    <main className="mx-auto w-full max-w-xl px-6 py-16 md:py-24">
+    <main className="mx-auto w-full max-w-6xl">
       <LessonForm
         mode="edit"
         orgSlug={slug}

@@ -34,7 +34,7 @@ def configured_s3(monkeypatch):
 
 
 def _png_bytes() -> bytes:
-    # 1x1 transparent PNG — minimal valid file for round-trip tests.
+    # 1x1 transparent PNG - minimal valid file for round-trip tests.
     return bytes.fromhex(
         "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4"
         "890000000d49444154789c63000100000005000100"
@@ -59,7 +59,7 @@ def test_upload_returns_public_url(client, fake_membership, configured_s3, host)
     # Verify the storage layer was called with the expected arguments.
     assert configured_s3["content_type"] == "image/png"
     assert configured_s3["body"] == b"hello-bytes"
-    # Key lives under uploads/images/<purpose>/ — `uploads/images/` is
+    # Key lives under uploads/images/<purpose>/ - `uploads/images/` is
     # mandatory so future file types (docs, scripts) get their own siblings.
     assert configured_s3["key"].startswith(
         f"uploads/images/course_logo/{fake_membership.org_id}/"
@@ -80,7 +80,7 @@ def test_upload_routes_by_purpose(client, fake_membership, configured_s3):
 
 
 def test_upload_rejects_missing_purpose(client, fake_membership, configured_s3):
-    # Purpose is required — no default — so an upload that forgets to declare
+    # Purpose is required - no default - so an upload that forgets to declare
     # one fails fast with 422 rather than landing in a catchall directory.
     response = client.post(
         "/api/v1/uploads/image",

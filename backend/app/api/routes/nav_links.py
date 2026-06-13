@@ -33,7 +33,7 @@ async def replace_nav_links(
     membership: CurrentMembershipDep,
     session: SessionDep,
 ) -> list[NavLinkPublic]:
-    # Site chrome (nav, footer, branding) is owner-only — instructors stay
+    # Site chrome (nav, footer, branding) is owner-only - instructors stay
     # scoped to course/lesson edits.
     if membership.role != Role.OWNER:
         raise HTTPException(

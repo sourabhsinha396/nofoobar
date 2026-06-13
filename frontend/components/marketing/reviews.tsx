@@ -19,7 +19,7 @@ const reviews: ReadonlyArray<Review> = [
   {
     name: "Lukas Berger",
     handle: "dev_in_berlin",
-    body: "Switched two courses over last weekend. The AI blog drafts saved me a Saturday — I had four posts queued by Sunday.",
+    body: "Switched two courses over last weekend. The AI blog drafts saved me a Saturday. I had four posts queued by Sunday.",
     initials: "LB",
     accent: "bg-sky-200/70",
   },

@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 MUX_API_BASE = "https://api.mux.com"
 # Mux upload statuses we care about. Anything else (cancelled, timed_out) is
-# treated as a terminal failure — same handling as 'errored'.
+# treated as a terminal failure - same handling as 'errored'.
 _TERMINAL_UPLOAD_FAILURES = {"errored", "cancelled", "timed_out"}
 
 
@@ -29,7 +29,7 @@ class MuxVideoProvider:
     """Mux video adapter. Centralized credentials via settings.MUX_TOKEN_ID /
     settings.MUX_TOKEN_SECRET.
 
-    Polling-based status updates, not webhooks — see docs/backend/video.md."""
+    Polling-based status updates, not webhooks - see docs/backend/video.md."""
 
     provider = VideoProviderName.MUX
 
@@ -74,10 +74,10 @@ class MuxVideoProvider:
         return _to_provider_asset(data)
 
     async def delete(self, *, provider_asset_ref: str) -> None:
-        raise NotImplementedError("MuxVideoProvider.delete — implemented in sweeper chunk")
+        raise NotImplementedError("MuxVideoProvider.delete - implemented in sweeper chunk")
 
     async def list_assets(self) -> AsyncIterator[ProviderAsset]:
-        raise NotImplementedError("MuxVideoProvider.list_assets — implemented in sweeper chunk")
+        raise NotImplementedError("MuxVideoProvider.list_assets - implemented in sweeper chunk")
         yield  # type: ignore[unreachable]
 
     async def _request(
@@ -93,7 +93,7 @@ class MuxVideoProvider:
         # is_configured() before calling.
         if not settings.MUX_TOKEN_ID or not settings.MUX_TOKEN_SECRET:
             raise VideoProviderNotConfigured(
-                "Mux credentials not set — configure MUX_TOKEN_ID and MUX_TOKEN_SECRET"
+                "Mux credentials not set; configure MUX_TOKEN_ID and MUX_TOKEN_SECRET"
             )
 
         client_kwargs: dict[str, Any] = {

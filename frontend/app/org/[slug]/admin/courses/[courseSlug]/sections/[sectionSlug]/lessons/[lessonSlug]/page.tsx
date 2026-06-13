@@ -45,7 +45,7 @@ export default async function LessonDetailPage({ params }: Props) {
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-12 md:py-16">
+    <main className="mx-auto w-full max-w-5xl">
       <header className="mb-8">
         <Link
           href={sectionHref}
@@ -53,36 +53,37 @@ export default async function LessonDetailPage({ params }: Props) {
         >
           ← Section
         </Link>
-        <div className="mt-6 flex items-center gap-2">
-          <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            Lesson
-          </p>
-          <span className="inline-flex items-center rounded-full border border-border bg-surface-subtle px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {CONTENT_TYPE_LABELS[lesson.content_type]}
-          </span>
+        <div className="mt-6 flex items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                Lesson
+              </p>
+              <span className="inline-flex items-center rounded-full border border-border bg-surface-subtle px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {CONTENT_TYPE_LABELS[lesson.content_type]}
+              </span>
+            </div>
+            <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight md:text-4xl">
+              {lesson.title}
+            </h1>
+            <p className="mt-2 font-mono text-sm text-muted-foreground">{lesson.slug}</p>
+          </div>
+          <div className="flex shrink-0 items-center gap-3">
+            <Button asChild>
+              <Link href={editHref}>Edit lesson</Link>
+            </Button>
+            <DeleteLessonButton
+              orgSlug={slug}
+              courseSlug={courseSlug}
+              sectionSlug={sectionSlug}
+              lessonSlug={lessonSlug}
+              lessonTitle={lesson.title}
+            />
+          </div>
         </div>
-        <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight md:text-4xl">
-          {lesson.title}
-        </h1>
-        <p className="mt-2 font-mono text-sm text-muted-foreground">{lesson.slug}</p>
       </header>
 
-      <div className="mb-10">
-        <LessonContent lesson={lesson} />
-      </div>
-
-      <div className="flex items-center gap-3">
-        <Button asChild>
-          <Link href={editHref}>Edit lesson</Link>
-        </Button>
-        <DeleteLessonButton
-          orgSlug={slug}
-          courseSlug={courseSlug}
-          sectionSlug={sectionSlug}
-          lessonSlug={lessonSlug}
-          lessonTitle={lesson.title}
-        />
-      </div>
+      <LessonContent lesson={lesson} />
     </main>
   );
 }

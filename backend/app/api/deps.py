@@ -32,8 +32,8 @@ def _resolve_tenant(request: Request) -> TenantLookup:
 
     # Trusted hosts (local-dev loopbacks, the apex, and the API's own public
     # hostname) name the tenant explicitly instead of via their own hostname:
-    # either an X-Tenant-Slug header, or — when the Next server proxied a
-    # browser request on behalf of a visitor — the visitor's original host in
+    # either an X-Tenant-Slug header, or - when the Next server proxied a
+    # browser request on behalf of a visitor - the visitor's original host in
     # X-Forwarded-Host, resolved like a direct public host. Without this
     # carve-out, an API host under the apex (e.g. backend.<apex>) would be
     # misread as tenant subdomain "backend".

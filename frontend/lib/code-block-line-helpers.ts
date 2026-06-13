@@ -3,7 +3,7 @@
 
 // Given a code block's text content and a character offset within it, return
 // the 1-indexed line number that offset sits on. Offsets past the end clamp
-// to the last line. A single trailing newline doesn't introduce a new line —
+// to the last line. A single trailing newline doesn't introduce a new line -
 // matches wrapLines() in lib/code-highlight.ts which drops the trailing empty
 // line so creators and learners agree on what "line N" means.
 export function lineNumberAtOffset(text: string, offset: number): number {
@@ -29,7 +29,7 @@ export function toggleLine(lines: readonly number[], line: number): number[] {
 // Toggle every line covered by a range in/out of the list. If ANY of the
 // targeted lines are currently highlighted, the toggle removes them all;
 // otherwise it adds them all. Mirrors what a "Highlight selection" toolbar
-// button feels like — repeated clicks cleanly add then remove.
+// button feels like - repeated clicks cleanly add then remove.
 export function toggleLineRange(
   lines: readonly number[],
   fromLine: number,

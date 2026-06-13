@@ -1,4 +1,4 @@
-// Client-safe org helpers — types + path/URL builders. Anything that touches
+// Client-safe org helpers - types + path/URL builders. Anything that touches
 // `next/headers` (cookies, headers) lives in `lib/orgs-server.ts` so this file
 // can be imported from client components without dragging server-only code
 // into the browser bundle.

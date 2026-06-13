@@ -120,7 +120,7 @@ function makeClientId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-// One-line description of a block's contents — keeps the list view scannable
+// One-line description of a block's contents - keeps the list view scannable
 // without having to expand each row. Falls back to a placeholder when the
 // block is still empty (newly added, not edited yet).
 function summarize(config: HomepageBlockConfig): string {
@@ -244,7 +244,7 @@ export function HomepageEditor({ orgSlug, initialBlocks, courses }: Props) {
       <div className="flex items-center justify-between gap-3">
         <div className="text-xs text-muted-foreground">
           {drafts.length === 0
-            ? "No blocks yet — your homepage will show the default."
+            ? "No blocks yet. Your homepage will show the default."
             : `${drafts.length} block${drafts.length === 1 ? "" : "s"}`}
           {savedAt && !isDirty && (
             <span className="ml-2 text-emerald-600 dark:text-emerald-400">

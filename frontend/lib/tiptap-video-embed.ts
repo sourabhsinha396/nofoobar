@@ -1,7 +1,7 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 
 // Providers we render ourselves. YouTube is handled by @tiptap/extension-youtube
-// and isn't part of this node — see detectVideoProvider() for the dispatch.
+// and isn't part of this node - see detectVideoProvider() for the dispatch.
 export type VideoProvider = "vimeo" | "loom" | "mux" | "native";
 
 export type DetectedVideo =
@@ -15,7 +15,7 @@ export function detectVideoProvider(url: string): DetectedVideo | null {
   const trimmed = url.trim();
   if (!trimmed) return null;
 
-  // YouTube — leave src as-is; @tiptap/extension-youtube does its own parsing.
+  // YouTube - leave src as-is; @tiptap/extension-youtube does its own parsing.
   if (
     /^https?:\/\/(?:www\.|m\.)?(?:youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)[\w-]{6,}/i.test(
       trimmed,
@@ -24,19 +24,19 @@ export function detectVideoProvider(url: string): DetectedVideo | null {
     return { provider: "youtube", src: trimmed };
   }
 
-  // Vimeo — normalize any vimeo.com URL to the embed player URL.
+  // Vimeo - normalize any vimeo.com URL to the embed player URL.
   const vimeo = trimmed.match(/^https?:\/\/(?:www\.|player\.)?vimeo\.com\/(?:video\/)?(\d+)/);
   if (vimeo) {
     return { provider: "vimeo", src: `https://player.vimeo.com/video/${vimeo[1]}` };
   }
 
-  // Loom — normalize share/embed URLs to the embed form. IDs are hex.
+  // Loom - normalize share/embed URLs to the embed form. IDs are hex.
   const loom = trimmed.match(/^https?:\/\/(?:www\.)?loom\.com\/(?:share|embed)\/([a-f0-9]+)/i);
   if (loom) {
     return { provider: "loom", src: `https://www.loom.com/embed/${loom[1]}` };
   }
 
-  // Mux — player.mux.com/<playback_id> with optional query string preserved
+  // Mux - player.mux.com/<playback_id> with optional query string preserved
   // (Mux uses query params for Mux Data metadata and player config like
   // autoplay/primary-color, so we keep them rather than stripping).
   const mux = trimmed.match(/^https?:\/\/(?:www\.)?player\.mux\.com\/([\w-]+)(\?[^#]*)?/i);

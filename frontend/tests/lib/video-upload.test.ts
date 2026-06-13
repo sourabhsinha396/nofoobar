@@ -155,7 +155,7 @@ describe("pollVideoAsset", () => {
   });
 
   it("throws VideoPollError when the deadline is exceeded", async () => {
-    // Fresh Response per call — Response bodies are single-read.
+    // Fresh Response per call - Response bodies are single-read.
     fetchMock.mockImplementation(() => Promise.resolve(jsonResponse(makePending())));
     await expect(
       pollVideoAsset("acme", "vid", { intervalMs: 10, timeoutMs: 30 }),

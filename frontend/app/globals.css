@@ -187,7 +187,7 @@
   }
 }
 
-/* TipTap video embeds — shared responsive 16:9 wrapper.
+/* TipTap video embeds - shared responsive 16:9 wrapper.
    - [data-youtube-video]: from @tiptap/extension-youtube
    - [data-video-embed]:   from our custom VideoEmbed node (Vimeo, Loom, mp4) */
 [data-youtube-video],
@@ -210,11 +210,11 @@
   height: 100% !important;
   border: 0;
   /* `object-fit: contain` keeps the full frame visible on .mp4 files that
-     don't match the 16:9 aspect — letterboxes against the muted bg. */
+     don't match the 16:9 aspect - letterboxes against the muted bg. */
   object-fit: contain;
 }
 
-/* TipTap algoholia lab embeds — interactive lab iframe (terminal + editor), so
+/* TipTap algoholia lab embeds - interactive lab iframe (terminal + editor), so
    it's taller than the 16:9 video wrapper. Height clamps down on small screens
    while keeping the lab usable. See lib/tiptap-lab-embed.ts. */
 [data-lab-embed] {
@@ -253,7 +253,7 @@
   }
 }
 
-/* TipTap code blocks — wrapper styling for both editor and rendered articles.
+/* TipTap code blocks - wrapper styling for both editor and rendered articles.
    Editor uses CodeBlockLowlight; renderer post-processes the same way. The
    .hljs class lands on the inner <code> via HTMLAttributes config and the
    server-side highlight pass in lib/code-highlight.ts. */
@@ -310,7 +310,7 @@
 }
 
 /* Filename chip rendered above the code on the read side. Designed to read as
-   a code-editor "file tab" — distinctly lighter than the code surface, with a
+   a code-editor "file tab" - distinctly lighter than the code surface, with a
    subtle inner highlight, file icon, and a soft accent stripe along the bottom
    that visually connects it to the code block below.
 
@@ -333,13 +333,13 @@
   font-family: var(--font-mono);
   font-size: 0.8125rem;
   letter-spacing: 0.01em;
-  /* Inner top highlight gives the chip a soft 3D feel — like a raised tab. */
+  /* Inner top highlight gives the chip a soft 3D feel - like a raised tab. */
   box-shadow: inset 0 1px 0 oklch(0.55 0.018 255 / 0.4);
 }
 .code-block-header-icon {
   width: 0.875rem;
   height: 0.875rem;
-  /* Soft accent — picks up brand-ish blue without competing with the code. */
+  /* Soft accent - picks up brand-ish blue without competing with the code. */
   color: oklch(0.72 0.13 220);
   flex-shrink: 0;
 }
@@ -458,7 +458,7 @@
   outline: none;
 }
 
-/* Editor-side per-line highlight — inline span emitted by the
+/* Editor-side per-line highlight - inline span emitted by the
    line-highlight ProseMirror plugin. Text-width tint only (no full-bleed)
    because making this display:block would conflict with white-space:pre and
    produce extra vertical gaps. The rendered view goes full-bleed via the
@@ -502,7 +502,7 @@
   width: 0.875rem;
   height: 0.875rem;
 }
-/* Feedback states swap the label via CSS — keeps the client component simple
+/* Feedback states swap the label via CSS - keeps the client component simple
    (just toggle a class) and avoids React state for a transient flash. */
 .code-copy.code-copy-copied {
   opacity: 1;
@@ -528,7 +528,7 @@
   content: "Failed";
   font-size: 0.75rem;
 }
-/* Touch devices have no hover state — keep the button visible for them. */
+/* Touch devices have no hover state - keep the button visible for them. */
 @media (hover: none) {
   .code-copy {
     opacity: 0.85;
@@ -549,7 +549,7 @@
   content: none;
 }
 
-/* Inline code (single backticks) — subtle background, no quote marks. */
+/* Inline code (single backticks) - subtle background, no quote marks. */
 .prose :not(pre) > code {
   background: var(--muted);
   color: var(--foreground);
@@ -563,7 +563,7 @@
   content: none;
 }
 
-/* highlight.js token colours — hand-rolled palette tuned to our dark code
+/* highlight.js token colours - hand-rolled palette tuned to our dark code
    surface above. Dark-first because our pre background is always dark; the
    .dark variant below is for the rare creator running the editor on a dark
    page background (the editor's pre is also dark, so it's the same colours). */

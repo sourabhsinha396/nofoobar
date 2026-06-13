@@ -18,7 +18,7 @@ router = APIRouter(prefix="/admin/pages", tags=["admin-pages"])
 async def list_pages_admin(
     membership: CurrentMembershipDep, session: SessionDep
 ) -> list[OrganizationPageSummary]:
-    # Summary projection — listing pages shouldn't ship every body blob.
+    # Summary projection - listing pages shouldn't ship every body blob.
     result = await session.exec(
         select(OrganizationPage)
         .where(OrganizationPage.org_id == membership.org_id)
@@ -33,7 +33,7 @@ async def create_page(
     membership: CurrentMembershipDep,
     session: SessionDep,
 ) -> OrganizationPagePublic:
-    # Owner-only — pages are site chrome (legal docs, contact info), not
+    # Owner-only - pages are site chrome (legal docs, contact info), not
     # course content.
     if membership.role != Role.OWNER:
         raise HTTPException(

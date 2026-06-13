@@ -91,7 +91,7 @@ export default async function MyLearningPage({ params }: Props) {
           </h2>
           <p className="mt-2 max-w-md text-sm text-muted-foreground">
             Browse the catalog and enroll to see your courses here. Free
-            previews are open to everyone — no enrollment needed.
+            previews are open to everyone, no enrollment needed.
           </p>
           <Button asChild size="lg" className="mt-6">
             <Link href={browseHref}>Browse courses</Link>

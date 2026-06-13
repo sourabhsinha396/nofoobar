@@ -88,7 +88,7 @@ export default async function AdminPagesIndex({ params }: Props) {
         <Card className="items-center p-10 text-center">
           <p className="text-muted-foreground">No pages yet.</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Start with a privacy policy and terms — payment providers need them.
+            Start with a privacy policy and terms, since payment providers need them.
           </p>
         </Card>
       ) : (

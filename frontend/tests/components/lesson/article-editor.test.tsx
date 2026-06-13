@@ -8,7 +8,7 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe("ArticleEditor — smoke", () => {
+describe("ArticleEditor - smoke", () => {
   it("renders all five toolbar buttons (H1, Bold, Italic, BulletList, CodeBlock)", () => {
     render(<ArticleEditor value={EMPTY_TIPTAP_DOC} onChange={() => {}} orgSlug="test-org" />);
     expect(screen.getByRole("button", { name: /heading 1/i })).toBeInTheDocument();

@@ -8,7 +8,7 @@ import { ReactNodeViewRenderer } from "@tiptap/react";
 import { CodeBlockNodeView } from "@/components/lesson/code-block-node-view";
 import { CodeBlock, buildExtensions } from "@/lib/tiptap-extensions";
 
-// Editor-only extension list — adds the React NodeView to CodeBlock so the
+// Editor-only extension list - adds the React NodeView to CodeBlock so the
 // editor renders the filename + language picker toolbar, plus a ProseMirror
 // plugin that visualises highlighted lines while editing. The NodeView pulls
 // in React internals from @tiptap/react which aren't safe in Server Components,
@@ -19,7 +19,7 @@ const lineHighlightKey = new PluginKey("code-block-line-highlight");
 
 // Walk every codeBlock in the doc and emit an inline decoration for each line
 // listed in its highlightedLines attribute. The decoration's class is styled
-// in globals.css as a text-width background tint — see the chunk D rationale
+// in globals.css as a text-width background tint - see the chunk D rationale
 // in lib/code-block-line-helpers.ts for why we don't go full-bleed in the
 // editor.
 function buildLineHighlightDecorations(doc: PMNode): DecorationSet {

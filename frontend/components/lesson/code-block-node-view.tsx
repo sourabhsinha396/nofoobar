@@ -13,7 +13,7 @@ import {
 // rendering with a toolbar (filename input + line-highlight toggle + language
 // dropdown) above the editable code area. The toolbar is contentEditable=false
 // so creators can't accidentally type into it. Server-side rendering uses
-// extension.renderHTML instead — see lib/code-highlight.ts for the matching
+// extension.renderHTML instead - see lib/code-highlight.ts for the matching
 // display chip and per-line highlight stripes.
 export function CodeBlockNodeView({
   node,
@@ -29,7 +29,7 @@ export function CodeBlockNodeView({
     return Array.isArray(raw) ? raw.filter((n) => Number.isFinite(n) && n > 0) : [];
   }, [node.attrs.highlightedLines]);
 
-  // Filename is committed on blur rather than per-keystroke — every transaction
+  // Filename is committed on blur rather than per-keystroke - every transaction
   // forces ProseMirror to recompute decorations including the syntax-highlight
   // overlay, which is jank for typing.
   const [localFilename, setLocalFilename] = useState(filename ?? "");

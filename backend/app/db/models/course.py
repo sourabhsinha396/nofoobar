@@ -43,7 +43,7 @@ class Course(TimestampedModel, table=True):
         ),
         sa_column_kwargs={"server_default": CourseVisibility.DRAFT.value},
     )
-    # Pricing — null = free (enroll directly), int = paid (hosted checkout).
+    # Pricing - null = free (enroll directly), int = paid (hosted checkout).
     # The base price the creator sets. At checkout, the buyer can choose any
     # connected provider + any currency the gateway supports; the backend
     # PPP-converts to the buyer's currency before creating the order.

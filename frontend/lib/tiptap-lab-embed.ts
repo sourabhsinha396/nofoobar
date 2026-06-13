@@ -6,7 +6,7 @@ import { Node, mergeAttributes } from "@tiptap/core";
 // iframe rather than trusting the pasted markup verbatim.
 //
 // Host of the labs service. Configurable for dev/staging, but the embed URL we
-// build is always rooted here — we never render a host pulled from pasted HTML.
+// build is always rooted here - we never render a host pulled from pasted HTML.
 const LABS_HOST = process.env.NEXT_PUBLIC_LABS_HOST ?? "https://algoholia.com";
 
 export interface ParsedLabEmbed {
@@ -24,7 +24,7 @@ const EMBED_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{1
 // recognisable algoholia lab embed.
 //
 // Security: we only accept algoholia-hosted URLs. Pasted iframe markup is
-// otherwise an arbitrary-embed vector — a creator could point the frame at any
+// otherwise an arbitrary-embed vector - a creator could point the frame at any
 // site. We extract org + embedId and rebuild the src ourselves (see
 // labEmbedSrc), so the stored doc never carries attacker-controlled HTML.
 export function parseLabEmbed(input: string): ParsedLabEmbed | null {
@@ -57,7 +57,7 @@ export function parseLabEmbed(input: string): ParsedLabEmbed | null {
   return { org: org.toLowerCase(), embedId: embedId.toLowerCase() };
 }
 
-// Canonical embed URL we control — always rooted at LABS_HOST regardless of
+// Canonical embed URL we control - always rooted at LABS_HOST regardless of
 // what host the creator pasted from.
 export function labEmbedSrc(org: string, embedId: string): string {
   return `${LABS_HOST.replace(/\/+$/, "")}/${org}/embed/${embedId}`;

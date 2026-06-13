@@ -48,7 +48,7 @@ export default async function PaymentsSettingsPage({ params }: Props) {
         </h1>
         <p className="mt-2 text-muted-foreground">
           Connect a provider to start accepting paid course enrollments. You stay the merchant of
-          record — money goes directly to your account.
+          record, and money goes directly to your account.
         </p>
       </header>
 

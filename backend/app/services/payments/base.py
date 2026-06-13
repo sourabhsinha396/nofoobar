@@ -22,7 +22,7 @@ class GatewayCredentials(BaseModel):
     """Tenant-provided credentials passed per-call to a PaymentGateway.
 
     `key_id` is the provider's public-ish identifier (Stripe pk_*, Razorpay
-    key_id). `secret_key` is the decrypted secret — never log or serialise.
+    key_id). `secret_key` is the decrypted secret - never log or serialise.
     """
 
     key_id: str

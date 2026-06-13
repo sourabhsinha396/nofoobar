@@ -160,7 +160,7 @@ export function VideoLessonPicker({ url, onChange, onBusyChange, orgSlug }: Prop
           >
             <Upload className="size-5" />
             <span>Upload a video file</span>
-            <span className="text-xs">MP4, MOV, WebM — any size Mux accepts</span>
+            <span className="text-xs">MP4, MOV, WebM (any size Mux accepts)</span>
           </button>
 
           <div className="flex items-center gap-2 text-xs text-muted-foreground">

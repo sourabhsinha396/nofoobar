@@ -69,7 +69,7 @@ export default async function AdminHomepagePage({ params }: Props) {
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
           Build your tenant&apos;s landing page from a stack of section blocks. Drag
-          isn&apos;t supported yet — use the up/down arrows to reorder.
+          isn&apos;t supported yet, so use the up/down arrows to reorder.
         </p>
       </header>
 

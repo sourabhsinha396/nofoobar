@@ -15,7 +15,7 @@ export function HomepageBlocks({ blocks, courses, coursesPrefix }: Props) {
   return (
     <>
       {blocks.map((block) => {
-        // Discriminator is on block.config.type — switch on that so TS narrows
+        // Discriminator is on block.config.type - switch on that so TS narrows
         // the config payload per branch.
         const cfg = block.config;
         switch (cfg.type) {

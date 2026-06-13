@@ -23,7 +23,7 @@ def _resolve_ips(host: str) -> set[str]:
 
 async def check_domain_dns(domain: str, expected_target: str) -> DomainDnsStatus:
     """Live DNS check: does `domain` currently resolve to the same address(es)
-    as the platform's ingress target? Computed on demand — no stored state, so
+    as the platform's ingress target? Computed on demand - no stored state, so
     the answer is never stale."""
     target = expected_target.strip().lower()
     if not target:
@@ -45,7 +45,7 @@ async def check_domain_dns(domain: str, expected_target: str) -> DomainDnsStatus
             connected=False,
             resolved_ips=[],
             expected_ips=[],
-            message=f"The platform target {target} did not resolve — contact support.",
+            message=f"The platform target {target} did not resolve; contact support.",
         )
 
     try:

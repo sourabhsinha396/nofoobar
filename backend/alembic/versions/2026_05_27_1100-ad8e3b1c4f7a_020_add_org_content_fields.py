@@ -7,7 +7,7 @@ Create Date: 2026-05-27 11:00:00.000000
 Adds tenant-facing content columns to `organizations`: tagline, footer_text,
 contact_email, social_links (JSONB list of {platform, url}). These power the
 admin "Brand & contact" page and downstream renderers (navbar, footer, course
-landings). `primary_color` is intentionally left in place — it's being
+landings). `primary_color` is intentionally left in place - it's being
 dropped from the admin surface but the column stays until we're sure nothing
 downstream still reads it.
 """

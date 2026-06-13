@@ -284,7 +284,7 @@ function FeaturedCoursesForm({
             <Label className="text-sm font-medium">Selected (in display order)</Label>
             {selectedCourses.length === 0 ? (
               <p className="mt-2 rounded-md border border-dashed border-border p-3 text-xs text-muted-foreground">
-                None — will auto-show the latest 3 published courses.
+                None. The latest 3 published courses will show automatically.
               </p>
             ) : (
               <ul className="mt-2 space-y-2">
@@ -445,7 +445,7 @@ function TestimonialsForm({
               placeholder="https://…"
             />
           </Field>
-          <Field label="Course" hint="Optional — associate the quote with a specific course.">
+          <Field label="Course" hint="Optionally associate the quote with a specific course.">
             <select
               className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
               value={item.course_id ?? ""}

@@ -17,7 +17,7 @@ interface DomainStatus {
 }
 
 // Live DNS status for the org's SAVED custom domain (not the draft in the
-// form above — save first, then check). Polls nothing; the tenant clicks
+// form above - save first, then check). Polls nothing; the tenant clicks
 // "Check again" after changing DNS at their provider.
 export function DomainStatusPanel({ orgSlug }: { orgSlug: string }) {
   const [status, setStatus] = useState<DomainStatus | null>(null);
@@ -56,13 +56,13 @@ export function DomainStatusPanel({ orgSlug }: { orgSlug: string }) {
       {status.configured ? (
         status.connected ? (
           <p className="text-sm text-emerald-600 dark:text-emerald-400">
-            Connected — {status.domain} points at this platform. HTTPS is issued
+            Connected. {status.domain} points at this platform. HTTPS is issued
             automatically on first visit.
           </p>
         ) : (
           <div className="space-y-2 text-sm">
             <p className="text-amber-600 dark:text-amber-400">
-              Not connected yet{status.message ? ` — ${status.message}` : "."}
+              Not connected yet{status.message ? `. ${status.message}` : "."}
             </p>
             {status.expected_target && (
               <div className="rounded-md border border-border bg-muted/40 p-3 font-mono text-xs">

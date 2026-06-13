@@ -38,7 +38,7 @@ export async function resolveCustomDomain(host: string): Promise<string | null> 
       slug = typeof org.slug === "string" ? org.slug : null;
     }
   } catch {
-    // Backend unreachable: don't poison the cache — serve a stale answer if
+    // Backend unreachable: don't poison the cache - serve a stale answer if
     // we have one, otherwise let the request fall through to apex routes.
     return cached?.slug ?? null;
   }

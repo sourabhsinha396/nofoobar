@@ -11,7 +11,7 @@ NavHref = Annotated[str, StringConstraints(min_length=1, max_length=2048)]
 
 class NavLinkInput(BaseModel):
     """One nav link as posted by the admin in a full-list PUT (scoped to a
-    location via the route's query parameter). Position is not required —
+    location via the route's query parameter). Position is not required -
     the server assigns 0..N-1 in array order.
     """
 

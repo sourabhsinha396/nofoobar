@@ -70,7 +70,7 @@ function formatDuration(seconds: number): string {
 
 function LessonRow({ lesson, href }: { lesson: PublishedLessonOutline; href?: string }) {
   const Icon = CONTENT_TYPE_ICONS[lesson.content_type];
-  // Per-lesson content-type label removed — the icon already communicates
+  // Per-lesson content-type label removed - the icon already communicates
   // type. Surfacing "ARTICLE" on the public landing made paid courses look
   // like blogs and depressed enrollment intent.
   const body = (
@@ -132,7 +132,7 @@ export default async function CourseLandingPage({ params, searchParams }: Props)
   const totalLessons = course.sections.reduce((sum, s) => sum + s.lessons.length, 0);
   const allSectionIds = course.sections.map((s) => s.id);
 
-  // Lesson-type breakdown — fold across sections so the right-side card can
+  // Lesson-type breakdown - fold across sections so the right-side card can
   // surface "X videos · Y articles · …" instead of a bare lesson count.
   const breakdown = course.sections.reduce(
     (acc, section) => {
@@ -246,7 +246,7 @@ export default async function CourseLandingPage({ params, searchParams }: Props)
 
               {!isPaid ? (
                 // Free course: open access, no enrollment. Jump straight into
-                // the first lesson — works for signed-out visitors too.
+                // the first lesson - works for signed-out visitors too.
                 firstLessonHref ? (
                   <Button asChild size="lg" className="w-full">
                     <Link href={firstLessonHref}>Start learning</Link>

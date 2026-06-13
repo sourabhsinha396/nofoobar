@@ -100,7 +100,7 @@ export function NavLinksEditor({
     setError(null);
     setIsSaving(true);
     try {
-      // Drop rows where label or href is blank — these would 422 server-side
+      // Drop rows where label or href is blank - these would 422 server-side
       // with a confusing error. The admin can refill them later.
       const cleaned = drafts.filter(
         (d) => d.label.trim() !== "" && d.href.trim() !== "",

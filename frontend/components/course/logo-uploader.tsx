@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ApiError } from "@/lib/api";
 
-// Relative paths — proxied to the backend by app/api/v1/[...path]/route.ts.
+// Relative paths - proxied to the backend by app/api/v1/[...path]/route.ts.
 const API_URL = "";
 
-// Client-side pre-check before sending the request — the backend is the
+// Client-side pre-check before sending the request - the backend is the
 // authoritative cap (matches s3.MAX_UPLOAD_BYTES on the server).
 const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
 
@@ -20,7 +20,7 @@ interface UploadResponse {
 }
 
 // Mirrors backend `app.services.storage.s3.ImagePurpose`. The backend
-// requires this field on every upload — no default — so the bucket path
+// requires this field on every upload - no default - so the bucket path
 // is meaningful (`uploads/images/<purpose>/…`).
 export type ImagePurpose = "organization_logo" | "course_logo" | "tiptap_inline";
 

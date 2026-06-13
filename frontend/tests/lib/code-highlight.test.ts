@@ -142,7 +142,7 @@ describe("highlightCodeBlocks", () => {
   });
 });
 
-// Direct hast-walker tests — these guarantee multi-line tokens (a real bug
+// Direct hast-walker tests - these guarantee multi-line tokens (a real bug
 // hazard if we'd done naive HTML splitting) clone correctly across lines.
 
 function el(
@@ -223,7 +223,7 @@ describe("wrapLines (hast walker)", () => {
   });
 
   it("preserves deliberate empty lines as empty .line spans", () => {
-    // "a\n\nb" — two source lines with a blank line between them.
+    // "a\n\nb" - two source lines with a blank line between them.
     const tree = {
       type: "root" as const,
       children: [{ type: "text" as const, value: "a\n\nb" }],
@@ -233,7 +233,7 @@ describe("wrapLines (hast walker)", () => {
       (c) => c.type === "element" && c.tagName === "span",
     );
     expect(lineSpans).toHaveLength(3);
-    // Middle span exists but has no children — CSS min-height keeps it visible.
+    // Middle span exists but has no children - CSS min-height keeps it visible.
     const middle = lineSpans[1];
     if (middle.type === "element") {
       expect(middle.children).toEqual([]);

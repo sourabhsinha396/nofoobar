@@ -98,7 +98,7 @@ export function LessonForm(props: Props) {
       : "",
   );
   const [durationMinutes, setDurationMinutes] = useState(() => {
-    // Form input is in minutes (creator-friendly). Storage stays in seconds —
+    // Form input is in minutes (creator-friendly). Storage stays in seconds -
     // see buildDurationSeconds() for the conversion at submit. Read from
     // top-level Lesson.duration_seconds first; fall back to the legacy JSONB
     // location for any data that hasn't been migrated yet.
@@ -136,7 +136,7 @@ export function LessonForm(props: Props) {
         setError("Video URL is required.");
         return null;
       }
-      // duration_seconds is no longer nested inside content — it lives at the
+      // duration_seconds is no longer nested inside content - it lives at the
       // top of the Lesson row. See buildLessonPayload below.
       return { content_type: "video", url: videoUrl.trim() };
     }
@@ -197,7 +197,7 @@ export function LessonForm(props: Props) {
           payload,
           { headers: { "X-Tenant-Slug": props.orgSlug } },
         );
-        // Slug may have changed — navigate to the new URL.
+        // Slug may have changed - navigate to the new URL.
         router.push(
           tenantPath(
             props.orgSlug,

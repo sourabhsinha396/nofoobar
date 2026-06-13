@@ -7,7 +7,7 @@ import type { Currency } from "@/lib/tenant";
 //     different markets, not equally priced after a daily FX lookup.
 //
 // Update these numbers when you want the platform-wide pricing
-// suggestion to shift. They're a UX hint at form-fill time only — the
+// suggestion to shift. They're a UX hint at form-fill time only - the
 // creator can override any suggestion, and the buyer-facing price is
 // whatever lives in the DB after submission.
 const PPP_RATES_USD: Record<Currency, number> = {
@@ -23,7 +23,7 @@ const PPP_RATES_USD: Record<Currency, number> = {
  * between two supported currencies using the PPP rates above.
  *
  * Rounding:
- *   - INR → nearest 10 (₹1882.50 → ₹1880) — INR pricing tends to use
+ *   - INR → nearest 10 (₹1882.50 → ₹1880) - INR pricing tends to use
  *     round tens, sub-rupee precision is unusual.
  *   - Everything else → nearest whole unit ($29.42 → $29).
  *

@@ -206,7 +206,7 @@ async def delete_payment_account(
 
 def _validate_provider_currency(provider: PaymentProvider, currency: Currency) -> None:
     """Razorpay accounts default to INR-only. Most tenant accounts won't have
-    international payments enabled, and we can't detect it from the keys —
+    international payments enabled, and we can't detect it from the keys -
     so refuse non-INR Razorpay checkouts at the API boundary."""
     if provider is PaymentProvider.RAZORPAY and currency != "INR":
         raise HTTPException(
@@ -238,7 +238,7 @@ async def create_checkout_session(
     if not course.price_cents:
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST,
-            "This course is free — use POST /enroll instead.",
+            "This course is free; use POST /enroll instead.",
         )
 
     gateway = get_gateway(payload.provider)
@@ -347,7 +347,7 @@ async def verify_payment_attempt(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Payment attempt not found")
 
     if attempt.status == PaymentStatus.PAID:
-        # Buyer hit the success URL but already enrolled — re-grant is a no-op.
+        # Buyer hit the success URL but already enrolled - re-grant is a no-op.
         enrollment_created = await _grant_enrollment_idempotent(
             session, attempt.user_id, attempt.org_id, attempt.course_id
         )

@@ -9,7 +9,7 @@ from app.core.config import settings
 
 # Domain-meaningful purposes for image uploads. Each value becomes a
 # subdirectory under `uploads/images/`. Routes require callers to declare
-# their purpose explicitly — no defaults — so we never end up with images
+# their purpose explicitly - no defaults - so we never end up with images
 # leaking into a generic "thumbnails" bucket again.
 #
 # Adding a new image use case = add the literal here and reference it from
@@ -74,7 +74,7 @@ def build_image_key(purpose: ImagePurpose, org_id: UUID, ext: str) -> str:
     The `uploads/images/` prefix is mandatory so future file types (docs,
     scripts) get their own siblings (`uploads/docs/…`, `uploads/scripts/…`)
     without polluting the image namespace. The `<purpose>` segment is
-    semantic — grep `organization_logo` and you find every org-logo upload.
+    semantic - grep `organization_logo` and you find every org-logo upload.
     """
     return f"uploads/images/{purpose}/{org_id}/{uuid4()}.{ext}"
 
@@ -89,7 +89,7 @@ def _put_object_sync(key: str, body: bytes, content_type: str) -> None:
 
 
 async def put_object(key: str, body: bytes, content_type: str) -> None:
-    # boto3 is sync — push into a thread so the FastAPI event loop stays
+    # boto3 is sync - push into a thread so the FastAPI event loop stays
     # responsive while bytes upload to R2.
     await asyncio.to_thread(_put_object_sync, key, body, content_type)
 

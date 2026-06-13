@@ -25,13 +25,13 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     # Wipe existing rows. They held Stripe Connect account ids from the
-    # IN-locked test platform — meaningless under BYO. NOT NULL on secret_key
+    # IN-locked test platform - meaningless under BYO. NOT NULL on secret_key
     # would otherwise fail.
     op.execute("DELETE FROM org_payment_accounts")
 
     # `charges_enabled` was meaningful for Stripe Connect (Stripe reports it
     # via account.updated). Under BYO, presence of the row IS the readiness
-    # signal — drop the column.
+    # signal - drop the column.
     op.drop_column('org_payment_accounts', 'charges_enabled')
 
     # Rename external_account_id → key_id. New semantics: this is the
@@ -46,7 +46,7 @@ def upgrade() -> None:
         new_column_name='key_id',
     )
 
-    # The encrypted secret (Stripe sk_*, Razorpay key_secret) — stored as
+    # The encrypted secret (Stripe sk_*, Razorpay key_secret) - stored as
     # opaque Fernet ciphertext.
     op.add_column('org_payment_accounts', sa.Column('secret_key', sa.LargeBinary(), nullable=False))
 

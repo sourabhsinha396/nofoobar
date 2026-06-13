@@ -26,7 +26,7 @@ class PaymentAttempt(TimestampedModel, table=True):
     provider's webhook fires (server-side safety net). Both paths are
     idempotent and short-circuit if the attempt is already `paid`.
 
-    We deliberately don't cascade-delete with Course or User — payment records
+    We deliberately don't cascade-delete with Course or User - payment records
     are audit data and should outlive the entities they reference (with FK
     constraints that will block course deletion if attempts exist).
     """
@@ -42,7 +42,7 @@ class PaymentAttempt(TimestampedModel, table=True):
             PaymentProvider,
             name="payment_provider",
             values_callable=lambda enum: [m.value for m in enum],
-            # Reuse the enum created by the org_payment_accounts migration —
+            # Reuse the enum created by the org_payment_accounts migration -
             # alembic raises DuplicateObject if we try to re-create it here.
             create_type=False,
         ),

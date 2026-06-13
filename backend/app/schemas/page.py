@@ -9,7 +9,7 @@ from app.schemas.common import Slug
 from app.schemas.lesson import TipTapDoc
 
 # Slugs that conflict with existing tenant routes. Admins can't create a
-# page at any of these — the route resolver would never reach the page
+# page at any of these - the route resolver would never reach the page
 # renderer because Next.js would match the static segment first. We block
 # at write time so the failure is clear and immediate, not silently broken.
 #
@@ -91,7 +91,7 @@ class OrganizationPagePublic(SQLModel):
 
 
 class OrganizationPageSummary(SQLModel):
-    """Lightweight projection for admin lists and footer menus — skips the
+    """Lightweight projection for admin lists and footer menus - skips the
     `body` JSONB blob so listing N pages doesn't ship N tiptap docs."""
 
     id: UUID

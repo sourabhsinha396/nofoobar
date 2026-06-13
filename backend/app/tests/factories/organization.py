@@ -10,6 +10,6 @@ class OrganizationFactory(ModelFactory[Organization]):
     def social_links(cls) -> list[dict]:
         # Polyfactory's default for list[dict[str, Any]] generates random-key
         # dicts that don't match the {platform, url} shape expected by
-        # OrganizationPublic. Default to an empty list — tests that exercise
+        # OrganizationPublic. Default to an empty list - tests that exercise
         # this field opt in explicitly.
         return []

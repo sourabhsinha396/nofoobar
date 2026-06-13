@@ -73,7 +73,7 @@ describe("rewriteSetCookieForHost", () => {
 
   it("does not treat a lookalike domain as a platform host", () => {
     // evilnofoobar.com ends with "nofoobar.com" as a string but is not a
-    // subdomain — it must stay host-only.
+    // subdomain - it must stay host-only.
     expect(rewriteSetCookieForHost(COOKIE, "evilnofoobar.com", "nofoobar.com")).toBe(COOKIE);
   });
 

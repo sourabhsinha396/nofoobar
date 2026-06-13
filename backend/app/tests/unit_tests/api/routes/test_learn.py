@@ -12,7 +12,7 @@ HOSTS = ["localhost", "acme.nofoobar.app"]
 
 LESSON_PATH = "/api/v1/learn/courses/intro/sections/getting-started/lessons/welcome"
 
-# A non-zero price so a lesson's course counts as *paid* — i.e. the open-access
+# A non-zero price so a lesson's course counts as *paid* - i.e. the open-access
 # free-course gate does not fire and the enrollment/membership paths are tested.
 PAID = 1000
 
@@ -74,7 +74,7 @@ def test_anonymous_user_can_view_free_course_lesson(
 
     response = client.get(LESSON_PATH, headers={"Host": "localhost"})
     assert response.status_code == 200
-    # No enrollment / membership lookup — the price came back with the lesson.
+    # No enrollment / membership lookup - the price came back with the lesson.
     assert mock_session.exec.call_count == 1
 
 
@@ -188,7 +188,7 @@ def test_authed_user_without_enrollment_or_membership_gets_404(
 def test_free_preview_lesson_accessible_without_enrollment(
     client, mock_session, fake_org, authed_user
 ):
-    # Free-preview lessons skip the enrollment/membership checks entirely —
+    # Free-preview lessons skip the enrollment/membership checks entirely -
     # the gate fires only on the lesson's own attributes (published + preview).
     lesson = LessonFactory.build(
         org_id=fake_org.id,
@@ -233,7 +233,7 @@ def test_lesson_404_when_lesson_does_not_exist(
 
 def test_lesson_404_when_course_is_draft(client, mock_session, fake_org, authed_user):
     # Query filters by visibility=published, so a draft course's lesson just
-    # comes back as None at the route layer — same 404 path as missing lesson.
+    # comes back as None at the route layer - same 404 path as missing lesson.
     mock_session.exec.side_effect = _exec_results(None)
     response = client.get(LESSON_PATH, headers={"Host": "localhost"})
     assert response.status_code == 404

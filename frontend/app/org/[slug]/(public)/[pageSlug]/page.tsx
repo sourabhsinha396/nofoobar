@@ -10,8 +10,8 @@ interface Props {
 }
 
 // Catch-all for tenant-authored pages (terms, privacy, refund, contact,
-// custom). Static segments under (public)/ — courses, login, signup,
-// my-learning — win precedence in Next.js, so this only fires on slugs
+// custom). Static segments under (public)/ - courses, login, signup,
+// my-learning - win precedence in Next.js, so this only fires on slugs
 // that aren't already routes. Reserved slugs are also blocked at write
 // time by the backend schema so admins never even create a colliding row.
 

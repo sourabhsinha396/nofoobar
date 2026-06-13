@@ -2,7 +2,7 @@ from app.db.models.payment_account import OrgPaymentAccount, PaymentProvider
 
 
 def test_tenant_endpoint_returns_resolved_org(client, mock_session, fake_org):
-    # Empty payment_accounts list — fresh tenant with no provider connected.
+    # Empty payment_accounts list - fresh tenant with no provider connected.
     mock_session.exec.return_value.all.return_value = []
     response = client.get("/api/v1/tenant", headers={"X-Tenant-Slug": "ignored"})
     assert response.status_code == 200

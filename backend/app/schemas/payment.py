@@ -13,7 +13,7 @@ from app.schemas.course import Currency
 
 
 class PaymentAccountCredentials(BaseModel):
-    """Tenant input — what gets pasted into the admin settings UI."""
+    """Tenant input - what gets pasted into the admin settings UI."""
 
     key_id: Annotated[str, StringConstraints(min_length=1, max_length=255)]
     secret_key: Annotated[str, StringConstraints(min_length=1, max_length=512)]
@@ -36,14 +36,14 @@ class CheckoutRequest(BaseModel):
 
 
 class StripeRedirectPayload(BaseModel):
-    """Stripe Hosted Checkout — the frontend sets window.location.href to redirect_url."""
+    """Stripe Hosted Checkout - the frontend sets window.location.href to redirect_url."""
 
     kind: Literal["stripe_redirect"] = "stripe_redirect"
     redirect_url: str
 
 
 class RazorpayModalPayload(BaseModel):
-    """Razorpay JS modal — the frontend loads checkout.razorpay.com/v1/checkout.js
+    """Razorpay JS modal - the frontend loads checkout.razorpay.com/v1/checkout.js
     and calls `new Razorpay({...}).open()` with these fields."""
 
     kind: Literal["razorpay_modal"] = "razorpay_modal"

@@ -5,7 +5,7 @@ import { resolveCustomDomain } from "@/lib/resolve-domain";
 
 const TENANT_HOST = process.env.NEXT_PUBLIC_TENANT_HOST?.toLowerCase();
 
-// Paths that only exist on the apex — visiting them on a tenant subdomain
+// Paths that only exist on the apex - visiting them on a tenant subdomain
 // should redirect back to the apex, not get rewritten into /org/[slug]/...
 const APEX_ONLY_PATH_PREFIXES = ["/me", "/login", "/signup"];
 
@@ -16,7 +16,7 @@ function isApexOnlyPath(path: string): boolean {
 // Rewrite a tenant-site request (subdomain or custom domain) into the
 // /org/[slug] tree, marking it with x-tenant-site so server components know
 // the visitor's URL is bare (serverTenantPath). The header is set, never
-// forwarded from the client — spoofing it on the apex only mangles link
+// forwarded from the client - spoofing it on the apex only mangles link
 // shapes in the spoofer's own response.
 function tenantRewrite(request: NextRequest, slug: string): NextResponse {
   const path = request.nextUrl.pathname;
@@ -32,7 +32,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // API calls go to the same-origin proxy route handler on every host —
+  // API calls go to the same-origin proxy route handler on every host -
   // they must never be rewritten into /org/[slug]/api/... or redirected.
   if (request.nextUrl.pathname.startsWith("/api/")) {
     return NextResponse.next();

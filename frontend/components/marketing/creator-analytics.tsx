@@ -249,7 +249,7 @@ export function CreatorAnalytics() {
         </div>
 
         <p className="mx-auto mt-4 max-w-5xl text-center text-xs text-muted-foreground">
-          Sample data — your dashboard fills in as students enroll.
+          Sample data. Your dashboard fills in as students enroll.
         </p>
       </div>
     </section>

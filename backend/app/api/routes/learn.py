@@ -38,13 +38,13 @@ async def get_lesson_for_learner(
 
     # Access gate, ordered cheapest → costliest so the common case ends fast:
     #   1. Free-preview: open to everyone, including anonymous visitors. No DB.
-    #   2. Free course ($0 / unpriced): every published lesson is open access —
+    #   2. Free course ($0 / unpriced): every published lesson is open access -
     #      no enrollment, no sign-in. Price came back with the lesson, so no
     #      extra DB hit.
     #   3. Enrolled + published: the bread-and-butter case, one DB query.
     #   4. Org member: owners/instructors get unrestricted access to anything
-    #      in their org, drafts included — for previewing what they're authoring.
-    # On failure, return 404 — not 403 — so we don't leak existence.
+    #      in their org, drafts included - for previewing what they're authoring.
+    # On failure, return 404 - not 403 - so we don't leak existence.
     is_published = lesson.visibility == LessonVisibility.PUBLISHED
 
     if is_published and lesson.is_free_preview:

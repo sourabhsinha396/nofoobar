@@ -28,7 +28,7 @@ export default async function CurriculumPage({ params }: Props) {
   }
 
   return (
-    <>
+    <div className="mx-auto w-full max-w-4xl">
       <header className="mb-12">
         <div className="flex items-center gap-2">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
@@ -84,6 +84,6 @@ export default async function CurriculumPage({ params }: Props) {
           />
         )}
       </section>
-    </>
+    </div>
   );
 }

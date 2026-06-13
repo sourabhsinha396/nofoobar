@@ -1,7 +1,7 @@
 """015_drop_course_payment_provider
 
 Removes Course.payment_provider. After this migration, every connected
-provider on the tenant is offered to the buyer at checkout — the creator no
+provider on the tenant is offered to the buyer at checkout - the creator no
 longer chooses one per course. The `payment_provider` enum type stays in
 place (still used by org_payment_accounts and payment_attempts).
 

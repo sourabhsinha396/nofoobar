@@ -73,7 +73,7 @@ async def test_unconfigured_target_short_circuits(monkeypatch):
 
 
 def test_resolver_uses_tcp_proto_to_dedupe():
-    # Sanity check against the real resolver on localhost — should not raise
+    # Sanity check against the real resolver on localhost - should not raise
     # and should return at least one address.
     ips = domains._resolve_ips("localhost")
     assert ips

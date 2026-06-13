@@ -29,7 +29,7 @@ describe("tenantUrl", () => {
 
 describe("tenantPath", () => {
   it("returns bare path when window.location is on a subdomain (no /org prefix)", () => {
-    // jsdom default location is http://localhost:3000/ — no /org prefix → subdomain mode
+    // jsdom default location is http://localhost:3000/ - no /org prefix → subdomain mode
     expect(tenantPath("demo", "/admin")).toBe("/admin");
     expect(tenantPath("demo", "/")).toBe("/");
   });

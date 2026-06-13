@@ -10,10 +10,10 @@ import { lowlight } from "@/lib/tiptap-extensions";
 // second time on the rendered string and replace the inner text with highlighted
 // spans. This keeps creator-view and learner-view visually identical.
 //
-// Regex-based rather than jsdom for dep weight — the tiptap output shape is
+// Regex-based rather than jsdom for dep weight - the tiptap output shape is
 // well-defined (a single <code> child of <pre>, no nested elements), so the
 // pattern is unambiguous. If we ever start emitting richer code-block markup
-// (line wrappers, filename headers — chunk D), this should move to a proper
+// (line wrappers, filename headers - chunk D), this should move to a proper
 // HTML walker.
 //
 // Tiptap's CodeBlockLowlight emits `<pre class="hljs" data-filename="…"
@@ -84,7 +84,7 @@ export function highlightCodeBlocks(html: string): string {
 // Hast tree line splitter
 // ---------------------------------------------------------------------------
 
-// Lowlight returns a hast tree. We use a minimal subset of the type — no need
+// Lowlight returns a hast tree. We use a minimal subset of the type - no need
 // to pull the @types/hast dep just for this. The shape is stable.
 type HastText = { type: "text"; value: string };
 type HastElement = {
@@ -98,7 +98,7 @@ type HastTree = { type: "root"; children: HastChild[] };
 
 // Walk the hast tree, split into per-line trees on \n, then re-wrap each line
 // in <span class="line">. Handles the corner case where a single token span
-// (e.g. a multi-line string or block comment) covers more than one line — the
+// (e.g. a multi-line string or block comment) covers more than one line - the
 // token is cloned across each line it touches, preserving its class. Without
 // this, naive string-splitting on \n in the rendered HTML would produce broken
 // markup (unclosed/orphaned <span>) for any multi-line token.
@@ -115,7 +115,7 @@ export function wrapLines(tree: HastTree, highlighted: Set<number>): HastTree {
   // No "\n" text nodes between spans: CSS makes .line { display: block }, and
   // an explicit \n in <pre> (white-space: pre) would compound with the block
   // layout and produce a blank visual line between every row. Copy-to-clipboard
-  // joins the line spans with "\n" itself — see lib/code-block-clipboard.ts.
+  // joins the line spans with "\n" itself - see lib/code-block-clipboard.ts.
   const children: HastChild[] = lines.map((line, i) => {
     const properties: Record<string, unknown> = { className: ["line"] };
     if (highlighted.has(i + 1)) properties["dataHighlighted"] = "true";
@@ -195,7 +195,7 @@ function extractHighlightedLines(preAttrs: string | undefined): number[] {
 
 // HTML-escape user-supplied filename text for safe inclusion in the rendered
 // markup. Filename comes through the JSON doc, so it's already trusted in the
-// "this creator set it" sense — but we still escape to be defence-in-depth
+// "this creator set it" sense - but we still escape to be defence-in-depth
 // against bad/legacy data.
 function escapeHtml(s: string): string {
   return s
@@ -227,7 +227,7 @@ const COPY_ICON_SVG =
   '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>' +
   "</svg>";
 
-// Lucide "File" icon — generic file glyph rendered next to the filename in
+// Lucide "File" icon - generic file glyph rendered next to the filename in
 // the code-block header chip.
 const FILE_ICON_SVG =
   '<svg class="code-block-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +

@@ -83,7 +83,7 @@ HomepageBlockConfig = Annotated[
 class HomepageBlockInput(BaseModel):
     """One block as posted by the admin during a full-list PUT.
 
-    Position is *not* required — the server numbers blocks densely from 0
+    Position is *not* required - the server numbers blocks densely from 0
     in array order. is_enabled defaults to true.
     """
 

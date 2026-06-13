@@ -1,6 +1,6 @@
 from typing import Literal
 
-# Mirror of frontend/lib/pricing.ts. KEEP IN SYNC — if you change one set of
+# Mirror of frontend/lib/pricing.ts. KEEP IN SYNC - if you change one set of
 # rates here, change the other. Deliberately NOT real FX:
 #   - Real FX moves daily and would surprise buyers + creators.
 #   - We want courses to be roughly equally affordable across markets, not

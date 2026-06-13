@@ -21,7 +21,7 @@ class StripePaymentGateway:
     `stripe.api_key`, which means each tenant's requests are properly
     isolated.
 
-    Each tenant is the merchant of record on their own Stripe account — no
+    Each tenant is the merchant of record on their own Stripe account - no
     Connect, no platform fees, no `stripe_account=` header.
     """
 

@@ -83,7 +83,7 @@ export async function TenantFooter({ slug, org }: Props) {
   //   2. Published pages where show_in_footer=true
   // Pages render first (legal pages usually want top billing), then nav
   // links. Within each source, position-ordered. If admins want a custom
-  // order across both, we'd need a unified ordering field — keeping it
+  // order across both, we'd need a unified ordering field - keeping it
   // simple for v1.
   const [navLinks, pages] = await Promise.all([
     getNavLinks(slug, "footer"),
@@ -96,7 +96,7 @@ export async function TenantFooter({ slug, org }: Props) {
       .map((p) => ({
         key: `page-${p.id}`,
         label: p.title,
-        // Relative path — Next.js routes it under the tenant's (public)
+        // Relative path - Next.js routes it under the tenant's (public)
         // segment. Stays open in the same tab.
         href: `/${p.slug}`,
         open_in_new_tab: false,

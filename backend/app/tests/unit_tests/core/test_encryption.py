@@ -21,14 +21,14 @@ def test_encrypt_decrypt_roundtrip():
 
 
 def test_encrypt_produces_different_ciphertext_each_call():
-    # Fernet uses a random nonce per call — same plaintext, different output.
+    # Fernet uses a random nonce per call - same plaintext, different output.
     plain = "sk_test_same_input"
     assert encrypt(plain) != encrypt(plain)
 
 
 def test_decrypt_with_rotated_key_raises(monkeypatch):
     encrypted = encrypt("sk_test_original")
-    # Rotate the key — now the cipher can't decrypt the old token.
+    # Rotate the key - now the cipher can't decrypt the old token.
     monkeypatch.setattr(settings, "SECRETS_ENCRYPTION_KEY", Fernet.generate_key().decode())
     encryption._cipher.cache_clear()
     with pytest.raises(EncryptionError):

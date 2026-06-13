@@ -35,7 +35,7 @@ export default async function CheckoutPage({ params }: Props) {
     redirect(coursePath);
   }
   if (!course.price_cents) {
-    // Free courses don't need checkout — they enroll directly from the landing.
+    // Free courses don't need checkout - they enroll directly from the landing.
     redirect(coursePath);
   }
   const enrollments = (await getMyEnrollments(slug)) ?? [];

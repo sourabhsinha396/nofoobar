@@ -81,7 +81,7 @@ function VisibilityToggle({
   disabled: boolean;
 }) {
   const isPublished = visibility === "published";
-  // Switch + label inside a bordered cluster — the chrome makes it visually
+  // Switch + label inside a bordered cluster - the chrome makes it visually
   // distinct from the static badges (ARTICLE / FREE PREVIEW) sitting next to
   // it, so creators read it as an interactive control rather than just another
   // tag. The whole cluster is a <label> so clicking the text flips the switch.

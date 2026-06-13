@@ -23,7 +23,7 @@ interface VerifyResponse {
  *
  * Calls the verify endpoint; on success, refreshes the page so the rest of
  * the course landing re-renders with the new "Enrolled" state. The Stripe
- * webhook is the redundant safety net — it'll fire even if the user closes
+ * webhook is the redundant safety net - it'll fire even if the user closes
  * this tab before verify finishes. */
 export function PaymentVerifier({ orgSlug, paymentAttemptId }: Props) {
   const router = useRouter();

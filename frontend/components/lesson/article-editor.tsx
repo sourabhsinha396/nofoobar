@@ -40,7 +40,7 @@ import {
   uploadVideoBytes,
 } from "@/lib/video-upload";
 
-// Relative paths — proxied to the backend by app/api/v1/[...path]/route.ts.
+// Relative paths - proxied to the backend by app/api/v1/[...path]/route.ts.
 const API_URL = "";
 const IMAGE_MAX_BYTES = 2 * 1024 * 1024;
 const IMAGE_ACCEPT = "image/png,image/jpeg,image/gif";
@@ -402,7 +402,7 @@ function LabDialog({ open, onOpenChange, onInsert }: LabDialogProps) {
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
-    // See the matching note in VideoDialog.submitUrl — stop the submit from
+    // See the matching note in VideoDialog.submitUrl - stop the submit from
     // bubbling to the surrounding LessonForm's <form>.
     event.stopPropagation();
     const result = parseLabEmbed(code);
@@ -498,7 +498,7 @@ export function ArticleEditor({ value, onChange, orgSlug, id }: Props) {
 
   function insertVideo(detected: NonNullable<ReturnType<typeof detectVideoProvider>>) {
     if (!editor) return;
-    // YouTube has its own dedicated extension (better defaults — nocookie,
+    // YouTube has its own dedicated extension (better defaults - nocookie,
     // controls, etc.). Everything else goes through our VideoEmbed node.
     if (detected.provider === "youtube") {
       editor.chain().focus().setYoutubeVideo({ src: detected.src }).run();
@@ -518,7 +518,7 @@ export function ArticleEditor({ value, onChange, orgSlug, id }: Props) {
 
   // Blur the editor before opening the dialog. Without this, the focused
   // ProseMirror node is a descendant of the sidebar-wrapper that Radix
-  // marks aria-hidden when the modal opens — Chrome's a11y validator
+  // marks aria-hidden when the modal opens - Chrome's a11y validator
   // flags the resulting "focused element inside aria-hidden ancestor"
   // contradiction. Blurring lets focus move cleanly into the dialog.
   function openVideoDialog() {

@@ -79,7 +79,7 @@ describe("handleCopyClick", () => {
     const { btn } = buildBlock("x = 42");
     btn.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
-    // The handler kicks off an async chain — wait one microtask for the
+    // The handler kicks off an async chain - wait one microtask for the
     // synchronous writeText() call inside copyToClipboard.
     await Promise.resolve();
     expect(writeText).toHaveBeenCalledOnce();

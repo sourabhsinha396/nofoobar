@@ -44,7 +44,7 @@ describe("resolveCustomDomain", () => {
     expect(init.headers).toMatchObject({ "x-forwarded-host": "learn.acme.test" });
   });
 
-  it("caches hits — second lookup makes no backend call", async () => {
+  it("caches hits - second lookup makes no backend call", async () => {
     fetchMock.mockResolvedValueOnce(orgResponse("fastapi"));
     const resolve = await loadResolver();
     await resolve("fastapitutorial.com");

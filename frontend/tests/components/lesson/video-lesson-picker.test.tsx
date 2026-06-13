@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { VideoLessonPicker } from "@/components/lesson/video-lesson-picker";
 
-// Mock the upload helpers — the upload logic itself is exercised in
+// Mock the upload helpers - the upload logic itself is exercised in
 // tests/lib/video-upload.test.ts. Here we only test the picker's wiring.
 vi.mock("@/lib/video-upload", async () => {
   const actual = await vi.importActual<typeof import("@/lib/video-upload")>("@/lib/video-upload");
@@ -37,7 +37,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("VideoLessonPicker — empty state", () => {
+describe("VideoLessonPicker - empty state", () => {
   it("renders the upload button and URL input when no URL is set", () => {
     render(<VideoLessonPicker url="" onChange={vi.fn()} orgSlug="acme" />);
 
@@ -56,7 +56,7 @@ describe("VideoLessonPicker — empty state", () => {
   });
 });
 
-describe("VideoLessonPicker — filled state", () => {
+describe("VideoLessonPicker - filled state", () => {
   it("shows a Mux preview iframe when a recognised URL is supplied", () => {
     const { container } = render(
       <VideoLessonPicker
@@ -93,7 +93,7 @@ describe("VideoLessonPicker — filled state", () => {
   });
 });
 
-describe("VideoLessonPicker — upload flow", () => {
+describe("VideoLessonPicker - upload flow", () => {
   it("uploads bytes, polls, and reports the resulting Mux URL + duration", async () => {
     initiateMock.mockResolvedValueOnce({
       video_asset_id: "vid-1",

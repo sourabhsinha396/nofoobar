@@ -1,10 +1,10 @@
-# Tenant onboarding — new organization + custom domain
+# Tenant onboarding - new organization + custom domain
 
 How a course creator goes from nothing to a live, white-labeled school on
 their own domain. Written for the creator; the [Platform prerequisites](#platform-prerequisites-operator)
 section at the end is for whoever runs the platform.
 
-Throughout, `nofoobar.com` is the platform apex — substitute your own if
+Throughout, `nofoobar.com` is the platform apex - substitute your own if
 self-hosting.
 
 ---
@@ -12,7 +12,7 @@ self-hosting.
 ## 1. Create your account
 
 1. Go to `https://nofoobar.com/signup` and register.
-2. You'll land on `https://nofoobar.com/me` — your account home.
+2. You'll land on `https://nofoobar.com/me` - your account home.
 
 ## 2. Create your organization
 
@@ -26,7 +26,7 @@ The slug becomes your school's address immediately:
 https://<slug>.nofoobar.com
 ```
 
-No DNS, no waiting — the subdomain works the moment the org exists. You are
+No DNS, no waiting - the subdomain works the moment the org exists. You are
 the **owner**; only owners can change org settings.
 
 > Choose the slug carefully. It's your permanent platform address and shows
@@ -45,7 +45,7 @@ All admin lives at `https://<slug>.nofoobar.com/admin`:
 | `/admin/nav-links` | Extra header/footer links |
 | `/admin/payments` | Connect Stripe or Razorpay to sell paid courses |
 
-Publish at least one course before inviting students — an empty school is a
+Publish at least one course before inviting students - an empty school is a
 confusing first impression.
 
 You log in once at `nofoobar.com` and you're signed in across every
@@ -53,22 +53,22 @@ You log in once at `nofoobar.com` and you're signed in across every
 
 ## 4. Connect your custom domain
 
-Your school can also live on a domain you own — students see only your
+Your school can also live on a domain you own - students see only your
 brand.
 
 ### 4a. Register the domain in settings
 
 1. Open `https://<slug>.nofoobar.com/admin/settings` → **Custom domain**.
-2. Enter the bare hostname — no `https://`, no paths, no port:
+2. Enter the bare hostname - no `https://`, no paths, no port:
    - subdomain style: `learn.yourdomain.com`
    - apex style: `yourdomain.com`
 3. **Save.** The status panel below the field will show *"Not connected
-   yet"* with the exact DNS records to add — that's expected.
+   yet"* with the exact DNS records to add - that's expected.
 
 Rules enforced on save:
 - One custom domain per organization.
 - A domain already connected to another org is rejected.
-- Platform hostnames (`nofoobar.com` or anything under it) are rejected —
+- Platform hostnames (`nofoobar.com` or anything under it) are rejected -
   your subdomain already works automatically.
 
 ### 4b. Add the DNS record at your domain provider
@@ -85,7 +85,7 @@ Two provider-specific notes:
 - **If your DNS is on Cloudflare:** set the record to **DNS only (grey
   cloud)**, not Proxied. Proxied routes traffic into Cloudflare's network,
   which has no certificate for your domain on this platform.
-- **Keep your MX/TXT records untouched** — connecting the domain only
+- **Keep your MX/TXT records untouched** - connecting the domain only
   changes where the website points; your email keeps working.
 
 ### 4c. Verify and go live
@@ -94,20 +94,20 @@ Two provider-specific notes:
    usually propagate in minutes; the panel shows what your domain currently
    resolves to while you wait.
 2. When it turns green (**Connected**), open `https://yourdomain.com`.
-3. The very first visit takes a few extra seconds — the platform issues a
+3. The very first visit takes a few extra seconds - the platform issues a
    TLS certificate for your domain on the spot (via Let's Encrypt). Every
    visit after that is instant. Renewal is automatic; there is nothing to
    maintain.
 
 ### What changes on a custom domain
 
-- Students browse, sign up, and log in **on your domain** — they never see
+- Students browse, sign up, and log in **on your domain** - they never see
   the platform's name or address.
 - Sessions are independent: logging in on `yourdomain.com` is separate from
   any `nofoobar.com` login. (Your shared platform login still works across
   all `*.nofoobar.com` hosts.)
 - URLs are clean: `yourdomain.com/courses`, `yourdomain.com/login`, etc.
-- `www.yourdomain.com` is a **separate hostname** and is not covered yet —
+- `www.yourdomain.com` is a **separate hostname** and is not covered yet -
   pick the apex or a subdomain as your canonical address, and (optionally)
   add a redirect for the other at your DNS provider.
 
@@ -141,4 +141,4 @@ Everything above assumes the platform is configured per
 - Frontend env: `NEXT_PUBLIC_TENANT_HOST=<apex>`,
   `API_INTERNAL_URL=http://127.0.0.1:8000`.
 
-No per-tenant operator action is required — that's the point.
+No per-tenant operator action is required - that's the point.

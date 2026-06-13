@@ -98,7 +98,7 @@ export function SettingsEditor({ orgSlug, initial }: Props) {
     setError(null);
     setIsSaving(true);
     try {
-      // Drop any incomplete social rows before sending — empty URLs would
+      // Drop any incomplete social rows before sending - empty URLs would
       // fail server-side validation with a confusing 422.
       const cleanedSocials = form.social_links.filter((s) => s.url.trim() !== "");
       await apiPatch<TenantOrg>(
@@ -117,7 +117,7 @@ export function SettingsEditor({ orgSlug, initial }: Props) {
       );
       setSavedAt(Date.now());
       // Pull fresh data from the server (rather than mutating local state)
-      // — keeps us honest about what was actually persisted, including any
+      // - keeps us honest about what was actually persisted, including any
       // normalization the backend applied.
       router.refresh();
     } catch (err) {
@@ -125,7 +125,7 @@ export function SettingsEditor({ orgSlug, initial }: Props) {
         setError("Only owners can edit organization settings.");
       } else if (err instanceof ApiError && (err.status === 400 || err.status === 409)) {
         // Domain guard errors carry actionable detail (platform domain,
-        // already claimed) — show them verbatim.
+        // already claimed) - show them verbatim.
         setError(err.message);
       } else if (err instanceof ApiError && err.status === 422) {
         setError("One of the fields failed validation. Check email, URLs, and domain.");
@@ -187,7 +187,7 @@ export function SettingsEditor({ orgSlug, initial }: Props) {
       <Section title="Logo">
         <p className="text-xs text-muted-foreground">
           Use a transparent PNG or SVG so it reads on both light and dark
-          backgrounds. There are no theme overrides — pick one image that
+          backgrounds. There are no theme overrides, so pick one image that
           works in both.
         </p>
         <LogoUploader
@@ -233,7 +233,7 @@ export function SettingsEditor({ orgSlug, initial }: Props) {
       <Section title="Custom domain">
         <Field
           label="Domain"
-          hint="Your own domain for this site (e.g. learn.yourdomain.com or yourdomain.com) — no https:// or paths. Clear and save to disconnect."
+          hint="Your own domain for this site (e.g. learn.yourdomain.com or yourdomain.com), without https:// or paths. Clear and save to disconnect."
         >
           <Input
             value={form.custom_domain}

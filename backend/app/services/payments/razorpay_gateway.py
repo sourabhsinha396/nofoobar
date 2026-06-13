@@ -17,7 +17,7 @@ class RazorpayPaymentGateway:
     """BYO-keys Razorpay integration.
 
     Each tenant pastes their own rzp_test_/rzp_live_ key_id + key_secret.
-    Unlike Stripe Hosted Checkout, Razorpay uses a client-side JS modal —
+    Unlike Stripe Hosted Checkout, Razorpay uses a client-side JS modal -
     the gateway creates an Order, and the frontend opens the modal with
     the order_id + key_id. There's no redirect URL.
 
@@ -57,7 +57,7 @@ class RazorpayPaymentGateway:
                 "notes": metadata,
             }
         )
-        # product_name + description aren't part of the Order payload — they
+        # product_name + description aren't part of the Order payload - they
         # show up in the JS modal which the frontend opens separately with
         # the order_id we return.
         return GatewayCheckoutSession(

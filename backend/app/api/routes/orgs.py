@@ -27,7 +27,7 @@ async def _validate_custom_domain(
     if domain == apex or domain.endswith(f".{apex}"):
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST,
-            f"{domain} is a platform domain — your {apex} subdomain works automatically.",
+            f"{domain} is a platform domain; your {apex} subdomain works automatically.",
         )
     result = await session.exec(
         select(Organization)
@@ -77,7 +77,7 @@ async def update_org(
     membership: CurrentMembershipDep,
     session: SessionDep,
 ) -> OrganizationPublic:
-    # Site-chrome edits are owner-only — instructors stay scoped to course
+    # Site-chrome edits are owner-only - instructors stay scoped to course
     # and lesson edits. Brand, footer, and contact reflect the whole org's
     # public face.
     if membership.role != Role.OWNER:

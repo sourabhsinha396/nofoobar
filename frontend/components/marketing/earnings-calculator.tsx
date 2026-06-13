@@ -13,7 +13,7 @@ type Platform = {
   ours?: boolean;
 };
 
-// Published pricing as of June 2026 — re-verify before changing.
+// Published pricing as of June 2026 - re-verify before changing.
 const platforms: Platform[] = [
   {
     name: "nofoobar Pro",

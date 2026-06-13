@@ -96,10 +96,10 @@ export function LessonView({
             <div className="h-full overflow-y-auto">
               {/* Query container = the scroll content box (panel minus the
                   scrollbar), the same box the reading column below is centered
-                  in. It must NOT be the scrolling element itself — cqw on a
+                  in. It must NOT be the scrolling element itself - cqw on a
                   scroll container includes the scrollbar gutter, which throws
                   the lab's breakout off-center. Lets a lab embed span the panel
-                  — see [data-lab-embed] in globals.css. */}
+                  - see [data-lab-embed] in globals.css. */}
               <div className="[container-name:lesson-content] [container-type:inline-size]">
                 <div className="mx-auto w-full max-w-7xl px-6 py-12 md:py-16">
                   {children}

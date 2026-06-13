@@ -3,11 +3,11 @@
 // shared across the whole platform via Domain=.<apex>, so an owner who logs
 // in at the apex is signed in on every tenant subdomain. On any other host
 // (a tenant's custom domain) the Domain attribute is stripped so the cookie
-// is host-only — each custom domain is an independent first-party site.
+// is host-only - each custom domain is an independent first-party site.
 
 const TENANT_HOST = process.env.NEXT_PUBLIC_TENANT_HOST;
 
-// The Domain attribute the session cookie must carry on this host —
+// The Domain attribute the session cookie must carry on this host -
 // `.{apex}` on platform hosts, undefined (host-only) elsewhere. Setting and
 // clearing the cookie MUST both go through this: a deletion only matches a
 // cookie with the same Domain scope it was set with.

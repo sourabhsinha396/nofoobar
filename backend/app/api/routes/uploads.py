@@ -27,7 +27,7 @@ _AUTHOR_ROLES = {Role.OWNER, Role.INSTRUCTOR}
 async def upload_image(
     membership: CurrentMembershipDep,
     file: Annotated[UploadFile, File()],
-    # Required — no default. Callers must declare what the image is for so
+    # Required - no default. Callers must declare what the image is for so
     # the bucket path is meaningful (`uploads/images/<purpose>/…`) rather
     # than landing in a catchall.
     purpose: Annotated[s3.ImagePurpose, Form()],

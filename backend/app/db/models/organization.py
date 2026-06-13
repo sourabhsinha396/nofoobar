@@ -26,7 +26,7 @@ class Organization(TimestampedModel, table=True):
     primary_color: str | None = Field(default=None, max_length=7)
     description: str | None = Field(default=None, max_length=500)
 
-    # Tenant-facing content fields. All optional — empty falls back to sane
+    # Tenant-facing content fields. All optional - empty falls back to sane
     # defaults at render time (e.g. footer_text falls back to "© <year> <name>").
     tagline: str | None = Field(default=None, max_length=140)
     footer_text: str | None = Field(default=None, max_length=500)

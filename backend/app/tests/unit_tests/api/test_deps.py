@@ -126,7 +126,7 @@ def test_slug_header_wins_over_forwarded_host():
 
 
 def test_forwarded_apex_host_still_requires_slug_header():
-    # Apex pages are not tenant sites — a proxied apex request without an
+    # Apex pages are not tenant sites - a proxied apex request without an
     # explicit slug must fail the same way a direct apex request does.
     with pytest.raises(HTTPException) as exc:
         _resolve_tenant(_request("localhost", forwarded_host=settings.APEX_DOMAIN))
@@ -143,7 +143,7 @@ def test_forwarded_host_ignored_on_untrusted_hosts():
 
 def test_unset_api_host_keeps_subdomain_resolution():
     # Without the carve-out configured, a "backend" subdomain is just a tenant
-    # slug like any other — the default must not change existing behavior.
+    # slug like any other - the default must not change existing behavior.
     assert _resolve_tenant(_request(f"backend.{settings.APEX_DOMAIN}", "demo")) == (
         "slug",
         "backend",

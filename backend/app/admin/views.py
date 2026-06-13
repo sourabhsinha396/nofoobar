@@ -43,7 +43,7 @@ class OrganizationAdmin(ModelView, model=Organization):
 
 
 class OrgPaymentAccountAdmin(ModelView, model=OrgPaymentAccount):
-    # secret_key is intentionally NOT in column_list or form_columns — it's
+    # secret_key is intentionally NOT in column_list or form_columns - it's
     # encrypted bytes and should never be exposed through sqladmin (decrypting
     # it would defeat the at-rest encryption).
     column_list = [

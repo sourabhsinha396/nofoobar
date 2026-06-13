@@ -24,7 +24,7 @@ visibility_enum = postgresql.ENUM("draft", "published", name="course_visibility"
 
 def upgrade() -> None:
     # ALTER TABLE ADD COLUMN can't auto-create the enum type the way CREATE TABLE
-    # can — create it explicitly before referencing it.
+    # can - create it explicitly before referencing it.
     visibility_enum.create(op.get_bind(), checkfirst=True)
     op.add_column(
         'courses',

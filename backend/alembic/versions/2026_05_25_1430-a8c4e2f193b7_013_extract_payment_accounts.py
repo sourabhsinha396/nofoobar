@@ -110,7 +110,7 @@ def upgrade() -> None:
         "RENAME TO ix_payment_attempts_gateway_session_id"
     )
 
-    # 6. Per-course payment provider selection. Nullable — null = free course
+    # 6. Per-course payment provider selection. Nullable - null = free course
     #    (no checkout) or a paid course still pending provider assignment.
     op.add_column(
         'courses',

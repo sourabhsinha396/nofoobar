@@ -111,7 +111,7 @@ def test_pending_upload_still_waiting_returns_pending(
     assert response.status_code == 200
     assert response.json()["status"] == "pending"
     fake_video_provider.fetch_upload.assert_awaited_once_with(provider_upload_ref="upload_xyz")
-    # Didn't graduate yet — fetch_asset should NOT have been called.
+    # Didn't graduate yet - fetch_asset should NOT have been called.
     fake_video_provider.fetch_asset.assert_not_called()
 
 
@@ -138,7 +138,7 @@ def test_pending_upload_graduated_then_fetches_asset(
     assert body["playback_ref"] == "playback_xyz"
     assert body["duration_seconds"] == 42
     assert body["max_resolution_height"] == 720
-    # Both calls happen in the same request — graduation then asset fetch.
+    # Both calls happen in the same request - graduation then asset fetch.
     fake_video_provider.fetch_upload.assert_awaited_once()
     fake_video_provider.fetch_asset.assert_awaited_once_with(provider_asset_ref="asset_abc")
 
@@ -155,7 +155,7 @@ def test_pending_upload_errored_marks_asset_errored(
 
     assert response.status_code == 200
     assert response.json()["status"] == "errored"
-    # No fetch_asset call — terminal failure short-circuits.
+    # No fetch_asset call - terminal failure short-circuits.
     fake_video_provider.fetch_asset.assert_not_called()
 
 
@@ -165,7 +165,7 @@ def test_pending_upload_errored_marks_asset_errored(
 def test_pending_asset_phase_polls_fetch_asset_only(
     client, fake_membership, video_asset, fake_video_provider, mock_session
 ):
-    # provider_asset_ref already populated from an earlier poll — skip
+    # provider_asset_ref already populated from an earlier poll - skip
     # fetch_upload entirely.
     video_asset.provider_asset_ref = "asset_abc"
     fake_video_provider.fetch_asset.return_value = ProviderAsset(
@@ -194,7 +194,7 @@ def test_provider_error_returns_current_db_state(
 
     response = client.get(f"/api/v1/video_assets/{video_asset.id}", headers={"Host": "localhost"})
 
-    # Don't fail the request — let frontend keep polling. State is whatever
+    # Don't fail the request - let frontend keep polling. State is whatever
     # the DB row currently says.
     assert response.status_code == 200
     assert response.json()["status"] == "pending"

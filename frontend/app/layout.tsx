@@ -24,7 +24,7 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: {
     default: "nofoobar",
-    template: "%s — nofoobar",
+    template: "%s | nofoobar",
   },
   description:
     "An open-source platform for publishing courses, blogs, and hands-on coding labs under your own brand. Self-hostable. Apache licensed.",

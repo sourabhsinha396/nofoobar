@@ -73,7 +73,7 @@ export function CourseCard({ course, href }: CourseCardProps) {
           )}
 
           {/* Visual CTA. The whole card is already a <Link>, so this can't
-              be a nested anchor/button — render a styled <span> that picks
+              be a nested anchor/button - render a styled <span> that picks
               up the card-wide hover state via `group-*` selectors. */}
           <span
             className="mt-auto inline-flex w-fit items-center gap-1.5 pt-5 text-sm font-medium text-lime-500 transition-colors group-hover:text-foreground"

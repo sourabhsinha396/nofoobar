@@ -5,8 +5,8 @@ import { rewriteSetCookieForHost } from "@/lib/proxy-cookies";
 
 // Same-origin API proxy: the browser only ever talks to the domain in its
 // address bar; every /api/v1/* request is forwarded to the backend over the
-// internal URL. This makes session cookies first-party on every host —
-// platform subdomains and tenant custom domains alike — and removes CORS
+// internal URL. This makes session cookies first-party on every host -
+// platform subdomains and tenant custom domains alike - and removes CORS
 // from the picture entirely.
 
 // Dropped from the forwarded request: host (the upstream URL sets its own),

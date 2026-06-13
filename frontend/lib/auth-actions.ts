@@ -18,7 +18,7 @@ export async function logout() {
   } catch {
     // best-effort; clear the local cookie regardless so the user is logged out client-side
   }
-  // Must mirror the Domain scoping the API proxy applied at login — a
+  // Must mirror the Domain scoping the API proxy applied at login - a
   // deletion without the matching Domain attribute leaves the platform-wide
   // cookie alive and the user silently stays signed in.
   const host = (await headers()).get("host") ?? "";

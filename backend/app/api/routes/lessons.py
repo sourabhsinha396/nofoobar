@@ -216,13 +216,13 @@ async def update_lesson(
         if payload.content.content_type != lesson.content_type:
             raise HTTPException(
                 status.HTTP_409_CONFLICT,
-                "content_type cannot change after creation — delete and recreate the lesson",
+                "content_type cannot change after creation; delete and recreate the lesson",
             )
         lesson.content = payload.content.model_dump(mode="json", exclude={"content_type"})
 
     # Following the existing "None means no change" pattern. To clear
     # duration_seconds explicitly, send 0 and the form layer can treat 0 as null
-    # on the display side — keeps the schema unambiguous without a sentinel.
+    # on the display side - keeps the schema unambiguous without a sentinel.
     if payload.visibility is not None:
         lesson.visibility = payload.visibility
     if payload.duration_seconds is not None:

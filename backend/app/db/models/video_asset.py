@@ -13,7 +13,7 @@ from app.db.models.organization import Organization
 
 
 class VideoProviderName(StrEnum):
-    """Hosted video providers we know how to talk to. Centralized credentials —
+    """Hosted video providers we know how to talk to. Centralized credentials -
     one platform account per provider, configured via settings. See
     docs/backend/video.md for the BYO-vs-centralized rationale.
     """
@@ -33,7 +33,7 @@ class VideoAssetStatus(StrEnum):
 class VideoAsset(TimestampedModel, table=True):
     """One row per asset a video provider holds on our behalf.
 
-    `id` is the stable internal handle — Lesson and any other consumer references
+    `id` is the stable internal handle - Lesson and any other consumer references
     *this*, never the provider's opaque refs, so a future provider migration is a
     column rewrite rather than a schema/API change.
     """

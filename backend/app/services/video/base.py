@@ -70,7 +70,7 @@ class ProviderAsset(BaseModel):
 
 
 class VideoProvider(Protocol):
-    """Provider-agnostic interface for hosted video. Centralized credentials —
+    """Provider-agnostic interface for hosted video. Centralized credentials -
     each adapter reads from app.core.config.settings at instantiation. See
     docs/backend/video.md for the BYO-vs-centralized and polling-vs-webhooks
     rationale.
@@ -101,7 +101,7 @@ class VideoProvider(Protocol):
         ...
 
     async def delete(self, *, provider_asset_ref: str) -> None:
-        """Hard-delete on the provider. Idempotent — already-deleted is not an error."""
+        """Hard-delete on the provider. Idempotent - already-deleted is not an error."""
         ...
 
     async def list_assets(self) -> AsyncIterator[ProviderAsset]:

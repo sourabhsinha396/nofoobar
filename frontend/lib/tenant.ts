@@ -4,7 +4,7 @@ import { INTERNAL_API_URL as API_URL } from "@/lib/api-internal";
 
 // Server-side companion to `tenantPath` in lib/orgs.ts. The browser's URL
 // shape depends on whether we're on a tenant site (`demo.host/admin` or a
-// custom domain — bare paths) or in apex path mode (`apex/org/demo/admin`).
+// custom domain - bare paths) or in apex path mode (`apex/org/demo/admin`).
 // The proxy marks every request it rewrote into /org/[slug] with the
 // x-tenant-site header; the Host check stays as a fallback for subdomains.
 export async function serverTenantPath(slug: string, path: string): Promise<string> {
@@ -453,7 +453,7 @@ export async function getNavLinks(
   location: NavLinkLocation,
 ): Promise<NavLink[]> {
   // Public read: a fetch failure here shouldn't take down the whole navbar.
-  // Treat any error as "no links" rather than null — the navbar always
+  // Treat any error as "no links" rather than null - the navbar always
   // renders, just without tenant-added items.
   try {
     const response = await fetch(
@@ -493,7 +493,7 @@ export async function getAdminNavLinks(
   }
 }
 
-// Admin variant — returns ALL blocks (including is_enabled=false) for editing.
+// Admin variant - returns ALL blocks (including is_enabled=false) for editing.
 // 403 → caller is not an org member; treat the same as "no data" so the page
 // can render an appropriate "not a member" message.
 export async function getAdminHomepageBlocks(slug: string): Promise<HomepageBlock[] | null> {

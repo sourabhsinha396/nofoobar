@@ -28,7 +28,7 @@ class Settings(BaseSettings):
 
     # Public hostname the API itself is served at (e.g. backend.nofoobar.com).
     # Requests addressed to this host carry the tenant in X-Tenant-Slug, same
-    # as the apex — without this, an API host under the apex would be
+    # as the apex - without this, an API host under the apex would be
     # misread as tenant subdomain "backend". Empty disables the carve-out.
     API_HOST: str = ""
 
@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     # Fernet key for at-rest encryption of tenant payment-provider secrets
     # stored in org_payment_accounts. Generate with:
     #   python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
-    # Rotating this key invalidates every stored secret — tenants must re-paste keys.
+    # Rotating this key invalidates every stored secret - tenants must re-paste keys.
     SECRETS_ENCRYPTION_KEY: str = ""
 
     # S3-compatible object storage for tenant-uploaded images (course logos,
@@ -60,12 +60,12 @@ class Settings(BaseSettings):
     S3_ACCESS_KEY_ID: str = ""
     S3_SECRET_ACCESS_KEY: str = ""
     S3_BUCKET: str = ""
-    # Public URL prefix that the bucket is reachable at — R2's public dev URL
+    # Public URL prefix that the bucket is reachable at - R2's public dev URL
     # (https://pub-<hash>.r2.dev) or a custom domain. logo_url written to the
     # DB is built as {S3_PUBLIC_URL_BASE}/{object-key}.
     S3_PUBLIC_URL_BASE: str = ""
 
-    # Mux centralized credentials. One platform account, not BYO — see
+    # Mux centralized credentials. One platform account, not BYO - see
     # docs/backend/video.md. Empty values disable Mux integration; the upload
     # route checks is_configured() and fails closed.
     MUX_TOKEN_ID: str = ""

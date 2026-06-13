@@ -8,7 +8,7 @@ from sqlmodel import SQLModel
 from app.schemas.common import Slug
 from app.schemas.payment_account import OrgPaymentAccountPublic
 
-# Permissive email check — avoids pulling in `email-validator` for what is
+# Permissive email check - avoids pulling in `email-validator` for what is
 # really just a "looks like an email" guard. The address is shown back to
 # the tenant; we don't send mail from it. Tighten later if we need to.
 _EMAIL_PATTERN = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
@@ -17,7 +17,7 @@ EmailLike = Annotated[str, StringConstraints(pattern=_EMAIL_PATTERN, max_length=
 # Hostname for tenant custom domains: lowercase labels, at least one dot, no
 # scheme/port/path. Normalization runs in a BeforeValidator because pydantic
 # checks `pattern` against the raw input, before to_lower/strip transforms.
-# (No lookaheads — pydantic compiles patterns with the Rust regex engine.)
+# (No lookaheads - pydantic compiles patterns with the Rust regex engine.)
 _DOMAIN_PATTERN = r"^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$"
 
 
@@ -57,7 +57,7 @@ class OrganizationUpdate(BaseModel):
 
     All fields optional. Sending `None` explicitly clears a value (e.g.
     removing the logo). Fields the admin doesn't touch are omitted from
-    the payload entirely — the route uses `model_dump(exclude_unset=True)`
+    the payload entirely - the route uses `model_dump(exclude_unset=True)`
     to distinguish "unset" from "explicitly cleared".
     """
 

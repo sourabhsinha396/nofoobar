@@ -57,7 +57,7 @@ function renderList() {
   );
 }
 
-describe("SortableSectionList — smoke", () => {
+describe("SortableSectionList - smoke", () => {
   it("renders every section in the initial order", () => {
     renderList();
     const items = screen.getAllByRole("listitem");

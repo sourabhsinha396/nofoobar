@@ -174,7 +174,7 @@ def test_put_nav_links_assigns_dense_positions(client, mock_session, fake_member
 def test_put_nav_links_scoped_delete_does_not_touch_other_location(
     client, mock_session, fake_membership
 ):
-    # Confirms the wipe query includes the location filter — editing the
+    # Confirms the wipe query includes the location filter - editing the
     # header must not touch footer rows.
     fake_membership.role = Role.OWNER
     mock_session.exec.return_value.all.return_value = []

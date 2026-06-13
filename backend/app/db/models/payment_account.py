@@ -24,7 +24,7 @@ class OrgPaymentAccount(TimestampedModel, table=True):
     One row per (org, provider) pair. The tenant pastes their own provider keys
     (Stripe sk_*, Razorpay key_secret etc) into the admin UI; we encrypt the
     secret with the platform Fernet key before storing. The presence of a row
-    means the tenant is ready to accept payments via that provider — no
+    means the tenant is ready to accept payments via that provider - no
     separate `enabled` flag.
     """
 

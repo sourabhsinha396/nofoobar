@@ -15,7 +15,7 @@ class PageKind(StrEnum):
     """Why we keep a `kind` even though `body` is freeform:
 
     * Razorpay onboarding needs deterministic URLs for refund/contact at the
-      time we hand over to the gateway — `kind = 'refund'` is the canonical
+      time we hand over to the gateway - `kind = 'refund'` is the canonical
       hook, regardless of the slug the admin picked.
     * Admin dashboard can flag missing legal pages ("Privacy: not set").
     * Future: drop in a template body when a kind is chosen.

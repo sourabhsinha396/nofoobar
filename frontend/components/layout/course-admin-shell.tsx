@@ -83,7 +83,10 @@ export function CourseAdminShell({
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
-        <div className="mx-auto w-full max-w-4xl px-6 py-12 md:py-16">
+        {/* Width is owned by each page (their own mx-auto max-w-* wrapper); the
+            shell only provides padding so wide pages (e.g. lesson view) aren't
+            clamped by a shared cap. */}
+        <div className="w-full px-6 py-12 md:py-16">
           <div className="mb-8 flex items-center gap-3">
             <SidebarTrigger />
             <Link

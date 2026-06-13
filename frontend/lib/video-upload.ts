@@ -1,6 +1,6 @@
 import { ApiError } from "@/lib/api";
 
-// Relative paths — proxied to the backend by app/api/v1/[...path]/route.ts.
+// Relative paths - proxied to the backend by app/api/v1/[...path]/route.ts.
 const API_URL = "";
 
 export type VideoProviderName = "mux" | "bunny" | "cloudflare";
@@ -82,7 +82,7 @@ export interface PollOptions {
 }
 
 // 3. Poll our GET endpoint until the asset is in a terminal state. Our
-// backend, in turn, polls the provider — see docs/backend/video.md for why
+// backend, in turn, polls the provider - see docs/backend/video.md for why
 // we use polling instead of webhooks.
 export async function pollVideoAsset(
   orgSlug: string,

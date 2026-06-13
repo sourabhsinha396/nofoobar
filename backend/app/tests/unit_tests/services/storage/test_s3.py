@@ -35,7 +35,7 @@ def test_build_image_key_unique_per_call():
 
 
 def test_build_image_key_segments_by_purpose():
-    # The `<purpose>` segment is the whole point — different purposes land
+    # The `<purpose>` segment is the whole point - different purposes land
     # in different subdirectories under uploads/images/.
     org_id = uuid4()
     course = s3.build_image_key("course_logo", org_id, "png")

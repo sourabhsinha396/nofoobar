@@ -67,7 +67,7 @@ def test_list_admin_blocks_query_filters_by_org_and_orders_by_position(
 @pytest.mark.parametrize("role", [Role.OWNER, Role.INSTRUCTOR])
 def test_put_homepage_succeeds_for_authors(client, mock_session, fake_membership, role):
     fake_membership.role = role
-    # First exec is the "load existing" SELECT for deletion — empty in this case.
+    # First exec is the "load existing" SELECT for deletion - empty in this case.
     mock_session.exec.return_value.all.return_value = []
     payload = {
         "blocks": [
@@ -103,7 +103,7 @@ def test_put_homepage_requires_authentication(client, mock_session):
 
 
 def test_put_homepage_validates_block_configs(client, mock_session, fake_membership):
-    # Hero requires headline — payload missing it should 422 at the schema layer
+    # Hero requires headline - payload missing it should 422 at the schema layer
     # before any DB work happens.
     response = client.put(
         HOMEPAGE_PATH,

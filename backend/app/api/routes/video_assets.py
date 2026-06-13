@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/video_assets", tags=["video_assets"])
 
-# Terminal states — no point hitting the provider again, return cached DB row.
+# Terminal states - no point hitting the provider again, return cached DB row.
 _TERMINAL_STATES = {VideoAssetStatus.READY, VideoAssetStatus.ERRORED, VideoAssetStatus.DELETED}
 
 
@@ -73,7 +73,7 @@ async def _refresh_from_provider(session, asset: VideoAsset) -> None:
             # Fall through to fetch_asset with the freshly-graduated asset ref.
 
         if asset.provider_asset_ref is None:
-            return  # nothing to fetch — shouldn't happen post-init
+            return  # nothing to fetch - shouldn't happen post-init
 
         provider_asset = await provider.fetch_asset(provider_asset_ref=asset.provider_asset_ref)
         asset.status = provider_asset.status
