@@ -2,6 +2,13 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Typography plugin powers the `prose` classes used by both the article editor
+   (components/lesson/article-editor.tsx) and the rendered article
+   (components/lesson/article-renderer.tsx) — paragraph/heading/list spacing
+   comes from here. The custom .prose code-block rules further down override
+   the plugin's pre/code styling. */
+@plugin "@tailwindcss/typography";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -251,6 +258,15 @@
     width: auto;
     margin-inline: calc(50% - 50cqw + 0.5rem);
   }
+}
+
+/* Blank lines authors type for breathing room arrive as empty <p> tags in the
+   rendered article. At zero height their margins collapse through into a
+   single ordinary paragraph gap and the intended spacing vanishes; one line of
+   min-height matches the blank line the editor shows (ProseMirror pads empty
+   paragraphs with a trailing <br>, so the editor and reader stay in sync). */
+.prose p:empty {
+  min-height: 1lh;
 }
 
 /* TipTap code blocks - wrapper styling for both editor and rendered articles.
