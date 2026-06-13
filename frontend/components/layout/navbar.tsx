@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { MobileNav } from "@/components/layout/mobile-nav";
 import { ScheduleDemo } from "@/components/layout/schedule-demo";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { logout } from "@/lib/auth-actions";
@@ -26,12 +27,12 @@ export async function Navbar() {
           >
             Pricing
           </Link>
-          <Link
+          {/* <Link
             href="/docs"
             className="hidden transition-colors hover:text-foreground sm:inline-block"
           >
             Docs
-          </Link>
+          </Link> */}
           <Link
             href="https://github.com/sourabhsinha396/nofoobar"
             className="hidden transition-colors hover:text-foreground sm:inline-block"
@@ -53,7 +54,7 @@ export async function Navbar() {
             <>
               <Link
                 href="/me"
-                className="px-3 py-1.5 transition-colors hover:text-foreground"
+                className="hidden px-3 py-1.5 transition-colors hover:text-foreground sm:inline-block"
               >
                 My account
               </Link>
@@ -70,7 +71,7 @@ export async function Navbar() {
             <>
               <Link
                 href="/login"
-                className="px-3 py-1.5 transition-colors hover:text-foreground"
+                className="hidden px-3 py-1.5 transition-colors hover:text-foreground sm:inline-block"
               >
                 Sign in
               </Link>
@@ -82,6 +83,26 @@ export async function Navbar() {
               </Link>
             </>
           )}
+
+          {/* Below sm, the text links above are hidden; the drawer carries
+              them instead. The brand CTA stays in the bar on all sizes. */}
+          <MobileNav>
+            {user ? (
+              <Link
+                href="/me"
+                className="rounded-md px-3 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-accent"
+              >
+                My account
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="rounded-md px-3 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-accent"
+              >
+                Sign in
+              </Link>
+            )}
+          </MobileNav>
         </nav>
       </div>
     </header>

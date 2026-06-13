@@ -31,7 +31,7 @@ const columns: ReadonlyArray<FooterColumn> = [
       { label: "License (Apache 2.0)", href: "/LICENSE" },
       { label: "Privacy", href: "/privacy" },
       { label: "Terms", href: "/terms" },
-      { label: "Contact", href: "mailto:hi@nofoobar.com" },
+      { label: "Contact", href: "mailto:team@nofoobar.com" },
     ],
   },
 ];
@@ -85,6 +85,7 @@ export function Footer() {
             <Link
               href="https://github.com/sourabhsinha396"
               className="text-foreground transition-opacity hover:opacity-80"
+              target="_blank"
             >
               Sourabh Sinha
             </Link>

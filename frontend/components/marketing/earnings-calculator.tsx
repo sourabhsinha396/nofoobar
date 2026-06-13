@@ -42,7 +42,7 @@ const platforms: Platform[] = [
   },
   {
     name: "Udemy marketplace",
-    terms: "keeps 63% of each sale",
+    terms: "generally keeps 63% of each sale",
     monthlyUsd: 0,
     revenueCut: 0.63,
   },
@@ -73,7 +73,7 @@ export function EarningsCalculator() {
             Do the math
           </p>
           <h2 className="font-heading text-4xl font-normal leading-[1.1] tracking-tight text-foreground md:text-5xl">
-            Estimate your earnings
+            Estimate your savings
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
             Most platforms take a cut of every sale. Here it&apos;s a flat
@@ -139,7 +139,7 @@ export function EarningsCalculator() {
           </div>
 
           <div className="mt-8 space-y-4">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-brand">
               What each platform costs you per year
             </p>
             {platforms.map((p, i) => (

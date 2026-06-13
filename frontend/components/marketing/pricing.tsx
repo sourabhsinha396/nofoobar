@@ -156,7 +156,7 @@ export function Pricing() {
         <p className="mt-10 text-center text-sm text-muted-foreground">
           Multiple instructors or 5,000+ students?{" "}
           <Link
-            href="mailto:hi@nofoobar.com"
+            href="mailto:team@nofoobar.com"
             className="text-foreground underline underline-offset-4 hover:opacity-80"
           >
             Talk to us
