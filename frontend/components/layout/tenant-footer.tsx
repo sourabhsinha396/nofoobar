@@ -206,7 +206,7 @@ export async function TenantFooter({ slug, org }: Props) {
           <p>
             Powered by{" "}
             <Link
-              href="https://github.com/sourabhsinha396/nofoobar"
+              href="https://nofoobar.com/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-foreground transition-opacity hover:opacity-80"

@@ -1,5 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
-
+import { ScheduleDemo } from "@/components/layout/schedule-demo";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { logout } from "@/lib/auth-actions";
 import { getCurrentUser } from "@/lib/auth";
@@ -12,41 +13,47 @@ export async function Navbar() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 md:px-8">
         <Link
           href="/"
-          className="font-heading text-2xl leading-none tracking-tight text-foreground"
+          className="flex items-center gap-1 font-heading text-2xl leading-none tracking-tight text-foreground"
         >
+          <Image src="/images/logo.png" alt="" width={32} height={32} />
           nofoobar
         </Link>
 
-        <nav className="flex items-center gap-2 text-sm md:gap-6">
+        <nav className="flex items-center gap-2 md:gap-6">
           <Link
             href="/pricing"
-            className="hidden text-muted-foreground transition-colors hover:text-foreground sm:inline-block"
+            className="hidden transition-colors hover:text-foreground sm:inline-block"
           >
             Pricing
           </Link>
           <Link
             href="/docs"
-            className="hidden text-muted-foreground transition-colors hover:text-foreground sm:inline-block"
+            className="hidden transition-colors hover:text-foreground sm:inline-block"
           >
             Docs
           </Link>
           <Link
             href="https://github.com/sourabhsinha396/nofoobar"
-            className="hidden text-muted-foreground transition-colors hover:text-foreground sm:inline-block"
+            className="hidden transition-colors hover:text-foreground sm:inline-block"
+            target="_blank"
           >
+            <span className="flex items-center gap-1">
             GitHub
+            </span>
           </Link>
+
+          <ScheduleDemo className="hidden cursor-pointer transition-colors hover:text-foreground sm:inline-block" />
 
           <AnimatedThemeToggler
             variant="circle"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground [&_svg]:h-4 [&_svg]:w-4"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-foreground [&_svg]:h-4 [&_svg]:w-4"
           />
 
           {user ? (
             <>
               <Link
                 href="/me"
-                className="px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                className="px-3 py-1.5 transition-colors hover:text-foreground"
               >
                 My account
               </Link>
@@ -63,7 +70,7 @@ export async function Navbar() {
             <>
               <Link
                 href="/login"
-                className="px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                className="px-3 py-1.5 transition-colors hover:text-foreground"
               >
                 Sign in
               </Link>

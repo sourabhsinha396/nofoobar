@@ -1,5 +1,5 @@
-import { Ai } from "@/components/marketing/ai";
-import { ContentStructure } from "@/components/marketing/content-structure";
+import { EarningsCalculator } from "@/components/marketing/earnings-calculator";
+import { CreatorAnalytics } from "@/components/marketing/creator-analytics";
 import { CtaFinal } from "@/components/marketing/cta-final";
 import { Faq } from "@/components/marketing/faq";
 import { Features } from "@/components/marketing/features";
@@ -13,12 +13,12 @@ export default function Home() {
   return (
     <>
       <Hero />
+      <EarningsCalculator />
+      <CreatorAnalytics />
+      <Pricing />
       <ProductPillars />
       <Features />
-      <Ai />
-      <ContentStructure />
       <Reviews />
-      <Pricing />
       <Faq />
       <CtaFinal />
       <Footer />

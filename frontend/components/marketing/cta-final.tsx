@@ -30,16 +30,17 @@ export function CtaFinal() {
         <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
           <Link href="/signup">
             <ShimmerButton
-              shimmerColor="#d4f268"
-              background="rgba(20, 20, 20, 1)"
-              className="text-base font-medium"
+              shimmerColor="var(--brand)"
+              background="var(--primary)"
+              className="text-base font-medium text-primary-foreground"
             >
               Get started
             </ShimmerButton>
           </Link>
           <Link
             href="https://github.com/sourabhsinha396/nofoobar"
-            className="inline-flex items-center gap-2 rounded-full border border-background/20 bg-transparent px-6 py-3 text-sm font-medium text-background transition-colors hover:bg-background/10"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-6 py-3 text-base font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
+            target="_blank"
           >
             Star on GitHub
           </Link>

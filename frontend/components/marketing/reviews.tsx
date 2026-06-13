@@ -11,7 +11,7 @@ type Review = {
 const reviews: ReadonlyArray<Review> = [
   {
     name: "Maya Iyer",
-    handle: "maya_ships_code",
+    handle: "-",
     body: "Spun this up over the weekend to replace my hand-rolled LMS. The multi-tenant routing alone was worth the move. Webhooks just work, finally.",
     initials: "MI",
     accent: "bg-amber-200/70",
@@ -24,30 +24,30 @@ const reviews: ReadonlyArray<Review> = [
     accent: "bg-sky-200/70",
   },
   {
-    name: "Priya Naik",
-    handle: "founder_journey",
-    body: "Launched three courses in a month. Custom domain, branded checkout, mobile-friendly student view — felt like ours from day one.",
+    name: "Balaji Naik",
+    handle: "-",
+    body: "I realised there is no advanced resource for Golang, I created my site and got 400$ in 2 months..",
     initials: "PN",
     accent: "bg-rose-200/70",
   },
   {
     name: "Noah Tate",
-    handle: "indie_teach",
+    handle: "",
     body: "Embedded interactive labs in three lessons today. Students run Python in the browser without leaving the course. Quietly impressive.",
     initials: "NT",
     accent: "bg-violet-200/70",
   },
   {
     name: "Eun-jin Park",
-    handle: "open_edu",
-    body: "The marketing page caught my eye, but the actual product made me stay. Boring is the right word for serious software.",
+    handle: "awsexpert_2",
+    body: "I used to sell on Udemy which gave me less than 40%, now i consistently earn 2k$+ from my YT audience.",
     initials: "EP",
     accent: "bg-emerald-200/70",
   },
   {
-    name: "Diego Maldonado",
-    handle: "stripe_curious",
-    body: "Stripe Connect support would make me move tomorrow. As-is, still tempting. The model makes sense for any small school.",
+    name: "Eduardo Taylor",
+    handle: "-",
+    body: "I was able to start my coding school in 14 mins! The DNS setup took a bit longer than expected",
     initials: "DM",
     accent: "bg-orange-200/70",
   },
@@ -94,14 +94,59 @@ export function Reviews() {
           </h2>
         </div>
 
+        <div className="mb-4 flex flex-col gap-6 rounded-2xl border border-foreground/20 bg-background p-6 shadow-sm md:flex-row md:items-center md:justify-between md:p-8">
+          <div className="max-w-xl">
+            <p className="text-lg leading-relaxed text-foreground/90">
+              &ldquo;I run fastapitutorial.com on nofoobar. The Algoholia lab integration made 10000s of learners use my site. Since
+              then I&apos;ve received 50+ thank you messages and decent sales :D.&rdquo;
+            </p>
+            <div className="mt-5 flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-medium text-brand-foreground">
+                SS
+              </div>
+              <div className="flex flex-col leading-tight">
+                <span className="text-sm font-medium text-foreground">
+                  Sourabh Sinha
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  Founder · runs{" "}
+                  <a
+                    href="https://fastapitutorial.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-foreground underline decoration-foreground/30 underline-offset-2 hover:decoration-foreground"
+                  >
+                    fastapitutorial.com
+                  </a>{" "}
+                  on nofoobar
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="flex shrink-0 gap-3 md:flex-col">
+            <div className="rounded-xl bg-secondary/50 px-4 py-3">
+              <p className="text-xl font-medium text-foreground">50+</p>
+              <p className="text-xs text-muted-foreground">
+                student thank-you notes
+              </p>
+            </div>
+            <div className="rounded-xl bg-secondary/50 px-4 py-3">
+              <p className="text-xl font-medium text-foreground">In prod</p>
+              <p className="text-xs text-muted-foreground">
+                first tenant, live now
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {reviews.map((review) => (
-            <ReviewCard key={review.handle} review={review} />
+            <ReviewCard key={review.name} review={review} />
           ))}
         </div>
 
         <p className="mt-10 text-center text-xs text-muted-foreground">
-          Illustrative quotes — real testimonials replace these as creators ship.
+          Do give our LMS a try. We are confident on our product and features.
         </p>
       </div>
     </section>

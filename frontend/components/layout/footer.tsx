@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 type FooterColumn = {
@@ -43,8 +44,9 @@ export function Footer() {
           <div className="md:col-span-5">
             <Link
               href="/"
-              className="font-heading text-3xl leading-none tracking-tight text-foreground"
+              className="flex w-fit items-center gap-1 font-heading text-3xl leading-none tracking-tight text-foreground"
             >
+              <Image src="/images/logo.png" alt="" width={36} height={36} />
               nofoobar
             </Link>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">

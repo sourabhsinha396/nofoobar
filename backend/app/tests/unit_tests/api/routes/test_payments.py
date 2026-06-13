@@ -316,6 +316,72 @@ def test_checkout_400_when_razorpay_paired_with_non_inr(
     assert response.status_code == 400
 
 
+def test_checkout_400_when_return_url_origin_unknown(
+    client, mock_session, fake_org, authed_user
+):
+    fake_org.custom_domain = None
+    response = client.post(
+        "/api/v1/courses/paid/checkout",
+        json={**_STRIPE_BODY, "return_url_base": "https://evil.example"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "URL must match an allowed origin."
+
+
+@pytest.mark.parametrize(
+    "return_url_base",
+    [
+        "http://learn.acme.example",  # custom domain only trusted over https
+        "https://other.example",  # unrelated domain stays rejected
+        "https://sub.learn.acme.example",  # exact host match, no subdomains
+    ],
+)
+def test_checkout_400_when_origin_not_org_custom_domain(
+    client, mock_session, fake_org, authed_user, return_url_base
+):
+    fake_org.custom_domain = "learn.acme.example"
+    response = client.post(
+        "/api/v1/courses/paid/checkout",
+        json={**_STRIPE_BODY, "return_url_base": return_url_base},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "URL must match an allowed origin."
+
+
+def test_checkout_accepts_org_custom_domain_origin(
+    client, mock_session, fake_org, authed_user
+):
+    fake_org.custom_domain = "learn.acme.example"
+    course = CourseFactory.build(
+        slug="paid",
+        title="Paid course",
+        description=None,
+        org_id=fake_org.id,
+        visibility=CourseVisibility.PUBLISHED,
+        price_cents=9900,
+        currency="USD",
+    )
+    account = _stripe_account(fake_org)
+    mock_session.exec.side_effect = _exec_results(course, account, None)
+
+    with patch("stripe.checkout.Session.create") as create:
+        create.return_value = MagicMock(
+            id="cs_custom", url="https://checkout.stripe.com/pay/cs_custom"
+        )
+        response = client.post(
+            "/api/v1/courses/paid/checkout",
+            json={**_STRIPE_BODY, "return_url_base": "https://learn.acme.example"},
+            headers={"Host": "localhost"},
+        )
+
+    assert response.status_code == 200
+    call_kwargs = create.call_args.kwargs
+    assert call_kwargs["success_url"].startswith("https://learn.acme.example/courses/paid")
+    assert call_kwargs["cancel_url"] == "https://learn.acme.example/courses/paid"
+
+
 def test_checkout_404_when_course_missing(
     client, mock_session, fake_org, authed_user
 ):

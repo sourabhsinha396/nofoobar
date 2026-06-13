@@ -49,15 +49,15 @@ export function Hero() {
 
         <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
           <ShimmerButton
-              shimmerColor="rgba(20, 20, 20, 1)"
-              background="rgb(212, 242, 104)"
-              className="text-base font-medium text-gray-900"
+              shimmerColor="var(--brand-foreground)"
+              background="var(--brand)"
+              className="text-base font-medium text-brand-foreground"
             >
               Get started
             </ShimmerButton>
           <Link
             href="https://github.com/sourabhsinha396/nofoobar"
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-6 py-3 text-base font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
           >
             <GithubMark className="h-4 w-4" />
             GitHub

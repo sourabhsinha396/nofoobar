@@ -1,9 +1,9 @@
 import {
-  CreditCard,
   Globe,
-  GripVertical,
-  Mail,
+  MonitorPlay,
   Search,
+  Sparkles,
+  Terminal,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -11,16 +11,16 @@ import { cn } from "@/lib/utils";
 type Feature = {
   Icon: React.ElementType;
   name: string;
-  description: string;
+  description: React.ReactNode;
   className: string;
 };
 
 const features: ReadonlyArray<Feature> = [
   {
-    Icon: CreditCard,
-    name: "Stripe-native payments",
+    Icon: Sparkles,
+    name: "AI Copilot",
     description:
-      "Checkout, webhooks, refunds, disputes — all driven by Stripe events, not URL redirects. No transaction fee on top of what Stripe charges.",
+      "AI copilot for writing lessons, generating quizzes, and generating lab exercises.",
     className: "lg:col-span-2",
   },
   {
@@ -31,17 +31,29 @@ const features: ReadonlyArray<Feature> = [
     className: "lg:col-span-1",
   },
   {
-    Icon: GripVertical,
-    name: "Drag to reorder",
+    Icon: MonitorPlay,
+    name: "Video & DRM",
     description:
-      "Sections, lessons, anything. Restructure a course in seconds without breaking enrolled students.",
+      "Built-in support for Mux, InVideo, Bunny, and YouTube video embeds. DRM supported on the Pro plan.",
     className: "lg:col-span-1",
   },
   {
-    Icon: Mail,
-    name: "Email automation",
-    description:
-      "Receipts, course-access, password reset, drip sequences. Wired into Resend with your sender domain.",
+    Icon: Terminal,
+    name: "Coding Labs",
+    description: (
+      <>
+        Built-in support for{" "}
+        <a
+          href="https://algoholia.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-foreground underline decoration-foreground/30 underline-offset-2 hover:decoration-foreground"
+        >
+          Algoholia
+        </a>{" "}
+        coding labs. This helps convert up to 6× better.
+      </>
+    ),
     className: "lg:col-span-1",
   },
   {

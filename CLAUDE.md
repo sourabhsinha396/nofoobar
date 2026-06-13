@@ -24,6 +24,8 @@ Shared database, shared schema. Every tenant-owned row carries an `org_id` FK to
 
 The repo is public from commit #1. Do **not** name competing LMS / course platforms (Teachable, Thinkific, Kajabi, Podia, Mighty Networks, etc.) anywhere in code, comments, commit messages, docs, issues, or PRs. Describe nofoobar on its own terms — "open-source, multi-tenant LMS for course creators."
 
+**One exception** (owner-approved 2026-06-12): marketing-site copy may name competitors in truthful, sourced pricing comparisons (e.g. the fee-calculator section). Figures must match the competitor's published pricing and carry an "as of" date. Everywhere else — comments, commits, issues, PRs, internal docs — the no-naming rule still applies.
+
 ## Magic UI allowlist
 
 nofoobar uses a curated subset of Magic UI. Do not propose or install components outside this list without asking first. shadcn primitives (Accordion, Button, Card, etc.) remain unrestricted.

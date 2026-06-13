@@ -11,6 +11,7 @@
     "test:run": "vitest run"
   },
   "dependencies": {
+    "@calcom/embed-react": "^1.5.3",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
@@ -40,6 +41,7 @@
     "react-hook-form": "^7.76.0",
     "react-resizable-panels": "^4.11.2",
     "react-tweet": "^3.3.0",
+    "recharts": "3.8.0",
     "server-only": "^0.0.1",
     "shadcn": "^4.8.0",
     "sonner": "^2.0.7",

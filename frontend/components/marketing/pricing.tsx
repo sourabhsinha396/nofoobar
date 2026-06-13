@@ -21,9 +21,8 @@ const plans: ReadonlyArray<Plan> = [
     priceLabel: "$0",
     annualNote: "Apache 2.0 · the full code",
     features: [
-      "Every feature, no limits",
       "Your servers, your scale",
-      "Bring your own AI keys",
+      "Bring your own keys",
       "Zero Support because you did not pay :(",
       "Write a praise mail, I might support :)",
     ],
@@ -36,9 +35,9 @@ const plans: ReadonlyArray<Plan> = [
     annualNote: "or $14/mo billed annually",
     features: [
       "Up to 200 students",
-      "Your tenant subdomain",
+      "Custom domain · auto TLS",
       "50 GB media storage",
-      "AI blog drafts · 10 per month",
+      "AI credits 30/Month",
       "Email support",
     ],
     cta: { label: "Start trial", href: "/signup?plan=starter" },
@@ -49,12 +48,13 @@ const plans: ReadonlyArray<Plan> = [
     priceLabel: "$49",
     annualNote: "or $44/mo billed annually",
     features: [
-      "Up to 5,000 students",
+      "Up to 6,000 students",
       "Custom domain · auto TLS",
       "500 GB media storage",
-      "AI blog drafts · unlimited",
-      "AI quiz generator",
-      "Priority email support",
+      "AI credits 200/Month",
+      "DRM support for videos",
+      "AI Copilot for lesson, quiz and lab generation",
+      "Priority email, slack and whatsapp support",
     ],
     cta: { label: "Start trial", href: "/signup?plan=pro" },
     highlight: true,
@@ -74,8 +74,6 @@ export function Pricing() {
           </p>
           <h2 className="font-heading text-4xl font-normal leading-[1.1] tracking-tight text-foreground md:text-5xl">
             Honest prices.
-            <br />
-            Nothing on top.
           </h2>
           <p className="mt-6 text-base leading-relaxed text-muted-foreground md:text-lg">
             No transaction fees beyond Stripe&apos;s own. No usage gotchas.

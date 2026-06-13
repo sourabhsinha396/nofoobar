@@ -13,6 +13,7 @@ from app.core.pricing import Currency, convert_ppp_cents
 from app.db.models.course import Course, CourseVisibility
 from app.db.models.enrollment import Enrollment
 from app.db.models.membership import Role, UserOrgMembership
+from app.db.models.organization import Organization
 from app.db.models.payment_account import OrgPaymentAccount, PaymentProvider
 from app.db.models.payment_attempt import PaymentAttempt, PaymentStatus
 from app.schemas.payment import (
@@ -46,14 +47,18 @@ def _ensure_org_slug_matches(org: CurrentOrgDep, expected_slug: str) -> None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Org not found")
 
 
-def _validate_origin(url: str) -> None:
-    """Reject URLs whose origin (scheme://host[:port]) doesn't match the CORS regex."""
+def _validate_origin(url: str, org: Organization) -> None:
+    """Reject URLs whose origin (scheme://host[:port]) is neither a platform
+    domain (CORS regex) nor the org's own custom domain (https, exact host)."""
     parsed = urlparse(url)
     origin = f"{parsed.scheme}://{parsed.netloc}"
-    if not re.match(settings.CORS_ORIGIN_REGEX, origin):
-        raise HTTPException(
-            status.HTTP_400_BAD_REQUEST, "URL must match an allowed origin."
-        )
+    if re.match(settings.CORS_ORIGIN_REGEX, origin):
+        return
+    if org.custom_domain and origin == f"https://{org.custom_domain}":
+        return
+    raise HTTPException(
+        status.HTTP_400_BAD_REQUEST, "URL must match an allowed origin."
+    )
 
 
 async def _grant_enrollment_idempotent(
@@ -218,7 +223,7 @@ async def create_checkout_session(
     org: CurrentOrgDep,
     session: SessionDep,
 ) -> CheckoutResponse:
-    _validate_origin(str(payload.return_url_base))
+    _validate_origin(str(payload.return_url_base), org)
     _validate_provider_currency(payload.provider, payload.currency)
 
     course_result = await session.exec(
