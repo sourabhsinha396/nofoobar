@@ -74,8 +74,11 @@ export function LessonView({
         <main className="px-4 py-8 sm:px-6">{children}</main>
       </div>
 
-      {/* Desktop: resizable two-pane layout */}
-      <div className="hidden h-[calc(100vh-4rem)] lg:block">
+      {/* Desktop: resizable two-pane layout. Height = viewport minus the
+          navbar's h-16 AND its 1px bottom border - without the 1px the page
+          overflows the viewport by exactly that border and the window grows
+          a second scrollbar alongside the content pane's. */}
+      <div className="hidden h-[calc(100vh-4rem-1px)] lg:block">
         <ResizablePanelGroup orientation="horizontal" className="h-full">
           <ResizablePanel
             defaultSize={SIDEBAR_DEFAULT}

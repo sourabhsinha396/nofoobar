@@ -256,7 +256,7 @@
 @container lesson-content (min-width: 0) {
   [data-lab-embed] {
     width: auto;
-    margin-inline: calc(50% - 50cqw + 0.5rem);
+    margin-inline: calc(50% - 50cqw + 3rem);
   }
 }
 
@@ -267,6 +267,22 @@
    paragraphs with a trailing <br>, so the editor and reader stay in sync). */
 .prose p:empty {
   min-height: 1lh;
+}
+
+/* Brand-colored article headings (h1-h6), in the editor and the rendered view
+   alike - the typography plugin reads heading color from these variables.
+   Dark surfaces get the true brand lime (--brand, #d4f268); on light
+   backgrounds that value is illegible, so headings use a darker tone of the
+   same hue - the same trade-off --chart-brand makes. */
+.prose {
+  --tw-prose-headings: oklch(0.62 0.16 123);
+}
+/* This unlayered block outranks prose-invert's own variable reassignment
+   (which lives in the plugin's low-precedence :where() rules), so dark mode
+   must set the heading color explicitly rather than rely on
+   --tw-prose-invert-headings. */
+.dark .prose {
+  --tw-prose-headings: var(--color-brand);
 }
 
 /* TipTap code blocks - wrapper styling for both editor and rendered articles.

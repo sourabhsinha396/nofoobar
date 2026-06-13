@@ -99,6 +99,19 @@ function SidebarProvider({
         event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
         (event.metaKey || event.ctrlKey)
       ) {
+        // Leave Ctrl/Cmd+B alone while the user is typing: in the TipTap
+        // editor (a contenteditable) it means "bold", and form fields
+        // shouldn't toggle the sidebar either.
+        const target = event.target
+        if (
+          target instanceof HTMLElement &&
+          (target.isContentEditable ||
+            target.tagName === "INPUT" ||
+            target.tagName === "TEXTAREA" ||
+            target.tagName === "SELECT")
+        ) {
+          return
+        }
         event.preventDefault()
         toggleSidebar()
       }

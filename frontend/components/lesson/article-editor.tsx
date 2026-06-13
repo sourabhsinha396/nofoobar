@@ -5,13 +5,20 @@ import {
   Bold,
   Code2,
   FlaskConical,
+  Heading,
   Heading1,
+  Heading2,
+  Heading3,
+  Heading4,
+  Heading5,
+  Heading6,
   ImagePlus,
   Italic,
   List,
   Loader2,
   Play,
   Upload,
+  type LucideIcon,
 } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -24,6 +31,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ApiError } from "@/lib/api";
@@ -98,6 +111,55 @@ function ToolbarButton({ onClick, isActive = false, label, children }: ToolbarBu
   );
 }
 
+const HEADING_LEVELS = [1, 2, 3, 4, 5, 6] as const;
+type HeadingLevel = (typeof HEADING_LEVELS)[number];
+
+const HEADING_ICONS: Record<HeadingLevel, LucideIcon> = {
+  1: Heading1,
+  2: Heading2,
+  3: Heading3,
+  4: Heading4,
+  5: Heading5,
+  6: Heading6,
+};
+
+function HeadingMenu({ editor }: { editor: Editor }) {
+  const activeLevel = HEADING_LEVELS.find((level) => editor.isActive("heading", { level }));
+  const TriggerIcon = activeLevel ? HEADING_ICONS[activeLevel] : Heading;
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          aria-label="Heading"
+          aria-pressed={Boolean(activeLevel)}
+          className={cn("h-8 w-8 p-0", activeLevel && "bg-accent text-foreground")}
+        >
+          <TriggerIcon className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
+        {HEADING_LEVELS.map((level) => {
+          const Icon = HEADING_ICONS[level];
+          const isActive = editor.isActive("heading", { level });
+          return (
+            <DropdownMenuItem
+              key={level}
+              onSelect={() => editor.chain().focus().toggleHeading({ level }).run()}
+              className={cn(isActive && "bg-accent text-foreground")}
+            >
+              <Icon className="size-4" />
+              Heading {level}
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 interface ToolbarProps {
   editor: Editor | null;
   onOpenVideo: () => void;
@@ -110,13 +172,7 @@ function Toolbar({ editor, onOpenVideo, onOpenLab, onPickImage, isUploadingImage
   if (!editor) return null;
   return (
     <div className="flex items-center gap-1 border-b border-input p-1">
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        isActive={editor.isActive("heading", { level: 1 })}
-        label="Heading 1"
-      >
-        <Heading1 className="size-4" />
-      </ToolbarButton>
+      <HeadingMenu editor={editor} />
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBold().run()}
         isActive={editor.isActive("bold")}
