@@ -71,6 +71,12 @@ class Settings(BaseSettings):
     MUX_TOKEN_ID: str = ""
     MUX_TOKEN_SECRET: str = ""
 
+    # Outbound webhook integration. Every delivery is bounded by this timeout
+    # (connect + read + write) so a slow or unresponsive tenant endpoint can't
+    # tie up the background delivery task. Failures are logged and dropped -
+    # delivery is at-most-once.
+    WEBHOOK_TIMEOUT_SECONDS: float = 10.0
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def DATABASE_URL(self) -> str:

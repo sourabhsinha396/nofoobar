@@ -273,13 +273,7 @@ export default async function CourseLandingPage({ params, searchParams }: Props)
                   </span>
                 </div>
               ) : (
-                <EnrollButton
-                  orgSlug={slug}
-                  courseSlug={course.slug}
-                  priceCents={course.price_cents}
-                  currency={course.currency}
-                  priceLabel={priceLabel}
-                />
+                <EnrollButton orgSlug={slug} courseSlug={course.slug} priceLabel={priceLabel} />
               )}
 
               {/* {totalLessons > 0 && (

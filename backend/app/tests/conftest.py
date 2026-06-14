@@ -14,6 +14,7 @@ from app.core.security import hash_password
 from app.db.models.membership import Role, UserOrgMembership
 from app.db.models.organization import Organization
 from app.db.models.user import User
+from app.events.dispatcher import get_dispatcher
 from app.main import app
 from app.tests.factories.membership import UserOrgMembershipFactory
 from app.tests.factories.organization import OrganizationFactory
@@ -24,6 +25,26 @@ from app.tests.factories.user import UserFactory
 def _clear_overrides():
     yield
     app.dependency_overrides.clear()
+
+
+class _RecordingDispatcher:
+    """Captures dispatched events instead of scheduling real background delivery."""
+
+    def __init__(self) -> None:
+        self.events: list = []
+
+    def dispatch(self, event) -> None:
+        self.events.append(event)
+
+
+@pytest.fixture(autouse=True)
+def stub_dispatcher():
+    """Override the event dispatcher for every test so route emits are recorded,
+    not delivered - otherwise a BackgroundTask would open a real DB session.
+    Request this fixture to assert on `.events`."""
+    dispatcher = _RecordingDispatcher()
+    app.dependency_overrides[get_dispatcher] = lambda: dispatcher
+    return dispatcher
 
 
 @pytest.fixture

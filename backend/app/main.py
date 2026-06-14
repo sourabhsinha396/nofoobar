@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
+import app.services.integrations  # noqa: F401  # registers providers + bus subscriber
 from app.admin.main import register_admin
 from app.api.main import api_router
 from app.core.config import settings
