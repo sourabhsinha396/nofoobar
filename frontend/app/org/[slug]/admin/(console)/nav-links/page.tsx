@@ -5,7 +5,7 @@ import { NavLinksEditor } from "@/components/admin/nav-links/nav-links-editor";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
-import { getAdminNavLinks, getTenantOrg, serverTenantPath } from "@/lib/tenant";
+import { getAdminNavLinks, getTenantOrg } from "@/lib/tenant";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -19,11 +19,10 @@ export default async function AdminNavLinksPage({ params }: Props) {
     redirect("/login");
   }
 
-  const [org, headerLinks, footerLinks, adminHref] = await Promise.all([
+  const [org, headerLinks, footerLinks] = await Promise.all([
     getTenantOrg(slug),
     getAdminNavLinks(slug, "header"),
     getAdminNavLinks(slug, "footer"),
-    serverTenantPath(slug, "/admin"),
   ]);
 
   if (!org) {
@@ -49,13 +48,7 @@ export default async function AdminNavLinksPage({ params }: Props) {
   return (
     <main className="mx-auto w-full max-w-4xl px-6 py-12 md:py-16">
       <header className="mb-10">
-        <Link
-          href={adminHref}
-          className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
-        >
-          ← Admin
-        </Link>
-        <h1 className="mt-3 font-heading text-3xl font-semibold tracking-tight md:text-4xl">
+        <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">
           Navigation links
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">

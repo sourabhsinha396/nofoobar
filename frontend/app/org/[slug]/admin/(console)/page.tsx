@@ -1,4 +1,4 @@
-import { Blocks, CreditCard, FileText, LayoutTemplate, Link2, Settings } from "lucide-react";
+import { CreditCard } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -25,26 +25,11 @@ export default async function TenantAdminDashboard({ params }: Props) {
     notFound();
   }
 
-  const [
-    courses,
-    newCourseHref,
-    coursesPrefix,
-    paymentsHref,
-    homepageHref,
-    settingsHref,
-    navLinksHref,
-    pagesHref,
-    integrationsHref,
-  ] = await Promise.all([
+  const [courses, newCourseHref, coursesPrefix, paymentsHref] = await Promise.all([
     getTenantCourses(slug),
     serverTenantPath(slug, "/admin/courses/new"),
     serverTenantPath(slug, "/admin/courses"),
     serverTenantPath(slug, "/admin/payments"),
-    serverTenantPath(slug, "/admin/homepage"),
-    serverTenantPath(slug, "/admin/settings"),
-    serverTenantPath(slug, "/admin/nav-links"),
-    serverTenantPath(slug, "/admin/pages"),
-    serverTenantPath(slug, "/admin/integrations"),
   ]);
 
   // Org exists but membership-gated endpoints refused. Almost always: the
@@ -53,7 +38,7 @@ export default async function TenantAdminDashboard({ params }: Props) {
   // subdomain).
   if (courses === null) {
     return (
-      <main className="mx-auto w-full max-w-2xl px-6 py-24">
+      <main className="mx-auto w-full max-w-2xl px-6 py-16 md:py-24">
         <Card className="items-center p-10 text-center">
           <h1 className="font-heading text-2xl font-semibold tracking-tight">
             You&apos;re not a member of {org.name}
@@ -70,11 +55,20 @@ export default async function TenantAdminDashboard({ params }: Props) {
     );
   }
 
+  const publishedCount = courses.filter((c) => c.visibility === "published").length;
+  const draftCount = courses.length - publishedCount;
+
+  const stats = [
+    { label: "Courses", value: courses.length },
+    { label: "Published", value: publishedCount },
+    { label: "Drafts", value: draftCount },
+  ];
+
   return (
-    <main className="mx-auto w-full max-w-4xl px-6 py-16 md:py-24">
-      <header className="mb-12">
+    <main className="mx-auto w-full max-w-4xl px-6 py-12 md:py-16">
+      <header className="mb-10">
         <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-          Organization
+          Dashboard
         </p>
         <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight md:text-4xl">
           {org.name}
@@ -84,83 +78,17 @@ export default async function TenantAdminDashboard({ params }: Props) {
         )}
       </header>
 
-      <Card className="mb-4 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-start gap-3">
-          <Settings className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
-          <div>
-            <p className="font-medium">Brand &amp; contact</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Logo, tagline, footer text, contact email, and social links.
-            </p>
-          </div>
-        </div>
-        <Button asChild variant="outline">
-          <Link href={settingsHref}>Edit settings</Link>
-        </Button>
-      </Card>
-
-      <Card className="mb-4 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-start gap-3">
-          <LayoutTemplate className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
-          <div>
-            <p className="font-medium">Customize your homepage</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Add hero, stats, featured courses, testimonials, and FAQs to your tenant landing page.
-            </p>
-          </div>
-        </div>
-        <Button asChild variant="outline">
-          <Link href={homepageHref}>Edit homepage</Link>
-        </Button>
-      </Card>
-
-      <Card className="mb-4 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-start gap-3">
-          <Link2 className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
-          <div>
-            <p className="font-medium">Navigation links</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Add header and footer links (e.g. About, Blog, Pricing).
-            </p>
-          </div>
-        </div>
-        <Button asChild variant="outline">
-          <Link href={navLinksHref}>Edit links</Link>
-        </Button>
-      </Card>
-
-      <Card className="mb-4 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-start gap-3">
-          <FileText className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
-          <div>
-            <p className="font-medium">Pages</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Terms, privacy, refund policy, contact, or any custom page.
-            </p>
-          </div>
-        </div>
-        <Button asChild variant="outline">
-          <Link href={pagesHref}>Manage pages</Link>
-        </Button>
-      </Card>
-
-      <Card className="mb-8 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-start gap-3">
-          <Blocks className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
-          <div>
-            <p className="font-medium">Integrations</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Connect Slack, webhooks, and more to fire on events like new enrollments.
-            </p>
-          </div>
-        </div>
-        <Button asChild variant="outline">
-          <Link href={integrationsHref}>Manage integrations</Link>
-        </Button>
-      </Card>
+      <section className="mb-10 grid grid-cols-3 gap-3">
+        {stats.map((stat) => (
+          <Card key={stat.label} className="gap-1 p-4">
+            <p className="text-sm text-muted-foreground">{stat.label}</p>
+            <p className="font-heading text-2xl font-semibold tracking-tight">{stat.value}</p>
+          </Card>
+        ))}
+      </section>
 
       {org.payment_accounts.length === 0 && (
-        <Card className="mb-8 flex flex-col gap-3 border-amber-500/30 bg-amber-500/10 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <Card className="mb-10 flex flex-col gap-3 border-amber-500/30 bg-amber-500/10 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
             <CreditCard className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400" />
             <div>

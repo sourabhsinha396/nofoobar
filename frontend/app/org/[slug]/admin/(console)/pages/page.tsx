@@ -32,10 +32,9 @@ export default async function AdminPagesIndex({ params }: Props) {
     redirect("/login");
   }
 
-  const [org, pages, adminHref, newHref, pagesPrefix] = await Promise.all([
+  const [org, pages, newHref, pagesPrefix] = await Promise.all([
     getTenantOrg(slug),
     getAdminPages(slug),
-    serverTenantPath(slug, "/admin"),
     serverTenantPath(slug, "/admin/pages/new"),
     serverTenantPath(slug, "/admin/pages"),
   ]);
@@ -62,13 +61,7 @@ export default async function AdminPagesIndex({ params }: Props) {
   return (
     <main className="mx-auto w-full max-w-4xl px-6 py-12 md:py-16">
       <header className="mb-10">
-        <Link
-          href={adminHref}
-          className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
-        >
-          ← Admin
-        </Link>
-        <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
+        <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">
               Pages
