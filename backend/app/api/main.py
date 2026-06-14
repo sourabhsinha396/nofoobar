@@ -7,6 +7,7 @@ from app.api.routes import (
     enrollments,
     health,
     homepage,
+    integrations,
     learn,
     lessons,
     me,
@@ -42,6 +43,7 @@ api_router.include_router(nav_links.router)
 api_router.include_router(public_pages.router)
 api_router.include_router(pages.router)
 api_router.include_router(enrollments.router)
+api_router.include_router(integrations.router)
 api_router.include_router(learn.router)
 api_router.include_router(payments.router)
 api_router.include_router(uploads.router)

@@ -629,7 +629,7 @@ def test_verify_400_when_account_disconnected(
 
 
 def test_verify_marks_paid_and_grants_enrollment(
-    client, mock_session, fake_org, authed_user
+    client, mock_session, fake_org, authed_user, stub_dispatcher
 ):
     attempt = PaymentAttemptFactory.build(
         user_id=authed_user.id,
@@ -643,6 +643,8 @@ def test_verify_marks_paid_and_grants_enrollment(
     account = _stripe_account(fake_org, secret_plain="sk_test_tenant")
     # exec order: attempt, account, enrollment (None), membership (None).
     mock_session.exec.side_effect = _exec_results(attempt, account, None, None)
+    # _emit_enrollment_created looks the course up by id for its slug.
+    mock_session.get.return_value = MagicMock(slug="intro")
 
     with patch("stripe.checkout.Session.retrieve") as retrieve:
         retrieve.return_value = MagicMock(payment_status="paid", status="complete")
@@ -658,9 +660,16 @@ def test_verify_marks_paid_and_grants_enrollment(
     assert attempt.status == PaymentStatus.PAID
     retrieve.assert_called_once_with("cs_test_paid", api_key="sk_test_tenant")
 
+    # The paid path must publish the same event the free-enroll path does.
+    assert len(stub_dispatcher.events) == 1
+    event = stub_dispatcher.events[0]
+    assert event.event_type == "enrollment.created"
+    assert event.org_id == fake_org.id
+    assert event.user_id == authed_user.id
+
 
 def test_verify_idempotent_when_already_paid(
-    client, mock_session, fake_org, authed_user
+    client, mock_session, fake_org, authed_user, stub_dispatcher
 ):
     attempt = PaymentAttemptFactory.build(
         user_id=authed_user.id,
@@ -680,6 +689,8 @@ def test_verify_idempotent_when_already_paid(
     assert response.json()["enrolled"] is True
     # No Stripe API call needed - short-circuit fast path.
     retrieve.assert_not_called()
+    # Already enrolled -> no new enrollment -> no event.
+    assert stub_dispatcher.events == []
 
 
 def test_verify_returns_not_enrolled_when_session_unpaid(
@@ -722,6 +733,7 @@ def test_verify_razorpay_marks_paid(client, mock_session, fake_org, authed_user)
         secret_key=encrypt("secret_rzp"),
     )
     mock_session.exec.side_effect = _exec_results(attempt, account, None, None)
+    mock_session.get.return_value = MagicMock(slug="intro")
 
     with patch("razorpay.resources.order.Order.fetch") as fetch:
         fetch.return_value = {"id": "order_test_xyz", "status": "paid"}

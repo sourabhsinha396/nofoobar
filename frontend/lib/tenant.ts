@@ -27,6 +27,28 @@ export interface PaymentAccount {
   key_id: string;
 }
 
+export type PlanTier = "free" | "starter" | "pro" | "enterprise";
+
+export type IntegrationProvider = "webhook" | "slack" | "posthog";
+
+/** A configured integration. `config` has secret fields masked by the API. */
+export interface OrgIntegration {
+  id: string;
+  provider: IntegrationProvider;
+  enabled: boolean;
+  config: Record<string, string>;
+  created_at: string;
+}
+
+/** A provider the org could enable. `allowed` is false when the org's plan is
+ *  below `min_plan`. */
+export interface AvailableIntegration {
+  provider: IntegrationProvider;
+  min_plan: PlanTier;
+  allowed: boolean;
+  config_schema: Record<string, unknown>;
+}
+
 export type SocialPlatform =
   | "twitter"
   | "linkedin"
@@ -38,6 +60,13 @@ export interface SocialLink {
   platform: SocialPlatform;
   url: string;
 }
+
+export interface PostHogPublicConfig {
+  project_api_key: string;
+  host: string;
+}
+
+export type OrgRole = "owner" | "instructor" | "student";
 
 export interface TenantOrg {
   id: string;
@@ -51,6 +80,10 @@ export interface TenantOrg {
   contact_email: string | null;
   social_links: SocialLink[];
   payment_accounts: PaymentAccount[];
+  // Present when the tenant enabled PostHog; the public site loads analytics.
+  posthog: PostHogPublicConfig | null;
+  // The current viewer's role in this org, or null for anonymous/non-members.
+  viewer_role: OrgRole | null;
 }
 
 export type CourseVisibility = "draft" | "published";
@@ -274,6 +307,38 @@ export async function getPaymentAccounts(slug: string): Promise<PaymentAccount[]
       return null;
     }
     return (await response.json()) as PaymentAccount[];
+  } catch {
+    return null;
+  }
+}
+
+export async function getOrgIntegrations(slug: string): Promise<OrgIntegration[] | null> {
+  try {
+    const response = await fetch(`${API_URL}/api/v1/admin/integrations`, {
+      headers: await tenantHeaders(slug),
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      return null;
+    }
+    return (await response.json()) as OrgIntegration[];
+  } catch {
+    return null;
+  }
+}
+
+export async function getAvailableIntegrations(
+  slug: string,
+): Promise<AvailableIntegration[] | null> {
+  try {
+    const response = await fetch(`${API_URL}/api/v1/admin/integrations/available`, {
+      headers: await tenantHeaders(slug),
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      return null;
+    }
+    return (await response.json()) as AvailableIntegration[];
   } catch {
     return null;
   }

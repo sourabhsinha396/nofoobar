@@ -87,6 +87,14 @@ class DomainStatus(BaseModel):
     message: str | None = None
 
 
+class PostHogPublic(BaseModel):
+    """Public PostHog config for the tenant's site to initialise client-side
+    analytics. The project API key is public-by-design (it ships in browser JS)."""
+
+    project_api_key: str
+    host: str
+
+
 class OrganizationPublic(SQLModel):
     id: UUID
     slug: str
@@ -102,3 +110,8 @@ class OrganizationPublic(SQLModel):
     # accept paid payments yet. Frontend derives "needs onboarding" from
     # `payment_accounts.length === 0` (or filters by provider).
     payment_accounts: list[OrgPaymentAccountPublic] = []
+    # Present when the tenant enabled PostHog; the site loads analytics with it.
+    posthog: PostHogPublic | None = None
+    # The current viewer's role in this org ("owner"/"instructor"/"student"),
+    # or null for anonymous/non-members. Used to exclude staff from analytics.
+    viewer_role: str | None = None

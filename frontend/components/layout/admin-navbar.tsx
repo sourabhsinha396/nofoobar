@@ -33,7 +33,7 @@ export async function AdminNavbar({ slug, orgName }: Props) {
           </span>
         </div>
 
-        <nav className="flex items-center gap-2 text-sm md:gap-4">
+        <nav className="flex items-center gap-2 md:gap-4">
           <Link
             href={viewSiteHref}
             target="_blank"

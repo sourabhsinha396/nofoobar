@@ -20,6 +20,12 @@ class LessonFactory(ModelFactory[Lesson]):
     __model__ = Lesson
 
     @classmethod
+    def slug(cls) -> str:
+        # Avoid polyfactory's occasional empty string, which breaks tests that
+        # interpolate the slug into a URL path. Always a valid, non-empty slug.
+        return cls.__faker__.slug()
+
+    @classmethod
     def content_type(cls) -> ContentType:
         return ContentType.ARTICLE
 

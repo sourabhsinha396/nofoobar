@@ -1,4 +1,4 @@
-import { CreditCard, FileText, LayoutTemplate, Link2, Settings } from "lucide-react";
+import { Blocks, CreditCard, FileText, LayoutTemplate, Link2, Settings } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -34,6 +34,7 @@ export default async function TenantAdminDashboard({ params }: Props) {
     settingsHref,
     navLinksHref,
     pagesHref,
+    integrationsHref,
   ] = await Promise.all([
     getTenantCourses(slug),
     serverTenantPath(slug, "/admin/courses/new"),
@@ -43,6 +44,7 @@ export default async function TenantAdminDashboard({ params }: Props) {
     serverTenantPath(slug, "/admin/settings"),
     serverTenantPath(slug, "/admin/nav-links"),
     serverTenantPath(slug, "/admin/pages"),
+    serverTenantPath(slug, "/admin/integrations"),
   ]);
 
   // Org exists but membership-gated endpoints refused. Almost always: the
@@ -127,7 +129,7 @@ export default async function TenantAdminDashboard({ params }: Props) {
         </Button>
       </Card>
 
-      <Card className="mb-8 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <Card className="mb-4 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
           <FileText className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
           <div>
@@ -139,6 +141,21 @@ export default async function TenantAdminDashboard({ params }: Props) {
         </div>
         <Button asChild variant="outline">
           <Link href={pagesHref}>Manage pages</Link>
+        </Button>
+      </Card>
+
+      <Card className="mb-8 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-3">
+          <Blocks className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+          <div>
+            <p className="font-medium">Integrations</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Connect Slack, webhooks, and more to fire on events like new enrollments.
+            </p>
+          </div>
+        </div>
+        <Button asChild variant="outline">
+          <Link href={integrationsHref}>Manage integrations</Link>
         </Button>
       </Card>
 

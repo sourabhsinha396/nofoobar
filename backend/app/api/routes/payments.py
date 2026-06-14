@@ -16,6 +16,7 @@ from app.db.models.membership import Role, UserOrgMembership
 from app.db.models.organization import Organization
 from app.db.models.payment_account import OrgPaymentAccount, PaymentProvider
 from app.db.models.payment_attempt import PaymentAttempt, PaymentStatus
+from app.events import Dispatcher, DispatcherDep, EnrollmentCreated
 from app.schemas.payment import (
     CheckoutRequest,
     CheckoutResponse,
@@ -63,15 +64,17 @@ def _validate_origin(url: str, org: Organization) -> None:
 
 async def _grant_enrollment_idempotent(
     session: SessionDep, user_id: UUID, org_id: UUID, course_id: UUID
-) -> bool:
-    """Create enrollment + student membership if not already present."""
+) -> Enrollment | None:
+    """Create enrollment + student membership if not already present. Returns the
+    new Enrollment, or None when the user was already enrolled (so callers know
+    whether a fresh enrollment - and its event - actually happened)."""
     existing_result = await session.exec(
         select(Enrollment)
         .where(Enrollment.user_id == user_id)
         .where(Enrollment.course_id == course_id)
     )
     if existing_result.first() is not None:
-        return False
+        return None
 
     membership_result = await session.exec(
         select(UserOrgMembership)
@@ -81,8 +84,27 @@ async def _grant_enrollment_idempotent(
     if membership_result.first() is None:
         session.add(UserOrgMembership(user_id=user_id, org_id=org_id, role=Role.STUDENT))
 
-    session.add(Enrollment(user_id=user_id, org_id=org_id, course_id=course_id))
-    return True
+    enrollment = Enrollment(user_id=user_id, org_id=org_id, course_id=course_id)
+    session.add(enrollment)
+    return enrollment
+
+
+async def _emit_enrollment_created(
+    dispatcher: Dispatcher, session: SessionDep, enrollment: Enrollment, user_email: str
+) -> None:
+    """Publish EnrollmentCreated for a paid enrollment, mirroring the free-enroll
+    route so integrations fire on both paths. Looks up the course for its slug."""
+    course = await session.get(Course, enrollment.course_id)
+    dispatcher.dispatch(
+        EnrollmentCreated(
+            org_id=enrollment.org_id,
+            enrollment_id=enrollment.id,
+            course_id=enrollment.course_id,
+            course_slug=course.slug if course else "",
+            user_id=enrollment.user_id,
+            user_email=user_email,
+        )
+    )
 
 
 async def _get_payment_account(
@@ -238,7 +260,7 @@ async def create_checkout_session(
     if not course.price_cents:
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST,
-            "This course is free; use POST /enroll instead.",
+            "This course is free; it's open access and doesn't require checkout.",
         )
 
     gateway = get_gateway(payload.provider)
@@ -335,6 +357,7 @@ async def verify_payment_attempt(
     user: CurrentUserDep,
     org: CurrentOrgDep,
     session: SessionDep,
+    dispatcher: DispatcherDep,
 ) -> VerifyResponse:
     attempt_result = await session.exec(
         select(PaymentAttempt)
@@ -348,11 +371,12 @@ async def verify_payment_attempt(
 
     if attempt.status == PaymentStatus.PAID:
         # Buyer hit the success URL but already enrolled - re-grant is a no-op.
-        enrollment_created = await _grant_enrollment_idempotent(
+        enrollment = await _grant_enrollment_idempotent(
             session, attempt.user_id, attempt.org_id, attempt.course_id
         )
-        if enrollment_created:
+        if enrollment is not None:
             await session.commit()
+            await _emit_enrollment_created(dispatcher, session, enrollment, user.email)
         return VerifyResponse(attempt=attempt, enrolled=True)
 
     gateway = get_gateway(attempt.provider)
@@ -370,11 +394,13 @@ async def verify_payment_attempt(
 
     if checkout_status.paid:
         attempt.status = PaymentStatus.PAID
-        await _grant_enrollment_idempotent(
+        enrollment = await _grant_enrollment_idempotent(
             session, attempt.user_id, attempt.org_id, attempt.course_id
         )
         await session.commit()
         await session.refresh(attempt)
+        if enrollment is not None:
+            await _emit_enrollment_created(dispatcher, session, enrollment, user.email)
         return VerifyResponse(attempt=attempt, enrolled=True)
 
     if checkout_status.expired:

@@ -9,9 +9,9 @@ afterEach(() => {
 });
 
 describe("ArticleEditor - smoke", () => {
-  it("renders all five toolbar buttons (H1, Bold, Italic, BulletList, CodeBlock)", () => {
+  it("renders all five toolbar buttons (Heading, Bold, Italic, BulletList, CodeBlock)", () => {
     render(<ArticleEditor value={EMPTY_TIPTAP_DOC} onChange={() => {}} orgSlug="test-org" />);
-    expect(screen.getByRole("button", { name: /heading 1/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^heading$/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^bold$/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^italic$/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /bullet list/i })).toBeInTheDocument();
@@ -20,7 +20,7 @@ describe("ArticleEditor - smoke", () => {
 
   it("applies aria-pressed=false on toolbar buttons when no formatting is active", () => {
     render(<ArticleEditor value={EMPTY_TIPTAP_DOC} onChange={() => {}} orgSlug="test-org" />);
-    for (const name of [/heading 1/i, /^bold$/i, /^italic$/i, /bullet list/i, /code block/i]) {
+    for (const name of [/^heading$/i, /^bold$/i, /^italic$/i, /bullet list/i, /code block/i]) {
       expect(screen.getByRole("button", { name })).toHaveAttribute("aria-pressed", "false");
     }
   });
