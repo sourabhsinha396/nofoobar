@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   LayoutTemplate,
   Link2,
+  Search,
   Settings,
   type LucideIcon,
 } from "lucide-react";
@@ -53,6 +54,7 @@ const SEGMENT_ICONS: Record<string, LucideIcon> = {
   integrations: Blocks,
   payments: CreditCard,
   settings: Settings,
+  seo: Search,
 };
 
 interface Props {

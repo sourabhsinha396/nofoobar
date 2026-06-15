@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Pricing",
   description:
     "Honest prices. No transaction fees beyond Stripe's own. Self-host for free, forever.",
+  alternates: { canonical: "/pricing" },
 };
 
 export default function PricingPage() {

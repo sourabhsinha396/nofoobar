@@ -16,6 +16,7 @@ from app.core.config import settings
 # the calling form. Keeps the namespace explicit and grep-able.
 ImagePurpose = Literal[
     "organization_logo",
+    "organization_og_image",
     "course_logo",
     "tiptap_inline",
 ]

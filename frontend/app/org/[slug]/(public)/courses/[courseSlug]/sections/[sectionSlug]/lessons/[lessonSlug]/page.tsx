@@ -65,7 +65,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!lesson) {
     return {};
   }
-  return { title: lesson.title };
+  return {
+    title: lesson.title,
+    alternates: {
+      canonical: `/courses/${courseSlug}/sections/${sectionSlug}/lessons/${lessonSlug}`,
+    },
+  };
 }
 
 export default async function LessonPage({ params }: Props) {

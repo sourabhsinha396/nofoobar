@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { CourseCard } from "@/components/course/course-card";
@@ -6,6 +7,16 @@ import { getPublishedCourses, getTenantOrg, serverTenantPath } from "@/lib/tenan
 
 interface Props {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const org = await getTenantOrg(slug);
+  return {
+    title: "Courses",
+    description: org ? `Browse courses from ${org.name}.` : undefined,
+    alternates: { canonical: "/courses" },
+  };
 }
 
 export default async function TenantCourseCatalog({ params }: Props) {
