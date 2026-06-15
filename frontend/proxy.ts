@@ -38,6 +38,17 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // robots.txt and sitemap.xml are host-aware root metadata routes: they read
+  // the Host header themselves and emit apex- or tenant-specific output.
+  // Rewriting them into /org/[slug]/... would 404 (no such route), so let them
+  // through unchanged on every host.
+  if (
+    request.nextUrl.pathname === "/robots.txt" ||
+    request.nextUrl.pathname === "/sitemap.xml"
+  ) {
+    return NextResponse.next();
+  }
+
   const host = (request.headers.get("host") ?? "").toLowerCase();
 
   if (host === TENANT_HOST || host === `www.${TENANT_HOST}`) {

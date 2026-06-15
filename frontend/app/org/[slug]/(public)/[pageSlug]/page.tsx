@@ -21,7 +21,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!page) {
     return {};
   }
-  return { title: page.title };
+  return {
+    title: page.title,
+    alternates: { canonical: `/${pageSlug}` },
+  };
 }
 
 export default async function TenantPageRoute({ params }: Props) {

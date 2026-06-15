@@ -5,6 +5,7 @@ import { CheckCircle2, FileText, FlaskConical, ListChecks, Lock, PlayCircle } fr
 
 import { EnrollButton } from "@/components/enrollment/enroll-button";
 import { PaymentVerifier } from "@/components/enrollment/payment-verifier";
+import { JsonLd } from "@/components/seo/json-ld";
 import {
   Accordion,
   AccordionContent,
@@ -16,6 +17,7 @@ import { Card } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
 import { LEVEL_CLASSES, LEVEL_LABELS, fallbackHue } from "@/lib/course-display";
 import { formatPrice } from "@/lib/format";
+import { tenantOrigin } from "@/lib/site-url";
 import {
   getMyEnrollments,
   getPublishedCourse,
@@ -112,6 +114,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: course.title,
     description: course.description ?? undefined,
+    alternates: { canonical: `/courses/${courseSlug}` },
   };
 }
 
@@ -168,8 +171,30 @@ export default async function CourseLandingPage({ params, searchParams }: Props)
   const lessonHrefPrefix = `${coursesPrefix}/${course.slug}/sections`;
   const hue = fallbackHue(course.slug);
 
+  const origin = tenantOrigin(org.slug, org.custom_domain);
+  const courseLd = {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    name: course.title,
+    ...(course.description ? { description: course.description } : {}),
+    provider: {
+      "@type": "Organization",
+      name: org.name,
+      url: origin,
+    },
+    ...(course.logo_url ? { image: course.logo_url } : {}),
+    offers: {
+      "@type": "Offer",
+      price: ((course.price_cents ?? 0) / 100).toFixed(2),
+      priceCurrency: course.currency,
+      availability: "https://schema.org/InStock",
+      url: `${origin}/courses/${course.slug}`,
+    },
+  };
+
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-12 md:py-16">
+      <JsonLd data={courseLd} />
       {paymentAttemptId && user && (
         <PaymentVerifier orgSlug={slug} paymentAttemptId={paymentAttemptId} />
       )}

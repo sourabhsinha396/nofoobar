@@ -3,8 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { HomepageBlocks } from "@/components/homepage/homepage-blocks";
+import { JsonLd } from "@/components/seo/json-ld";
 import { AuroraText } from "@/components/ui/aurora-text";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
+import { tenantOrigin } from "@/lib/site-url";
 import {
   getHomepageBlocks,
   getPublishedCourses,
@@ -16,17 +18,13 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-  const org = await getTenantOrg(slug);
-  if (!org) {
-    return {};
-  }
-  return {
-    title: org.name,
-    description: org.description ?? undefined,
-  };
-}
+// Only a self-canonical here. Title + description come from the tenant public
+// layout (title.absolute = org name) - declaring a title would re-apply the
+// template and render "<org> | <org>". metadataBase is the tenant origin, so
+// this relative canonical resolves to the preferred (custom-domain) host.
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default async function TenantHome({ params }: Props) {
   const { slug } = await params;
@@ -42,12 +40,25 @@ export default async function TenantHome({ params }: Props) {
     notFound();
   }
 
+  const organizationLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: org.name,
+    url: tenantOrigin(org.slug, org.custom_domain),
+    ...(org.description ? { description: org.description } : {}),
+    ...(org.logo_url ? { logo: org.logo_url } : {}),
+    ...(org.social_links.length
+      ? { sameAs: org.social_links.map((link) => link.url) }
+      : {}),
+  };
+
   // Synthetic default for tenants that haven't customised yet: a hero with
   // the org's own metadata + a CTA into the catalog. Keeps day-one homepages
   // from rendering blank without requiring a migration backfill.
   if (!blocks || blocks.length === 0) {
     return (
       <main>
+        <JsonLd data={organizationLd} />
         <section className="mx-auto w-full max-w-4xl px-6 py-24 text-center md:py-32">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
             Welcome to
@@ -74,6 +85,7 @@ export default async function TenantHome({ params }: Props) {
 
   return (
     <main>
+      <JsonLd data={organizationLd} />
       <HomepageBlocks
         blocks={blocks}
         courses={courses ?? []}

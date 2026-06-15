@@ -68,6 +68,11 @@ class OrganizationUpdate(BaseModel):
     footer_text: Annotated[str, StringConstraints(max_length=500)] | None = None
     contact_email: EmailLike | None = None
     social_links: Annotated[list[SocialLinkItem], Field(max_length=16)] | None = None
+    # SEO overrides. Empty/None clears the override and falls back to the
+    # display fields when the public site renders metadata.
+    meta_title: Annotated[str, StringConstraints(max_length=70)] | None = None
+    meta_description: Annotated[str, StringConstraints(max_length=200)] | None = None
+    og_image_url: Annotated[str, StringConstraints(max_length=500)] | None = None
     # Owner-editable custom domain. Route-level checks add what the type
     # can't express: not a platform (sub)domain, not claimed by another org.
     custom_domain: DomainName | None = None
@@ -106,6 +111,10 @@ class OrganizationPublic(SQLModel):
     footer_text: str | None = None
     contact_email: str | None = None
     social_links: list[SocialLinkItem] = []
+    # SEO overrides; null means "fall back to display fields" on the public site.
+    meta_title: str | None = None
+    meta_description: str | None = None
+    og_image_url: str | None = None
     # Per-provider connection status; empty list means this tenant can't
     # accept paid payments yet. Frontend derives "needs onboarding" from
     # `payment_accounts.length === 0` (or filters by provider).

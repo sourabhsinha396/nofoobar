@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies, headers } from "next/headers";
 
 import { INTERNAL_API_URL as API_URL } from "@/lib/api-internal";
@@ -78,6 +79,10 @@ export interface TenantOrg {
   tagline: string | null;
   footer_text: string | null;
   contact_email: string | null;
+  // SEO overrides; null means fall back to display fields when rendering metadata.
+  meta_title: string | null;
+  meta_description: string | null;
+  og_image_url: string | null;
   social_links: SocialLink[];
   payment_accounts: PaymentAccount[];
   // Present when the tenant enabled PostHog; the public site loads analytics.
@@ -344,20 +349,27 @@ export async function getAvailableIntegrations(
   }
 }
 
-export async function getTenantOrg(slug: string): Promise<TenantOrg | null> {
-  try {
-    const response = await fetch(`${API_URL}/api/v1/tenant`, {
-      headers: await tenantHeaders(slug),
-      cache: "no-store",
-    });
-    if (!response.ok) {
+// Memoized per-request with React cache(): the tenant org is read in the
+// public layout, in generateMetadata, and in page bodies on the same request;
+// cache() collapses those into a single backend call. Cross-request freshness
+// is unchanged - no-store still applies, and cache() only dedupes within one
+// render.
+export const getTenantOrg = cache(
+  async (slug: string): Promise<TenantOrg | null> => {
+    try {
+      const response = await fetch(`${API_URL}/api/v1/tenant`, {
+        headers: await tenantHeaders(slug),
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        return null;
+      }
+      return (await response.json()) as TenantOrg;
+    } catch {
       return null;
     }
-    return (await response.json()) as TenantOrg;
-  } catch {
-    return null;
-  }
-}
+  },
+);
 
 export async function getTenantCourses(slug: string): Promise<Course[] | null> {
   try {

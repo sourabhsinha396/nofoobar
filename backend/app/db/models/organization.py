@@ -31,6 +31,15 @@ class Organization(TimestampedModel, table=True):
     tagline: str | None = Field(default=None, max_length=140)
     footer_text: str | None = Field(default=None, max_length=500)
     contact_email: str | None = Field(default=None, max_length=255)
+
+    # SEO overrides for the public site. All optional - when empty, metadata
+    # falls back to the display fields at render time (name -> <title>,
+    # description -> meta description). og_image_url is a full URL (uploaded via
+    # /uploads/images or pasted), kept separate from logo_url because social
+    # cards want a wide 1200x630 image, not a square logo.
+    meta_title: str | None = Field(default=None, max_length=70)
+    meta_description: str | None = Field(default=None, max_length=200)
+    og_image_url: str | None = Field(default=None, max_length=500)
     # List of {platform, url} pairs. Shape validated by Pydantic in
     # app/schemas/organization.py; DB column is opaque JSONB.
     social_links: list[dict[str, Any]] = Field(

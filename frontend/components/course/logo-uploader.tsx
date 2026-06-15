@@ -22,7 +22,11 @@ interface UploadResponse {
 // Mirrors backend `app.services.storage.s3.ImagePurpose`. The backend
 // requires this field on every upload - no default - so the bucket path
 // is meaningful (`uploads/images/<purpose>/…`).
-export type ImagePurpose = "organization_logo" | "course_logo" | "tiptap_inline";
+export type ImagePurpose =
+  | "organization_logo"
+  | "organization_og_image"
+  | "course_logo"
+  | "tiptap_inline";
 
 export interface LogoUploaderProps {
   orgSlug: string;

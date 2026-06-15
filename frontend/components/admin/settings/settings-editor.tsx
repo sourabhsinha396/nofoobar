@@ -174,7 +174,10 @@ export function SettingsEditor({ orgSlug, initial }: Props) {
             placeholder="e.g. Practical FastAPI courses."
           />
         </Field>
-        <Field label="Description" hint="Used as the meta description for SEO.">
+        <Field
+          label="Description"
+          hint="Shown on your site and used as the default search/social description. Override it on the SEO page."
+        >
           <Textarea
             value={form.description}
             onChange={(e) => patchForm({ description: e.target.value })}

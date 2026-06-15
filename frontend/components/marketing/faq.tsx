@@ -4,6 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { JsonLd } from "@/components/seo/json-ld";
 
 const faqs: ReadonlyArray<{ question: string; answer: string }> = [
   {
@@ -44,8 +45,19 @@ const faqs: ReadonlyArray<{ question: string; answer: string }> = [
 ];
 
 export function Faq() {
+  const faqLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: { "@type": "Answer", text: faq.answer },
+    })),
+  };
+
   return (
     <section className="border-b border-border/60 bg-surface-subtle py-24 md:py-32">
+      <JsonLd data={faqLd} />
       <div className="mx-auto max-w-3xl px-6">
         <div className="mb-12 text-center md:mb-16">
           <p className="mb-5 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
