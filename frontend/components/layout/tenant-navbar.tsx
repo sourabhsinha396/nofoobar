@@ -1,5 +1,9 @@
 import Link from "next/link";
 
+import {
+  TenantMobileNav,
+  type TenantNavItem,
+} from "@/components/layout/tenant-mobile-nav";
 import { TenantUserMenu } from "@/components/layout/tenant-user-menu";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { getCurrentUser } from "@/lib/auth";
@@ -22,6 +26,22 @@ export async function TenantNavbar({ slug, orgName, logoUrl }: Props) {
       serverTenantPath(slug, "/my-learning"),
       getNavLinks(slug, "header"),
     ]);
+
+  // Below `sm` the inline links drop out of the bar; the drawer carries them.
+  // Theme toggle, the Register CTA, and the user menu stay in the bar at all
+  // sizes (matches the apex navbar).
+  const mobileItems: TenantNavItem[] = [
+    { key: "courses", href: coursesHref, label: "Courses" },
+    ...navLinks.map((link) => ({
+      key: link.id,
+      href: link.href,
+      label: link.label,
+      external: link.open_in_new_tab,
+    })),
+    user
+      ? { key: "my-learning", href: myLearningHref, label: "My Learning" }
+      : { key: "sign-in", href: loginHref, label: "Sign in" },
+  ];
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/80 shadow shadow-gray-500">
@@ -47,7 +67,7 @@ export async function TenantNavbar({ slug, orgName, logoUrl }: Props) {
           </Link>
           <Link
             href={coursesHref}
-            className="text-foreground transition-colors hover:text-foreground"
+            className="hidden text-foreground transition-colors hover:text-foreground sm:inline-block"
           >
             Courses
           </Link>
@@ -57,7 +77,7 @@ export async function TenantNavbar({ slug, orgName, logoUrl }: Props) {
               href={link.href}
               target={link.open_in_new_tab ? "_blank" : undefined}
               rel={link.open_in_new_tab ? "noopener noreferrer" : undefined}
-              className="text-foreground transition-colors hover:text-foreground"
+              className="hidden text-foreground transition-colors hover:text-foreground sm:inline-block"
             >
               {link.label}
             </Link>
@@ -74,7 +94,7 @@ export async function TenantNavbar({ slug, orgName, logoUrl }: Props) {
             <>
               <Link
                 href={myLearningHref}
-                className="px-3 py-1.5 text-foreground transition-colors hover:text-foreground"
+                className="hidden px-3 py-1.5 text-foreground transition-colors hover:text-foreground sm:inline-block"
               >
                 My Learning
               </Link>
@@ -84,7 +104,7 @@ export async function TenantNavbar({ slug, orgName, logoUrl }: Props) {
             <>
               <Link
                 href={loginHref}
-                className="px-3 py-1.5 text-foreground transition-colors hover:text-foreground"
+                className="hidden px-3 py-1.5 text-foreground transition-colors hover:text-foreground sm:inline-block"
               >
                 Sign in
               </Link>
@@ -96,6 +116,10 @@ export async function TenantNavbar({ slug, orgName, logoUrl }: Props) {
               </Link>
             </>
           )}
+
+          {/* Below sm, the inline text links above are hidden; the drawer
+              carries them instead. */}
+          <TenantMobileNav items={mobileItems} />
         </nav>
       </div>
     </header>
