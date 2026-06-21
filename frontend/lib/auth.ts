@@ -8,6 +8,9 @@ export interface CurrentUser {
   id: string;
   email: string;
   name: string;
+  // Platform staff flag. Defaults to false for older backends that don't
+  // return it. Used to keep staff out of marketing-site analytics.
+  is_superuser: boolean;
 }
 
 export async function buildBackendHeaders(): Promise<HeadersInit> {
@@ -28,7 +31,13 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     if (!response.ok) {
       return null;
     }
-    return (await response.json()) as CurrentUser;
+    const data = (await response.json()) as Partial<CurrentUser> & { id: string };
+    return {
+      id: data.id,
+      email: data.email ?? "",
+      name: data.name ?? "",
+      is_superuser: data.is_superuser ?? false,
+    };
   } catch {
     return null;
   }

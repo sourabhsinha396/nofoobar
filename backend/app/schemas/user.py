@@ -18,3 +18,5 @@ class UserPublic(SQLModel):
     id: UUID
     email: str
     name: str
+    # Platform staff flag; the frontend uses it to exclude staff from analytics.
+    is_superuser: bool = False

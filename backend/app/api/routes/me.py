@@ -13,7 +13,9 @@ router = APIRouter(tags=["me"])
 
 @router.get("/me")
 async def me(user: CurrentUserDep) -> UserPublic:
-    return UserPublic(id=user.id, email=user.email, name=user.name)
+    return UserPublic(
+        id=user.id, email=user.email, name=user.name, is_superuser=user.is_superuser
+    )
 
 
 @router.get("/me/orgs")

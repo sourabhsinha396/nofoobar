@@ -27,3 +27,11 @@ class User(TimestampedModel, table=True):
         ),
         sa_column_kwargs={"server_default": PlanTier.FREE.value, "nullable": False},
     )
+
+    # Platform staff flag - true only for the nofoobar team. Superusers are
+    # excluded from product analytics (e.g. PostHog on the marketing site) so
+    # internal browsing doesn't pollute metrics. Existing rows default to false.
+    is_superuser: bool = Field(
+        default=False,
+        sa_column_kwargs={"server_default": "false", "nullable": False},
+    )
