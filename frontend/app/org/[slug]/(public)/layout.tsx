@@ -74,6 +74,7 @@ export default async function TenantPublicLayout({ children, params }: Props) {
         <PostHogAnalytics
           projectApiKey={org.posthog.project_api_key}
           host={org.posthog.host}
+          enableSessionRecording
         />
       )}
       <TenantNavbar slug={slug} orgName={org.name} logoUrl={org.logo_url} />
