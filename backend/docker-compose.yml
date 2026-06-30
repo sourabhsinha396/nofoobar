@@ -13,6 +13,45 @@ services:
       - /app/.venv
     command: ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
+  # Celery worker - runs the backup task (and any future background jobs).
+  worker:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/.venv
+    command: ["uv", "run", "celery", "-A", "app.worker.celery_app", "worker", "--loglevel=info"]
+
+  # Celery beat - fires the daily backup on schedule (BACKUP_HOUR_UTC).
+  beat:
+    build: .
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/.venv
+    # --schedule writes beat's last-run state to /tmp inside the container, not
+    # the bind-mounted /app, so the celerybeat-schedule* runtime files don't
+    # leak into the repo. --pidfile likewise kept off the mount.
+    command: ["uv", "run", "celery", "-A", "app.worker.celery_app", "beat", "--loglevel=info", "--schedule=/tmp/celerybeat-schedule", "--pidfile=/tmp/celerybeat.pid"]
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   postgres:
     image: postgres:17
     environment:

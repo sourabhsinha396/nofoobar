@@ -65,6 +65,28 @@ class Settings(BaseSettings):
     # DB is built as {S3_PUBLIC_URL_BASE}/{object-key}.
     S3_PUBLIC_URL_BASE: str = ""
 
+    # Daily Postgres backup. A pg_dump (-Fc custom format: compressed +
+    # selectively restorable) is pushed to the same S3/R2 bucket as uploads,
+    # under BACKUP_S3_PREFIX. Retention keeps BACKUP_KEEP newest and prunes the
+    # rest. Triggered by Celery beat at BACKUP_HOUR_UTC - see app/worker.py and
+    # docs/devops/db-backups.md. Reuses the S3_* and POSTGRES_* settings above.
+    BACKUP_S3_PREFIX: str = "db_backups/"
+    BACKUP_KEEP: int = 7
+    BACKUP_HOUR_UTC: int = 2
+
+    # Local-dev escape hatch. When true, the backup task writes the dump to
+    # LOCAL_BACKUP_DIR on disk and skips the S3/R2 upload entirely - so you can
+    # exercise pg_dump + retention without object-storage credentials. Retention
+    # (BACKUP_KEEP) still applies, against the local directory. Keep false in
+    # prod. (Env key spelled RUNNING_LOCALALLY to match the .env.)
+    RUNNING_LOCALALLY: bool = False
+    LOCAL_BACKUP_DIR: str = "db_backups"
+
+    # Celery broker + result backend. Used by the worker/beat containers for
+    # the backup task (and any later background jobs). Defaults to the compose
+    # `redis` service; override in prod if Redis lives elsewhere.
+    REDIS_URL: str = "redis://redis:6379/0"
+
     # Mux centralized credentials. One platform account, not BYO - see
     # docs/backend/video.md. Empty values disable Mux integration; the upload
     # route checks is_configured() and fails closed.

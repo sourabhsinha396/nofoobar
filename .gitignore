@@ -53,6 +53,13 @@ venv/
 .venv/
 env/
 
+# Local database dumps (RUNNING_LOCALALLY backups)
+db_backups/
+
+# Celery beat runtime state (schedule shelve db + pidfile)
+celerybeat-schedule*
+celerybeat.pid
+
 # OS
 .DS_Store
 Thumbs.db

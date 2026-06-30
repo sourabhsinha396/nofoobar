@@ -41,6 +41,15 @@ export function PostHogAnalytics({
       capture_pageview: false,
       capture_pageleave: true,
       disable_session_recording: !enableSessionRecording,
+      session_recording: {
+        // This is the PARENT side of cross-origin iframe recording. Lesson
+        // pages iframe in the algoholia lab embed player, which forwards its
+        // rrweb events here via postMessage. Without this flag the parent
+        // silently drops those events and the iframe is blank in the replay.
+        // The child (algoholia: instrumentation-client.ts) sets the same flag;
+        // PostHog requires it on both ends.
+        recordCrossOriginIframes: true,
+      },
     });
     initialized.current = true;
   }, [projectApiKey, host, enableSessionRecording]);
