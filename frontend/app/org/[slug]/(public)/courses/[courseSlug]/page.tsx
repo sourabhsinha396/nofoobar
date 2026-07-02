@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
 import {
-  CONTENT_TYPE_BADGE_CLASSES,
   CONTENT_TYPE_ICON_CLASSES,
   CONTENT_TYPE_ICONS,
   LEVEL_CLASSES,
@@ -75,29 +74,29 @@ function formatDuration(seconds: number): string {
 
 function LessonRow({ lesson, href }: { lesson: PublishedLessonOutline; href?: string }) {
   const Icon = CONTENT_TYPE_ICONS[lesson.content_type];
-  // Type is shown as a quiet tinted pill (owner-approved 2026-07-02). An
-  // earlier uppercase "ARTICLE" text label was removed because it made paid
-  // courses look like blogs and depressed enrollment intent - keep this pill
-  // sentence-case and low-contrast.
+  // Type is shown as a quiet tinted label after the icon (owner-approved
+  // 2026-07-02). An earlier uppercase "ARTICLE" text label was removed
+  // because it made paid courses look like blogs and depressed enrollment
+  // intent - keep this label sentence-case and low-contrast.
   const body = (
     <>
       <Icon
         className={`size-4 ${CONTENT_TYPE_ICON_CLASSES[lesson.content_type]}`}
         aria-hidden
       />
-      <span className="flex-1">{lesson.title}</span>
+      <span className="flex-1">
+        <span
+          className={`mr-2 text-xs font-medium ${CONTENT_TYPE_ICON_CLASSES[lesson.content_type]}`}
+        >
+          {CONTENT_TYPE_LABELS[lesson.content_type]}
+        </span>
+        {lesson.title}
+      </span>
       {lesson.is_free_preview && (
-        <span className="hidden rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-500 ring-1 ring-emerald-500/30 sm:inline">
+        <span className="hidden shrink-0 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium uppercase leading-none tracking-wide text-emerald-500 ring-1 ring-emerald-500/30 sm:inline-flex">
           Free preview
         </span>
       )}
-      {/* inline-flex, not inline: inline boxes ignore vertical padding and
-          inherit the link's text-decoration, which flattens the pill. */}
-      <span
-        className={`hidden shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium leading-none ring-1 sm:inline-flex ${CONTENT_TYPE_BADGE_CLASSES[lesson.content_type]}`}
-      >
-        {CONTENT_TYPE_LABELS[lesson.content_type]}
-      </span>
       {lesson.duration_seconds != null && (
         <span className="hidden text-xs tabular-nums text-muted-foreground sm:inline">
           {formatDuration(lesson.duration_seconds)}

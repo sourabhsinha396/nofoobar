@@ -30,16 +30,6 @@ export const CONTENT_TYPE_ICON_CLASSES: Record<LessonContentType, string> = {
   quiz: "text-amber-600/70 dark:text-amber-400/70",
 };
 
-// Pill variant of the tints above, for the type badge on curriculum rows.
-// Background at /10 with colored text, same shape language as the
-// free-preview badge but quieter (no ring, sentence case).
-export const CONTENT_TYPE_BADGE_CLASSES: Record<LessonContentType, string> = {
-  article: "bg-sky-500/10 text-sky-600 ring-sky-500/25 dark:text-sky-400",
-  video: "bg-violet-500/10 text-violet-600 ring-violet-500/25 dark:text-violet-400",
-  lab: "bg-emerald-500/10 text-emerald-600 ring-emerald-500/25 dark:text-emerald-400",
-  quiz: "bg-amber-500/10 text-amber-600 ring-amber-500/25 dark:text-amber-400",
-};
-
 // Deterministic hue from a slug so a course's gradient fallback (used when
 // logo_url is null) stays stable per course across reloads. Cheap djb2-ish
 // hash; collisions are fine, identity is what matters.
