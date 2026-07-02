@@ -43,7 +43,7 @@ def _validate_config(integration: Integration, raw: dict) -> IntegrationConfig:
         return integration.config_model.model_validate(raw)
     except ValidationError as exc:
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=exc.errors(include_url=False)
+            status.HTTP_422_UNPROCESSABLE_CONTENT, detail=exc.errors(include_url=False)
         ) from exc
 
 

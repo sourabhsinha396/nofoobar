@@ -44,12 +44,12 @@ async def upload_image(
         )
 
     if not file.filename:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Missing filename.")
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Missing filename.")
 
     ext = s3.normalize_extension(file.filename)
     if ext is None:
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
             f"Unsupported file type. Allowed: {', '.join(sorted(s3.ALLOWED_EXTS))}.",
         )
 
@@ -57,7 +57,7 @@ async def upload_image(
     if len(body) > s3.MAX_UPLOAD_BYTES:
         mb = s3.MAX_UPLOAD_BYTES // (1024 * 1024)
         raise HTTPException(
-            status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            status.HTTP_413_CONTENT_TOO_LARGE,
             f"File too large. Max {mb} MB.",
         )
 

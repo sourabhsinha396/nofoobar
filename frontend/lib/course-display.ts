@@ -1,4 +1,4 @@
-import { CodeXml, FileText, ListChecks, PlayCircle } from "lucide-react";
+import { CodeXml, FilePlay, ListChecks, PlayCircle } from "lucide-react";
 
 import type { CourseLevel, LessonContentType } from "@/lib/tenant";
 
@@ -15,11 +15,11 @@ export const LEVEL_CLASSES: Record<CourseLevel, string> = {
 };
 
 export const CONTENT_TYPE_ICONS = {
-  article: FileText,
+  article: FilePlay,
   video: PlayCircle,
   lab: CodeXml,
   quiz: ListChecks,
-} as const satisfies Record<LessonContentType, typeof FileText>;
+} as const satisfies Record<LessonContentType, typeof FilePlay>;
 
 // Soft tint per content type so lesson lists scan at a glance without the
 // icons competing with the text.
