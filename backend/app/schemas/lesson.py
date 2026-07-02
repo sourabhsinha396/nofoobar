@@ -1,7 +1,7 @@
 from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl, StringConstraints
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, StringConstraints, field_validator
 from sqlmodel import SQLModel
 
 from app.db.models.lesson import ContentType, LessonVisibility
@@ -33,9 +33,24 @@ class VideoContent(BaseModel):
     duration_seconds: Annotated[int, Field(ge=0)] | None = None
 
 
+# Labs are embedded from the interactive-labs service; only its domain may be
+# iframed into learner pages.
+LAB_EMBED_HOST = "algoholia.com"
+
+
 class LabContent(BaseModel):
     content_type: Literal[ContentType.LAB] = ContentType.LAB
-    lab_id: Annotated[str, StringConstraints(min_length=1, max_length=255)]
+    embed_url: HttpUrl
+
+    @field_validator("embed_url")
+    @classmethod
+    def embed_url_must_be_lab_host(cls, value: HttpUrl) -> HttpUrl:
+        host = value.host or ""
+        if value.scheme != "https" or (
+            host != LAB_EMBED_HOST and not host.endswith(f".{LAB_EMBED_HOST}")
+        ):
+            raise ValueError(f"embed_url must be an https URL on {LAB_EMBED_HOST}")
+        return value
 
 
 class QuizQuestion(BaseModel):

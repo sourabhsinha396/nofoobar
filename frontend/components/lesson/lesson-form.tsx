@@ -11,13 +11,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ApiError, apiPatch, apiPost } from "@/lib/api";
+import { extractLabEmbedUrl, isAllowedLabEmbedUrl, LAB_EMBED_HOST } from "@/lib/lab-embed";
 import { tenantPath } from "@/lib/orgs";
 import { EMPTY_TIPTAP_DOC } from "@/lib/tiptap-extensions";
 import type { LessonContentType, LessonVisibility } from "@/lib/tenant";
 
 const SLUG_PATTERN = /^[a-z][a-z0-9-]{0,62}$/;
 
-type SupportedContentType = "article" | "video";
+type SupportedContentType = "article" | "video" | "lab";
 
 interface LessonResponse {
   id: string;
@@ -56,6 +57,7 @@ type Props = CreateModeProps | EditModeProps;
 const CONTENT_TYPE_OPTIONS: Array<{ value: SupportedContentType; label: string; hint: string }> = [
   { value: "article", label: "Article", hint: "Rich text body" },
   { value: "video", label: "Video", hint: "URL + optional duration" },
+  { value: "lab", label: "Lab", hint: "Embedded interactive lab" },
 ];
 
 function isJsonContent(value: unknown): value is JSONContent {
@@ -95,6 +97,11 @@ export function LessonForm(props: Props) {
   const [videoUrl, setVideoUrl] = useState(
     initial?.content_type === "video" && typeof initial.content.url === "string"
       ? initial.content.url
+      : "",
+  );
+  const [labEmbedUrl, setLabEmbedUrl] = useState(
+    initial?.content_type === "lab" && typeof initial.content.embed_url === "string"
+      ? initial.content.embed_url
       : "",
   );
   const [durationMinutes, setDurationMinutes] = useState(() => {
@@ -140,7 +147,21 @@ export function LessonForm(props: Props) {
       // top of the Lesson row. See buildLessonPayload below.
       return { content_type: "video", url: videoUrl.trim() };
     }
-    // lab/quiz aren't edited via this form yet
+    if (contentType === "lab") {
+      // The input already extracts on change; extract again here so a snippet
+      // that bypassed onChange (autofill, programmatic set) is still accepted.
+      const embedUrl = extractLabEmbedUrl(labEmbedUrl);
+      if (!embedUrl) {
+        setError("Lab embed URL is required.");
+        return null;
+      }
+      if (!isAllowedLabEmbedUrl(embedUrl)) {
+        setError(`Lab embed URL must be an https link on ${LAB_EMBED_HOST}.`);
+        return null;
+      }
+      return { content_type: "lab", embed_url: embedUrl };
+    }
+    // quizzes aren't edited via this form yet
     return null;
   }
 
@@ -231,8 +252,8 @@ export function LessonForm(props: Props) {
         <CardDescription className="text-base">
           {props.mode === "create" ? (
             <>
-              Adding to <span className="font-mono">{props.sectionTitle}</span>. Labs and quizzes
-              get their own forms in a future update.
+              Adding to <span className="font-mono">{props.sectionTitle}</span>. Quizzes get
+              their own form in a future update.
             </>
           ) : (
             <>Content type can&apos;t change after creation. Delete and recreate to switch types.</>
@@ -243,7 +264,7 @@ export function LessonForm(props: Props) {
         <form onSubmit={onSubmit} className="flex flex-col gap-5">
           <fieldset className="flex flex-col gap-2">
             <Label className="text-sm font-medium">Type</Label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               {CONTENT_TYPE_OPTIONS.map((opt) => {
                 const isLocked =
                   lockedContentType !== null && lockedContentType !== opt.value;
@@ -322,6 +343,29 @@ export function LessonForm(props: Props) {
             </div>
           )}
 
+          {contentType === "lab" && (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="lab-embed-url" className="text-sm font-medium">
+                Lab embed URL
+              </Label>
+              <Input
+                id="lab-embed-url"
+                type="text"
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellCheck={false}
+                value={labEmbedUrl}
+                onChange={(e) => setLabEmbedUrl(extractLabEmbedUrl(e.target.value))}
+                placeholder={`https://${LAB_EMBED_HOST}/fastapi/embed/...`}
+                className="h-11 font-mono text-base"
+              />
+              <p className="text-xs text-muted-foreground">
+                Paste the embed URL or the full iframe snippet from {LAB_EMBED_HOST}. The URL is
+                pulled out of the snippet automatically.
+              </p>
+            </div>
+          )}
+
           {contentType === "video" && (
             <VideoLessonPicker
               url={videoUrl}
@@ -354,7 +398,9 @@ export function LessonForm(props: Props) {
               placeholder={
                 contentType === "video"
                   ? "Auto-filled from upload when available"
-                  : "e.g. 5 for a 5-minute read"
+                  : contentType === "lab"
+                    ? "e.g. 15 for a 15-minute lab"
+                    : "e.g. 5 for a 5-minute read"
               }
             />
           </div>

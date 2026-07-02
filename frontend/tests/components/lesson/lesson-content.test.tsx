@@ -81,3 +81,47 @@ describe("LessonContent video branch", () => {
     expect(container.textContent).toContain("Video URL");
   });
 });
+
+function labLesson(content: Record<string, unknown>): Lesson {
+  return {
+    id: "l-2",
+    org_id: "o-1",
+    course_id: "c-1",
+    section_id: "s-1",
+    slug: "http-lab",
+    title: "HTTP methods lab",
+    content_type: "lab",
+    content: { content_type: "lab", ...content },
+    position: 1,
+    visibility: "published",
+    duration_seconds: null,
+    is_free_preview: false,
+  };
+}
+
+describe("LessonContent lab branch", () => {
+  it("renders an iframe for an allowed labs-domain URL", () => {
+    const url = "https://algoholia.com/fastapi/embed/00d65b72-b92b-4320-95d2-20d8b90b0f59";
+    const lesson = labLesson({ embed_url: url });
+    const { container } = render(<LessonContent lesson={lesson} />);
+    const wrapper = container.querySelector("[data-lab-embed]");
+    expect(wrapper).not.toBeNull();
+    const iframe = wrapper?.querySelector("iframe");
+    expect(iframe?.src).toBe(url);
+    expect(iframe?.title).toBe("HTTP methods lab");
+  });
+
+  it("refuses to iframe URLs off the labs domain", () => {
+    const lesson = labLesson({ embed_url: "https://evil.example.com/embed/x" });
+    const { container } = render(<LessonContent lesson={lesson} />);
+    expect(container.querySelector("iframe")).toBeNull();
+    expect(container.textContent).toContain("This lab is not available.");
+  });
+
+  it("handles missing embed_url without crashing", () => {
+    const lesson = labLesson({});
+    const { container } = render(<LessonContent lesson={lesson} />);
+    expect(container.querySelector("iframe")).toBeNull();
+    expect(container.textContent).toContain("This lab is not available.");
+  });
+});

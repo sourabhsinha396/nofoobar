@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CheckCircle2, FileText, FlaskConical, ListChecks, Lock, PlayCircle } from "lucide-react";
+import { CheckCircle2, Lock } from "lucide-react";
 
 import { EnrollButton } from "@/components/enrollment/enroll-button";
 import { PaymentVerifier } from "@/components/enrollment/payment-verifier";
@@ -15,7 +15,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
-import { LEVEL_CLASSES, LEVEL_LABELS, fallbackHue } from "@/lib/course-display";
+import {
+  CONTENT_TYPE_ICON_CLASSES,
+  CONTENT_TYPE_ICONS,
+  LEVEL_CLASSES,
+  LEVEL_LABELS,
+  fallbackHue,
+} from "@/lib/course-display";
 import { formatPrice } from "@/lib/format";
 import { tenantOrigin } from "@/lib/site-url";
 import {
@@ -31,13 +37,6 @@ interface Props {
   params: Promise<{ slug: string; courseSlug: string }>;
   searchParams: Promise<{ payment_attempt?: string }>;
 }
-
-const CONTENT_TYPE_ICONS = {
-  article: FileText,
-  video: PlayCircle,
-  lab: FlaskConical,
-  quiz: ListChecks,
-} as const;
 
 const CONTENT_TYPE_LABELS = {
   article: "Article",
@@ -77,7 +76,10 @@ function LessonRow({ lesson, href }: { lesson: PublishedLessonOutline; href?: st
   // like blogs and depressed enrollment intent.
   const body = (
     <>
-      <Icon className="size-4 text-muted-foreground" aria-hidden />
+      <Icon
+        className={`size-4 ${CONTENT_TYPE_ICON_CLASSES[lesson.content_type]}`}
+        aria-hidden
+      />
       <span className="flex-1">{lesson.title}</span>
       {lesson.is_free_preview && (
         <span className="hidden rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-500 ring-1 ring-emerald-500/30 sm:inline">

@@ -2,6 +2,7 @@ import type { JSONContent } from "@tiptap/react";
 
 import { ArticleRenderer } from "@/components/lesson/article-renderer";
 import { Card } from "@/components/ui/card";
+import { isAllowedLabEmbedUrl } from "@/lib/lab-embed";
 import type { Lesson } from "@/lib/tenant";
 import { detectVideoProvider, youtubeEmbedSrc } from "@/lib/tiptap-video-embed";
 
@@ -70,6 +71,28 @@ function VideoLessonPlayer({ url, title }: { url: string; title: string }) {
   );
 }
 
+function LabLessonEmbed({ url, title }: { url: string; title: string }) {
+  // The backend only accepts lab embed URLs on the labs service's domain;
+  // re-check here so rows written outside the API can't iframe anything else.
+  if (!isAllowedLabEmbedUrl(url)) {
+    return (
+      <Card className="items-center p-10 text-center">
+        <p className="text-muted-foreground">This lab is not available.</p>
+      </Card>
+    );
+  }
+  return (
+    <div data-lab-embed>
+      <iframe
+        src={url}
+        title={title}
+        allow="clipboard-write"
+        className="h-[600px] w-full rounded-lg border border-input bg-muted"
+      />
+    </div>
+  );
+}
+
 export function LessonContent({ lesson }: Props) {
   if (lesson.content_type === "article") {
     const body = lesson.content.body;
@@ -88,11 +111,15 @@ export function LessonContent({ lesson }: Props) {
     return <VideoLessonPlayer url={url} title={lesson.title} />;
   }
 
+  if (lesson.content_type === "lab") {
+    const embedUrl =
+      typeof lesson.content.embed_url === "string" ? lesson.content.embed_url : "";
+    return <LabLessonEmbed url={embedUrl} title={lesson.title} />;
+  }
+
   return (
     <Card className="items-center p-10 text-center">
-      <p className="text-muted-foreground">
-        {lesson.content_type === "lab" ? "Lab" : "Quiz"} view coming in v2.
-      </p>
+      <p className="text-muted-foreground">Quiz view coming in v2.</p>
       <p className="mt-1 text-sm text-muted-foreground">
         Raw content stored under <span className="font-mono">content</span> in the database.
       </p>

@@ -24,6 +24,12 @@ VIDEO_PAYLOAD = {
         "duration_seconds": 120,
     },
 }
+LAB_EMBED_URL = "https://algoholia.com/fastapi/embed/00d65b72-b92b-4320-95d2-20d8b90b0f59"
+LAB_PAYLOAD = {
+    "slug": "http-lab",
+    "title": "HTTP methods lab",
+    "content": {"content_type": "lab", "embed_url": LAB_EMBED_URL},
+}
 
 
 def _exec_results(*first_values):
@@ -65,6 +71,44 @@ def test_create_video_lesson_persists_content(client, mock_session, fake_members
     assert added.content_type == ContentType.VIDEO
     assert added.content["url"].startswith("https://example.com/video")
     assert added.content["duration_seconds"] == 120
+
+
+def test_create_lab_lesson_persists_content(client, mock_session, fake_membership):
+    section = SectionFactory.build(org_id=fake_membership.org_id)
+    mock_session.exec.side_effect = _exec_results(section, None, None)
+    response = client.post(
+        f"/api/v1/courses/c/sections/{section.slug}/lessons",
+        json=LAB_PAYLOAD,
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 201
+    added = mock_session.add.call_args.args[0]
+    assert added.content_type == ContentType.LAB
+    assert added.content["embed_url"] == LAB_EMBED_URL
+
+
+@pytest.mark.parametrize(
+    "embed_url",
+    [
+        "http://algoholia.com/fastapi/embed/x",  # https required
+        "https://example.com/fastapi/embed/x",  # wrong host
+        "https://algoholia.com.evil.com/embed/x",  # lookalike host
+        "not-a-url",
+    ],
+)
+def test_create_lab_lesson_rejects_disallowed_embed_url(
+    client, mock_session, fake_membership, embed_url
+):
+    response = client.post(
+        "/api/v1/courses/c/sections/s/lessons",
+        json={
+            "slug": "x",
+            "title": "X",
+            "content": {"content_type": "lab", "embed_url": embed_url},
+        },
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 422
 
 
 def test_create_lesson_assigns_next_position(client, mock_session, fake_membership):

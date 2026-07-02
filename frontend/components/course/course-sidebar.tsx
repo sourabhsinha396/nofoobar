@@ -1,17 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { FileText, FlaskConical, ListChecks, PlayCircle } from "lucide-react";
 
+import { CONTENT_TYPE_ICON_CLASSES, CONTENT_TYPE_ICONS } from "@/lib/course-display";
 import { cn } from "@/lib/utils";
 import type { PublishedCourseLanding } from "@/lib/tenant";
-
-const CONTENT_TYPE_ICONS = {
-  article: FileText,
-  video: PlayCircle,
-  lab: FlaskConical,
-  quiz: ListChecks,
-} as const;
 
 interface Props {
   course: PublishedCourseLanding;
@@ -65,7 +58,13 @@ export function CourseSidebar({
                             : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
                         )}
                       >
-                        <Icon className="mt-0.5 size-4 shrink-0" aria-hidden />
+                        <Icon
+                          className={cn(
+                            "mt-0.5 size-4 shrink-0",
+                            CONTENT_TYPE_ICON_CLASSES[lesson.content_type],
+                          )}
+                          aria-hidden
+                        />
                         <span className="line-clamp-2 flex-1">{lesson.title}</span>
                       </Link>
                     </li>

@@ -78,7 +78,33 @@ const VIDEO_INITIAL = {
   is_free_preview: false,
 };
 
-function renderEdit(initial: typeof ARTICLE_INITIAL | typeof VIDEO_INITIAL) {
+const LAB_EMBED_URL = "https://algoholia.com/fastapi/embed/00d65b72-b92b-4320-95d2-20d8b90b0f59";
+
+const LAB_INITIAL = {
+  slug: "http-lab",
+  title: "HTTP methods lab",
+  content_type: "lab" as const,
+  content: { embed_url: LAB_EMBED_URL },
+  visibility: "draft" as const,
+  duration_seconds: null,
+  is_free_preview: false,
+};
+
+function renderCreate() {
+  return render(
+    <LessonForm
+      mode="create"
+      orgSlug="demo"
+      courseSlug="intro-fastapi"
+      sectionSlug="getting-started"
+      sectionTitle="Getting started"
+    />,
+  );
+}
+
+function renderEdit(
+  initial: typeof ARTICLE_INITIAL | typeof VIDEO_INITIAL | typeof LAB_INITIAL,
+) {
   return render(
     <LessonForm
       mode="edit"
@@ -204,6 +230,11 @@ describe("LessonForm â€” edit mode", () => {
     ).toBeInTheDocument();
   });
 
+  it("pre-populates fields from initial values (lab)", () => {
+    renderEdit(LAB_INITIAL);
+    expect(screen.getByLabelText("Lab embed URL")).toHaveValue(LAB_EMBED_URL);
+  });
+
   it("navigates to the new slug after successful PATCH", async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse({ id: "1", slug: "renamed" }));
     renderEdit(ARTICLE_INITIAL);
@@ -217,5 +248,58 @@ describe("LessonForm â€” edit mode", () => {
     expect(pushMock).toHaveBeenCalledWith(
       "/admin/courses/intro-fastapi/sections/getting-started/lessons/renamed",
     );
+  });
+});
+
+describe("LessonForm — lab lessons (create mode)", () => {
+  async function fillLabBasics(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole("radio", { name: /lab/i }));
+    await user.type(screen.getByLabelText("Title"), "HTTP methods lab");
+    await user.type(screen.getByLabelText("Slug"), "http-lab");
+  }
+
+  it("submits a POST with lab content", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ id: "1", slug: "http-lab" }, 201));
+    renderCreate();
+
+    const user = userEvent.setup();
+    await fillLabBasics(user);
+    await user.click(screen.getByLabelText("Lab embed URL"));
+    await user.paste(LAB_EMBED_URL);
+    await user.click(screen.getByRole("button", { name: /create lesson/i }));
+
+    expect(fetchMock).toHaveBeenCalledOnce();
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe("/api/v1/courses/intro-fastapi/sections/getting-started/lessons");
+    expect(init.method).toBe("POST");
+    const body = JSON.parse(init.body);
+    expect(body.content).toEqual({ content_type: "lab", embed_url: LAB_EMBED_URL });
+  });
+
+  it("extracts the URL from a pasted iframe snippet", async () => {
+    renderCreate();
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("radio", { name: /lab/i }));
+    const input = screen.getByLabelText("Lab embed URL");
+    await user.click(input);
+    await user.paste(
+      `<iframe src="${LAB_EMBED_URL}" width="100%" height="600" frameborder="0" allow="clipboard-write"></iframe>`,
+    );
+
+    expect(input).toHaveValue(LAB_EMBED_URL);
+  });
+
+  it("rejects embed URLs that are not on the labs domain", async () => {
+    renderCreate();
+
+    const user = userEvent.setup();
+    await fillLabBasics(user);
+    await user.click(screen.getByLabelText("Lab embed URL"));
+    await user.paste("https://evil.example.com/embed/x");
+    await user.click(screen.getByRole("button", { name: /create lesson/i }));
+
+    expect(await screen.findByText(/https link on algoholia\.com/i)).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
