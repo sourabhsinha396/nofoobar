@@ -85,8 +85,10 @@ function LessonRow({ lesson, href }: { lesson: PublishedLessonOutline; href?: st
         aria-hidden
       />
       <span className="flex-1">
+        {/* Fixed-width label column so titles share a left edge across rows
+            regardless of label length ("Lesson" vs "Lab"). */}
         <span
-          className={`mr-2 text-xs font-medium ${CONTENT_TYPE_ICON_CLASSES[lesson.content_type]}`}
+          className={`inline-block w-12 text-xs font-medium ${CONTENT_TYPE_ICON_CLASSES[lesson.content_type]}`}
         >
           {CONTENT_TYPE_LABELS[lesson.content_type]}
         </span>
