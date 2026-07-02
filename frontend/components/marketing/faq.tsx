@@ -74,7 +74,7 @@ export function Faq() {
               <AccordionTrigger className="py-6 text-base md:py-7 md:text-lg">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="pt-1 pb-7 text-base leading-relaxed text-muted-foreground md:pb-8">
+              <AccordionContent className="pt-1 pb-7 text-base leading-relaxed text-muted-foreground md:pb-8 [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>

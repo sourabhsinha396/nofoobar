@@ -16,7 +16,7 @@ export function FaqsBlock({ config }: { config: FaqsConfig }) {
         {config.items.map((item, idx) => (
           <AccordionItem key={idx} value={`faq-${idx}`}>
             <AccordionTrigger>{item.question}</AccordionTrigger>
-            <AccordionContent>
+            <AccordionContent className="[&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground">
               <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
                 {item.answer}
               </p>
