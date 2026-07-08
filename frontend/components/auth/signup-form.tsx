@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { isRecaptchaEnabled, RecaptchaCheckbox } from "@/components/auth/recaptcha-checkbox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -26,16 +27,28 @@ export function SignupForm({ redirectTo = "/me" }: Props = {}) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState("");
+  const [recaptchaReset, setRecaptchaReset] = useState(0);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+    if (isRecaptchaEnabled() && !recaptchaToken) {
+      setError("Please complete the reCAPTCHA");
+      return;
+    }
     setIsSubmitting(true);
     try {
-      await apiPost<SignupResponse>("/api/v1/auth/signup", { name, email, password });
+      await apiPost<SignupResponse>("/api/v1/auth/signup", {
+        name,
+        email,
+        password,
+        recaptcha_token: recaptchaToken,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Signup failed");
       setIsSubmitting(false);
+      setRecaptchaReset((n) => n + 1);
       return;
     }
     router.push(redirectTo);
@@ -62,6 +75,7 @@ export function SignupForm({ redirectTo = "/me" }: Props = {}) {
             <Label htmlFor="password" className="text-sm font-medium">Password</Label>
             <Input id="password" type="password" required minLength={8} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} className="h-11 text-base" />
           </div>
+          <RecaptchaCheckbox onToken={setRecaptchaToken} resetSignal={recaptchaReset} />
           {error && <p className="text-sm text-red-500">{error}</p>}
           <Button type="submit" disabled={isSubmitting} className="h-11 text-base">
             {isSubmitting ? "Creating account..." : "Sign up"}

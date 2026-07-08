@@ -7,11 +7,14 @@ class UserCreate(SQLModel):
     email: str
     password: str
     name: str
+    # Required only when RECAPTCHA_SECRET_KEY is configured server-side.
+    recaptcha_token: str = ""
 
 
 class LoginRequest(SQLModel):
     email: str
     password: str
+    recaptcha_token: str = ""
 
 
 class UserPublic(SQLModel):

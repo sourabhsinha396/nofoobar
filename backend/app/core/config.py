@@ -87,6 +87,13 @@ class Settings(BaseSettings):
     # `redis` service; override in prod if Redis lives elsewhere.
     REDIS_URL: str = "redis://redis:6379/0"
 
+    # Google reCAPTCHA v2 (checkbox) secret for the signup/login forms. The
+    # site key lives in the frontend env (NEXT_PUBLIC_RECAPTCHA_SITE_KEY);
+    # both keys must be created with domain verification disabled so tenant
+    # custom domains work. Empty disables verification entirely (local dev,
+    # tests).
+    RECAPTCHA_SECRET_KEY: str = ""
+
     # Mux centralized credentials. One platform account, not BYO - see
     # docs/backend/video.md. Empty values disable Mux integration; the upload
     # route checks is_configured() and fails closed.

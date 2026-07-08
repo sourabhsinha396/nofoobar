@@ -10,6 +10,7 @@ from app.api.deps import (
     get_current_user_optional,
     get_session,
 )
+from app.core.config import settings
 from app.core.security import hash_password
 from app.db.models.membership import Role, UserOrgMembership
 from app.db.models.organization import Organization
@@ -25,6 +26,13 @@ from app.tests.factories.user import UserFactory
 def _clear_overrides():
     yield
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(autouse=True)
+def _disable_recaptcha(monkeypatch):
+    """Keep tests hermetic when the dev .env carries a real reCAPTCHA secret.
+    Tests that exercise verification re-enable it explicitly."""
+    monkeypatch.setattr(settings, "RECAPTCHA_SECRET_KEY", "")
 
 
 class _RecordingDispatcher:
