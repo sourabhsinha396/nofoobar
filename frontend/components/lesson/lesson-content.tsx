@@ -86,7 +86,11 @@ function LabLessonEmbed({ url, title }: { url: string; title: string }) {
       <iframe
         src={url}
         title={title}
-        allow="clipboard-write"
+        // fullscreen (allow entry + allowFullScreen) is required for the lab's
+        // Full screen button - it hides itself when the host page doesn't
+        // grant the permission (document.fullscreenEnabled is false).
+        allow="clipboard-write; fullscreen"
+        allowFullScreen
         className="h-[600px] w-full rounded-lg border border-input bg-muted"
       />
     </div>

@@ -114,9 +114,12 @@ export const AlgoholiaLab = Node.create({
         {
           src: labEmbedSrc(org, embedId),
           frameborder: "0",
-          // clipboard-write lets the lab's "copy" buttons work; labs need no
-          // other capabilities.
-          allow: "clipboard-write",
+          // clipboard-write lets the lab's "copy" buttons work; fullscreen
+          // (both the Permissions-Policy `allow` entry and the legacy
+          // allowfullscreen attribute) lets the lab's Full screen button
+          // render - it hides itself when document.fullscreenEnabled is false.
+          allow: "clipboard-write; fullscreen",
+          allowfullscreen: "true",
           loading: "lazy",
         },
       ],
