@@ -11,6 +11,7 @@ from app.api.routes import (
     learn,
     lessons,
     me,
+    members,
     nav_links,
     orgs,
     pages,
@@ -40,6 +41,7 @@ api_router.include_router(public_homepage.router)
 api_router.include_router(homepage.router)
 api_router.include_router(public_nav_links.router)
 api_router.include_router(nav_links.router)
+api_router.include_router(members.router)
 api_router.include_router(public_pages.router)
 api_router.include_router(pages.router)
 api_router.include_router(enrollments.router)

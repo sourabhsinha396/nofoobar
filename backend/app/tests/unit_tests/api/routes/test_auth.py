@@ -2,6 +2,7 @@ import httpx
 import pytest
 
 from app.core.config import settings
+from app.db.models.membership import Role, UserOrgMembership
 from app.services import recaptcha
 
 HOSTS = ["localhost", "acme.nofoobar.app"]
@@ -21,6 +22,39 @@ def test_signup_creates_user_regardless_of_host(client, mock_session, host):
     assert body["name"] == "Test User"
     assert "password" not in body
     assert "password_hash" not in body
+
+
+def test_signup_on_tenant_site_creates_student_membership(
+    client, mock_session, fake_org
+):
+    # fake_org overrides the optional org dep, simulating a signup that
+    # arrived on a tenant site (subdomain or custom domain).
+    mock_session.exec.return_value.first.return_value = None  # email is unique
+    response = client.post(
+        "/api/v1/auth/signup",
+        json={"email": "s@example.com", "password": "secret123", "name": "Student"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 201
+    added = [call.args[0] for call in mock_session.add.call_args_list]
+    memberships = [a for a in added if isinstance(a, UserOrgMembership)]
+    assert len(memberships) == 1
+    assert memberships[0].role == Role.STUDENT
+    assert memberships[0].org_id == fake_org.id
+
+
+def test_signup_without_tenant_creates_no_membership(client, mock_session):
+    # Host localhost with no X-Tenant-Slug resolves to "no tenant" (an apex
+    # signup) - the user record is created but no membership.
+    mock_session.exec.return_value.first.return_value = None
+    response = client.post(
+        "/api/v1/auth/signup",
+        json={"email": "c@example.com", "password": "secret123", "name": "Creator"},
+        headers={"Host": "localhost"},
+    )
+    assert response.status_code == 201
+    added = [call.args[0] for call in mock_session.add.call_args_list]
+    assert not any(isinstance(a, UserOrgMembership) for a in added)
 
 
 @pytest.mark.parametrize("host", HOSTS)

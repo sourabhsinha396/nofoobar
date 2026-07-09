@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException, Request, Response, status
 from sqlmodel import select
 
-from app.api.deps import SessionDep
+from app.api.deps import OptionalCurrentOrgDep, SessionDep
 from app.core.security import hash_password, verify_password
+from app.db.models.membership import Role, UserOrgMembership
 from app.db.models.user import User
 from app.schemas.user import LoginRequest, UserCreate, UserPublic
 from app.services.recaptcha import require_recaptcha
@@ -11,7 +12,12 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/signup", status_code=status.HTTP_201_CREATED)
-async def signup(payload: UserCreate, request: Request, session: SessionDep) -> UserPublic:
+async def signup(
+    payload: UserCreate,
+    request: Request,
+    session: SessionDep,
+    org: OptionalCurrentOrgDep,
+) -> UserPublic:
     await require_recaptcha(payload.recaptcha_token)
     existing = await session.exec(select(User).where(User.email == payload.email))
     if existing.first() is not None:
@@ -22,6 +28,15 @@ async def signup(payload: UserCreate, request: Request, session: SessionDep) -> 
         name=payload.name,
     )
     session.add(user)
+    await session.flush()
+    # Signing up on a tenant site makes the visitor a student of that org, so
+    # they appear in the org's user roster right away. Apex signups (course
+    # creators) have no tenant here; they get an owner membership when they
+    # create their org.
+    if org is not None:
+        session.add(
+            UserOrgMembership(user_id=user.id, org_id=org.id, role=Role.STUDENT)
+        )
     await session.commit()
     await session.refresh(user)
     request.session["user_id"] = str(user.id)

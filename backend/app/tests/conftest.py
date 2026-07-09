@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 from app.api.deps import (
     get_current_membership,
     get_current_org,
+    get_current_org_optional,
     get_current_user,
     get_current_user_optional,
     get_session,
@@ -82,6 +83,7 @@ def fake_org() -> Organization:
         return org
 
     app.dependency_overrides[get_current_org] = _override
+    app.dependency_overrides[get_current_org_optional] = _override
     return org
 
 

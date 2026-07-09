@@ -209,6 +209,14 @@ export interface OrganizationPage extends OrganizationPageSummary {
   body: Record<string, unknown>;
 }
 
+export interface OrgMember {
+  user_id: string;
+  name: string;
+  email: string;
+  role: OrgRole;
+  joined_at: string;
+}
+
 export type NavLinkLocation = "header" | "footer";
 
 export interface NavLink {
@@ -546,6 +554,23 @@ export async function getNavLinks(
     return (await response.json()) as NavLink[];
   } catch {
     return [];
+  }
+}
+
+// Org user roster. 403 (student or non-member) and other failures surface as
+// null so the page can render an access message instead of crashing.
+export async function getOrgMembers(slug: string): Promise<OrgMember[] | null> {
+  try {
+    const response = await fetch(`${API_URL}/api/v1/admin/members`, {
+      headers: await tenantHeaders(slug),
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      return null;
+    }
+    return (await response.json()) as OrgMember[];
+  } catch {
+    return null;
   }
 }
 

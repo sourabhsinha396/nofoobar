@@ -32,6 +32,7 @@ export default async function AdminConsoleLayout({ children, params }: Props) {
     paymentsHref,
     settingsHref,
     seoHref,
+    usersHref,
   ] = await Promise.all([
     serverTenantPath(slug, "/admin"),
     serverTenantPath(slug, "/admin/homepage"),
@@ -41,6 +42,7 @@ export default async function AdminConsoleLayout({ children, params }: Props) {
     serverTenantPath(slug, "/admin/payments"),
     serverTenantPath(slug, "/admin/settings"),
     serverTenantPath(slug, "/admin/seo"),
+    serverTenantPath(slug, "/admin/users"),
   ]);
 
   const navGroups: AdminNavGroup[] = [
@@ -54,6 +56,10 @@ export default async function AdminConsoleLayout({ children, params }: Props) {
         { segment: "pages", label: "Pages", href: pagesHref },
         { segment: "nav-links", label: "Navigation", href: navLinksHref },
       ],
+    },
+    {
+      label: "People",
+      items: [{ segment: "users", label: "Users", href: usersHref }],
     },
     {
       label: "Setup",

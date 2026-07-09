@@ -58,13 +58,15 @@ def _lookup_for_public_host(host: str, apex: str) -> TenantLookup:
     return ("domain", host)
 
 
+def _org_lookup_stmt(kind: str, value: str):
+    if kind == "slug":
+        return select(Organization).where(Organization.slug == value)
+    return select(Organization).where(Organization.custom_domain == value)
+
+
 async def get_current_org(request: Request, session: SessionDep) -> Organization:
     kind, value = _resolve_tenant(request)
-    if kind == "slug":
-        stmt = select(Organization).where(Organization.slug == value)
-    else:
-        stmt = select(Organization).where(Organization.custom_domain == value)
-    result = await session.exec(stmt)
+    result = await session.exec(_org_lookup_stmt(kind, value))
     org = result.first()
     if org is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"Unknown tenant: {value}")
@@ -72,6 +74,23 @@ async def get_current_org(request: Request, session: SessionDep) -> Organization
 
 
 CurrentOrgDep = Annotated[Organization, Depends(get_current_org)]
+
+
+async def get_current_org_optional(
+    request: Request, session: SessionDep
+) -> Organization | None:
+    """The tenant org when the request carries one, else None. For routes that
+    serve both tenant sites and the apex (e.g. signup), where "no tenant" is a
+    valid state rather than an error."""
+    try:
+        kind, value = _resolve_tenant(request)
+    except HTTPException:
+        return None
+    result = await session.exec(_org_lookup_stmt(kind, value))
+    return result.first()
+
+
+OptionalCurrentOrgDep = Annotated[Organization | None, Depends(get_current_org_optional)]
 
 
 async def get_current_user(request: Request, session: SessionDep) -> User:
